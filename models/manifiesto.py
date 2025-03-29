@@ -6,7 +6,7 @@ class ManifiestoAmbiental(models.Model):
     _order = 'name desc'
 
     name = fields.Char(string='Número de Manifiesto', required=True, copy=False, default='Nuevo', readonly=True)
-    sale_order_id = fields.Many2one('sale.order', string='Orden de Venta', required=True, ondelete='cascade')
+    sale_order_id = fields.Many2one('sale.order', string='Orden de Servicio', required=True, ondelete='cascade')
 
     # Datos del generador (cliente)
     partner_id = fields.Many2one(related='sale_order_id.partner_id', string='Generador', store=True)

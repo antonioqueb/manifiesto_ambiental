@@ -4,6 +4,6 @@
         <field name="code">manifiesto.ambiental</field>
         <field name="prefix">MNF-</field>
         <field name="padding">6</field>
-        <field name="number_next">1</field>
+        <field name="number_next">1000</field>
     </record>
 </odoo>

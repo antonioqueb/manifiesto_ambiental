@@ -7,8 +7,8 @@
         "security/ir.model.access.csv",
         "data/sequence.xml",
         "report/report_actions.xml",
-        "views/manifiesto_views.xml",
         "report/manifiesto_pdf.xml",
+        "views/manifiesto_views.xml",
     ],
     "installable": True,
 }

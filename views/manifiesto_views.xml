@@ -1,99 +1,117 @@
 <odoo>
-    <!-- Vista Formulario -->
+   <!-- Vista Formulario Mejorada -->
     <record id="view_form_manifiesto_ambiental" model="ir.ui.view">
-      <field name="name">manifiesto.ambiental.form</field>
-      <field name="model">manifiesto.ambiental</field>
-      <field name="arch" type="xml">
+        <field name="name">manifiesto.ambiental.form</field>
+        <field name="model">manifiesto.ambiental</field>
+        <field name="arch" type="xml">
         <form string="Manifiesto Ambiental">
-          <header>
+            <header>
             <field name="estatus" widget="statusbar" statusbar_visible="borrador,validado,cerrado"/>
-          </header>
-          <sheet>
-            <group>
-              <field name="name"/>
-              <field name="sale_order_id"/>
-              <field name="partner_id" readonly="1"/>
+            
+            <button name="action_validar"
+                    type="object"
+                    string="Validar"
+                    class="btn-primary"
+                    if="estatus == 'borrador'"/>
+    
+            <button name="action_cerrar"
+                    type="object"
+                    string="Cerrar"
+                    class="btn-secondary"
+                    if="estatus == 'validado'"/>
+            </header>
+    
+            <sheet>
+            <group string="Información General">
+                <field name="name"/>
+                <field name="sale_order_id"/>
+                <field name="partner_id" readonly="1"/>
             </group>
-  
+    
             <notebook>
-              <page string="Datos del Generador">
-                <group>
-                  <field name="registro_ambiental"/>
-                  <field name="calle"/>
-                  <field name="municipio"/>
-                  <field name="estado"/>
-                  <field name="codigo_postal"/>
-                  <field name="telefono"/>
-                  <field name="email"/>
+                <page string="Datos del Generador">
+                <group string="Datos del Generador">
+                    <field name="registro_ambiental"/>
+                    <field name="calle"/>
+                    <field name="municipio"/>
+                    <field name="estado"/>
+                    <field name="codigo_postal"/>
+                    <field name="telefono"/>
+                    <field name="email"/>
                 </group>
-              </page>
-  
-              <page string="Residuos">
-                <field name="residuos_ids" widget="many2many_tags"/>
-              </page>
-  
-              <page string="Transportista">
-                <group>
-                  <field name="transportista_nombre"/>
-                  <field name="transportista_calle"/>
-                  <field name="transportista_num_ext"/>
-                  <field name="transportista_colonia"/>
-                  <field name="transportista_cp"/>
-                  <field name="transportista_municipio"/>
-                  <field name="transportista_estado"/>
-                  <field name="transportista_tel"/>
-                  <field name="transportista_email"/>
-                  <field name="semarnat_autorizacion"/>
-                  <field name="permiso_sct"/>
-                  <field name="tipo_vehiculo"/>
-                  <field name="placa"/>
-                  <field name="ruta"/>
+                </page>
+    
+                <page string="Residuos">
+                <group string="Listado de Residuos">
+                    <field name="residuos_ids" widget="many2many_tags"/>
                 </group>
-              </page>
-  
-              <page string="Destinatario">
-                <group>
-                  <field name="destinatario_nombre"/>
-                  <field name="destinatario_calle"/>
-                  <field name="destinatario_num_ext"/>
-                  <field name="destinatario_colonia"/>
-                  <field name="destinatario_cp"/>
-                  <field name="destinatario_municipio"/>
-                  <field name="destinatario_estado"/>
-                  <field name="destinatario_tel"/>
-                  <field name="destinatario_email"/>
-                  <field name="destinatario_semarnat"/>
-                  <field name="destinatario_receptor"/>
+                </page>
+    
+                <page string="Transportista">
+                <group string="Datos del Transportista">
+                    <field name="transportista_nombre"/>
+                    <field name="transportista_calle"/>
+                    <field name="transportista_num_ext"/>
+                    <field name="transportista_colonia"/>
+                    <field name="transportista_cp"/>
+                    <field name="transportista_municipio"/>
+                    <field name="transportista_estado"/>
+                    <field name="transportista_tel"/>
+                    <field name="transportista_email"/>
+                    <field name="semarnat_autorizacion"/>
+                    <field name="permiso_sct"/>
+                    <field name="tipo_vehiculo"/>
+                    <field name="placa"/>
+                    <field name="ruta"/>
                 </group>
-              </page>
-  
-              <page string="Firmas y Declaraciones">
-                <group string="Generador">
-                  <field name="responsable_nombre"/>
-                  <field name="responsable_firma"/>
-                  <field name="fecha_generador"/>
+                </page>
+    
+                <page string="Destinatario">
+                <group string="Datos del Destinatario">
+                    <field name="destinatario_nombre"/>
+                    <field name="destinatario_calle"/>
+                    <field name="destinatario_num_ext"/>
+                    <field name="destinatario_colonia"/>
+                    <field name="destinatario_cp"/>
+                    <field name="destinatario_municipio"/>
+                    <field name="destinatario_estado"/>
+                    <field name="destinatario_tel"/>
+                    <field name="destinatario_email"/>
+                    <field name="destinatario_semarnat"/>
+                    <field name="destinatario_receptor"/>
                 </group>
-                <group string="Transportista">
-                  <field name="responsable_transporte_nombre"/>
-                  <field name="responsable_transporte_firma"/>
-                  <field name="fecha_transporte"/>
+                </page>
+    
+                <page string="Firmas y Declaraciones">
+                <group string="Firma del Generador">
+                    <field name="responsable_nombre"/>
+                    <field name="responsable_firma"/>
+                    <field name="fecha_generador"/>
                 </group>
-                <group string="Destinatario">
-                  <field name="responsable_recepcion_nombre"/>
-                  <field name="responsable_recepcion_firma"/>
-                  <field name="fecha_recepcion"/>
+                <group string="Firma del Transportista">
+                    <field name="responsable_transporte_nombre"/>
+                    <field name="responsable_transporte_firma"/>
+                    <field name="fecha_transporte"/>
                 </group>
-              </page>
-  
-              <page string="Notas">
-                <field name="instrucciones"/>
-                <field name="observaciones"/>
-              </page>
+                <group string="Firma del Destinatario">
+                    <field name="responsable_recepcion_nombre"/>
+                    <field name="responsable_recepcion_firma"/>
+                    <field name="fecha_recepcion"/>
+                </group>
+                </page>
+    
+                <page string="Notas">
+                <group string="Instrucciones y Observaciones">
+                    <field name="instrucciones"/>
+                    <field name="observaciones"/>
+                </group>
+                </page>
             </notebook>
-          </sheet>
+            </sheet>
         </form>
-      </field>
+        </field>
     </record>
+  
   
     <!-- Vista Lista (Odoo 18 usa "list" en vez de "tree") -->
     <record id="view_list_manifiesto_ambiental" model="ir.ui.view">

@@ -73,6 +73,15 @@ class ManifiestoAmbiental(models.Model):
         ('cerrado', 'Cerrado'),
     ], default='borrador', string='Estatus')
 
+    def action_validar(self):
+        for rec in self:
+            rec.estatus = 'validado'
+
+    def action_cerrar(self):
+        for rec in self:
+            rec.estatus = 'cerrado'
+
+
     @api.model
     def create(self, vals):
         if vals.get('name', 'Nuevo') == 'Nuevo':

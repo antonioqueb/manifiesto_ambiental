@@ -1,0 +1,12 @@
+<odoo>
+    <report 
+      id="action_report_manifiesto_pdf"
+      model="manifiesto.ambiental"
+      string="Manifiesto Ambiental"
+      report_type="qweb-pdf"
+      name="manifiestos_ambientales.manifiesto_pdf"
+      file="manifiestos_ambientales.manifiesto_pdf"
+      print_report_name="'Manifiesto_%s' % (object.name)"
+    />
+  </odoo>
+  

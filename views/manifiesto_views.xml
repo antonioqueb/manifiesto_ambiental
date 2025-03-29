@@ -19,6 +19,14 @@
                     string="Cerrar"
                     class="btn-secondary"
                     if="estatus == 'validado'"/>
+                    
+            <button name="%(action_report_manifiesto_pdf)d"
+                    string="Imprimir Manifiesto"
+                    type="action"
+                    class="btn-secondary"
+                    context="{'active_ids': [active_id]}"
+                    groups="base.group_user"/>
+
             </header>
     
             <sheet>

@@ -11,15 +11,16 @@ class ManifiestoAmbiental(models.Model):
     # Datos del generador (cliente)
     partner_id = fields.Many2one(related='sale_order_id.partner_id', string='Generador', store=True)
     registro_ambiental = fields.Char(string='Núm. de registro ambiental')
-    calle = fields.Char(related='partner_id.street')
-    no_exterior = fields.Char(related='partner_id.l10n_mx_edi_street_number')
-    no_interior = fields.Char(related='partner_id.l10n_mx_edi_street_number2')
-    colonia = fields.Char(related='partner_id.l10n_mx_edi_colony_name')
-    municipio = fields.Char(related='partner_id.city')
-    estado = fields.Char(related='partner_id.state_id.name')
-    codigo_postal = fields.Char(related='partner_id.zip')
-    telefono = fields.Char(related='partner_id.phone')
-    email = fields.Char(related='partner_id.email')
+    calle = fields.Char(related='partner_id.street', readonly=True)
+    no_exterior = fields.Char(string='Núm. Ext.')  # campo manual porque no existe en res.partner
+    no_interior = fields.Char(string='Núm. Int.')  # campo manual porque no existe en res.partner
+    colonia = fields.Char(string='Colonia')        # campo manual porque no existe en res.partner
+    municipio = fields.Char(related='partner_id.city', readonly=True)
+    estado = fields.Char(related='partner_id.state_id.name', readonly=True)
+    codigo_postal = fields.Char(related='partner_id.zip', readonly=True)
+    telefono = fields.Char(related='partner_id.phone', readonly=True)
+    email = fields.Char(related='partner_id.email', readonly=True)
+
 
     # Residuos asociados
     residuos_ids = fields.Many2many('residuo.catalogo', string='Residuos')

@@ -128,12 +128,13 @@
       <field name="inherit_id" ref="sale.view_order_form"/>
       <field name="arch" type="xml">
         <header position="inside">
-          <button name="action_open_manifiesto_desde_orden"
-                  type="object"
-                  string="Generar Manifiesto"
-                  class="btn-primary"
-                  attrs="{'invisible': [('state', '!=', 'sale')]}"/>
-        </header>
+            <button name="action_open_manifiesto_desde_orden"
+                    type="object"
+                    string="Generar Manifiesto"
+                    class="btn-primary"
+                    if="state == 'sale'"/>
+          </header>
+          
       </field>
     </record>
   </odoo>

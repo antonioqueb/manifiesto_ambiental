@@ -30,16 +30,17 @@
     
             <notebook>
                 <page string="Datos del Generador">
-                <group string="Datos del Generador">
-                    <field name="registro_ambiental"/>
-                    <field name="calle"/>
-                    <field name="municipio"/>
-                    <field name="estado"/>
-                    <field name="codigo_postal"/>
-                    <field name="telefono"/>
-                    <field name="email"/>
-                </group>
+                    <group string="Datos del Generador">
+                        <field name="registro_ambiental" string="Núm. de registro ambiental"/>
+                        <field name="calle" string="Calle"/>
+                        <field name="municipio" string="Municipio"/>
+                        <field name="estado" string="Estado"/>
+                        <field name="codigo_postal" string="Código Postal"/>
+                        <field name="telefono" string="Teléfono"/>
+                        <field name="email" string="Correo electrónico"/>
+                    </group>
                 </page>
+                
     
                 <page string="Residuos">
                 <group string="Listado de Residuos">

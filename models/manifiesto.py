@@ -82,3 +82,14 @@ class ManifiestoAmbiental(models.Model):
         if vals.get('name', 'Nuevo') == 'Nuevo':
             vals['name'] = self.env['ir.sequence'].next_by_code('manifiesto.ambiental')
         return super().create(vals)
+    
+    @api.onchange('partner_id')
+    def _onchange_partner_id(self):
+        if self.partner_id:
+            self.calle = self.partner_id.street or ''
+            self.municipio = self.partner_id.city or ''
+            self.estado = self.partner_id.state_id.name if self.partner_id.state_id else ''
+            self.codigo_postal = self.partner_id.zip or ''
+            self.telefono = self.partner_id.phone or ''
+            self.email = self.partner_id.email or ''
+

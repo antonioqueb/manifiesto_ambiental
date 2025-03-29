@@ -1,4 +1,5 @@
 <odoo>
+    <!-- Vista Formulario -->
     <record id="view_form_manifiesto_ambiental" model="ir.ui.view">
       <field name="name">manifiesto.ambiental.form</field>
       <field name="model">manifiesto.ambiental</field>
@@ -12,12 +13,78 @@
               <field name="name"/>
               <field name="sale_order_id"/>
               <field name="partner_id" readonly="1"/>
-              <field name="fecha"/>
             </group>
+  
             <notebook>
+              <page string="Datos del Generador">
+                <group>
+                  <field name="registro_ambiental"/>
+                  <field name="calle"/>
+                  <field name="municipio"/>
+                  <field name="estado"/>
+                  <field name="codigo_postal"/>
+                  <field name="telefono"/>
+                  <field name="email"/>
+                </group>
+              </page>
+  
               <page string="Residuos">
                 <field name="residuos_ids" widget="many2many_tags"/>
               </page>
+  
+              <page string="Transportista">
+                <group>
+                  <field name="transportista_nombre"/>
+                  <field name="transportista_calle"/>
+                  <field name="transportista_num_ext"/>
+                  <field name="transportista_colonia"/>
+                  <field name="transportista_cp"/>
+                  <field name="transportista_municipio"/>
+                  <field name="transportista_estado"/>
+                  <field name="transportista_tel"/>
+                  <field name="transportista_email"/>
+                  <field name="semarnat_autorizacion"/>
+                  <field name="permiso_sct"/>
+                  <field name="tipo_vehiculo"/>
+                  <field name="placa"/>
+                  <field name="ruta"/>
+                </group>
+              </page>
+  
+              <page string="Destinatario">
+                <group>
+                  <field name="destinatario_nombre"/>
+                  <field name="destinatario_calle"/>
+                  <field name="destinatario_num_ext"/>
+                  <field name="destinatario_colonia"/>
+                  <field name="destinatario_cp"/>
+                  <field name="destinatario_municipio"/>
+                  <field name="destinatario_estado"/>
+                  <field name="destinatario_tel"/>
+                  <field name="destinatario_email"/>
+                  <field name="destinatario_semarnat"/>
+                  <field name="destinatario_receptor"/>
+                </group>
+              </page>
+  
+              <page string="Firmas y Declaraciones">
+                <group string="Generador">
+                  <field name="responsable_nombre"/>
+                  <field name="responsable_firma"/>
+                  <field name="fecha_generador"/>
+                </group>
+                <group string="Transportista">
+                  <field name="responsable_transporte_nombre"/>
+                  <field name="responsable_transporte_firma"/>
+                  <field name="fecha_transporte"/>
+                </group>
+                <group string="Destinatario">
+                  <field name="responsable_recepcion_nombre"/>
+                  <field name="responsable_recepcion_firma"/>
+                  <field name="fecha_recepcion"/>
+                </group>
+              </page>
+  
               <page string="Notas">
                 <field name="instrucciones"/>
                 <field name="observaciones"/>
@@ -28,12 +95,29 @@
       </field>
     </record>
   
+    <!-- Vista Lista (Odoo 18 usa "list" en vez de "tree") -->
+    <record id="view_list_manifiesto_ambiental" model="ir.ui.view">
+      <field name="name">manifiesto.ambiental.list</field>
+      <field name="model">manifiesto.ambiental</field>
+      <field name="arch" type="xml">
+        <list string="Manifiestos Ambientales">
+          <field name="name"/>
+          <field name="sale_order_id"/>
+          <field name="partner_id"/>
+          <field name="estatus"/>
+          <field name="fecha_generador"/>
+        </list>
+      </field>
+    </record>
+  
+    <!-- Acción -->
     <record id="action_manifiesto_ambiental" model="ir.actions.act_window">
       <field name="name">Manifiestos Ambientales</field>
       <field name="res_model">manifiesto.ambiental</field>
-      <field name="view_mode">tree,form</field>
+      <field name="view_mode">list,form</field>
     </record>
   
+    <!-- Menús -->
     <menuitem id="menu_manifiesto_root" name="Manifiestos" sequence="10"/>
     <menuitem id="menu_manifiesto" name="Manifiestos Ambientales" parent="menu_manifiesto_root" action="action_manifiesto_ambiental"/>
   </odoo>

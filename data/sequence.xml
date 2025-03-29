@@ -1,0 +1,9 @@
+<odoo>
+    <record id="seq_manifiesto_ambiental" model="ir.sequence">
+        <field name="name">Manifiesto Ambiental</field>
+        <field name="code">manifiesto.ambiental</field>
+        <field name="prefix">MNF-</field>
+        <field name="padding">6</field>
+        <field name="number_next">1</field>
+    </record>
+</odoo>

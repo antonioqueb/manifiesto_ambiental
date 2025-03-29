@@ -1,0 +1,40 @@
+<odoo>
+    <record id="view_form_manifiesto_ambiental" model="ir.ui.view">
+      <field name="name">manifiesto.ambiental.form</field>
+      <field name="model">manifiesto.ambiental</field>
+      <field name="arch" type="xml">
+        <form string="Manifiesto Ambiental">
+          <header>
+            <field name="estatus" widget="statusbar" statusbar_visible="borrador,validado,cerrado"/>
+          </header>
+          <sheet>
+            <group>
+              <field name="name"/>
+              <field name="sale_order_id"/>
+              <field name="partner_id" readonly="1"/>
+              <field name="fecha"/>
+            </group>
+            <notebook>
+              <page string="Residuos">
+                <field name="residuos_ids" widget="many2many_tags"/>
+              </page>
+              <page string="Notas">
+                <field name="instrucciones"/>
+                <field name="observaciones"/>
+              </page>
+            </notebook>
+          </sheet>
+        </form>
+      </field>
+    </record>
+  
+    <record id="action_manifiesto_ambiental" model="ir.actions.act_window">
+      <field name="name">Manifiestos Ambientales</field>
+      <field name="res_model">manifiesto.ambiental</field>
+      <field name="view_mode">tree,form</field>
+    </record>
+  
+    <menuitem id="menu_manifiesto_root" name="Manifiestos" sequence="10"/>
+    <menuitem id="menu_manifiesto" name="Manifiestos Ambientales" parent="menu_manifiesto_root" action="action_manifiesto_ambiental"/>
+  </odoo>
+  

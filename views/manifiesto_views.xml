@@ -120,5 +120,21 @@
     <!-- Menús -->
     <menuitem id="menu_manifiesto_root" name="Manifiestos" sequence="10"/>
     <menuitem id="menu_manifiesto" name="Manifiestos Ambientales" parent="menu_manifiesto_root" action="action_manifiesto_ambiental"/>
+  
+    <!-- Vista heredada de sale.order con botón para crear manifiesto -->
+    <record id="view_order_form_inherit_manifiesto" model="ir.ui.view">
+      <field name="name">sale.order.form.inherit.manifiesto</field>
+      <field name="model">sale.order</field>
+      <field name="inherit_id" ref="sale.view_order_form"/>
+      <field name="arch" type="xml">
+        <header position="inside">
+          <button name="action_open_manifiesto_desde_orden"
+                  type="object"
+                  string="Generar Manifiesto"
+                  class="btn-primary"
+                  attrs="{'invisible': [('state', '!=', 'sale')]}"/>
+        </header>
+      </field>
+    </record>
   </odoo>
   

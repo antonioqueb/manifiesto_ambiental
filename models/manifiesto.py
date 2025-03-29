@@ -18,8 +18,6 @@ class ManifiestoAmbiental(models.Model):
     telefono = fields.Char(related='partner_id.phone', readonly=True, store=True)
     email = fields.Char(related='partner_id.email', readonly=True, store=True)
 
-
-
     # Residuos asociados
     residuos_ids = fields.Many2many('residuo.catalogo', string='Residuos')
     instrucciones = fields.Text(string='Instrucciones Especiales')
@@ -80,7 +78,7 @@ class ManifiestoAmbiental(models.Model):
         if vals.get('name', 'Nuevo') == 'Nuevo':
             vals['name'] = self.env['ir.sequence'].next_by_code('manifiesto.ambiental')
         return super().create(vals)
-    
+
     @api.onchange('partner_id')
     def _onchange_partner_id(self):
         if self.partner_id:
@@ -90,4 +88,3 @@ class ManifiestoAmbiental(models.Model):
             self.codigo_postal = self.partner_id.zip or ''
             self.telefono = self.partner_id.phone or ''
             self.email = self.partner_id.email or ''
-

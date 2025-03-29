@@ -6,12 +6,13 @@
         <field name="arch" type="xml">
         <form string="Manifiesto Ambiental">
             <header>
-            <button name="%(action_report_manifiesto_pdf)d"
+            <button name="%(manifiesto_ambiental.action_report_manifiesto_pdf)d"
                 string="Imprimir Manifiesto"
                 type="action"
                 class="btn-secondary"
                 context="{'active_ids': [active_id]}"
                 groups="base.group_user"/>
+        
 
             <field name="estatus" widget="statusbar" statusbar_visible="borrador,validado,cerrado"/>
             

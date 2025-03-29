@@ -1,7 +1,7 @@
 from odoo import models
 
 class ManifiestoAmbientalReport(models.AbstractModel):
-    _name = 'report.manifiestos_ambientales.manifiesto_pdf'
+    _name = 'report.manufiesto_ambiental.manifiesto_pdf'
     _description = 'Reporte PDF del Manifiesto Ambiental'
 
     def _get_report_values(self, docids, data=None):

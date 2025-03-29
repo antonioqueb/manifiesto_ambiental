@@ -4,8 +4,8 @@
       model="manifiesto.ambiental"
       string="Manifiesto Ambiental"
       report_type="qweb-pdf"
-      name="manifiestos_ambientales.manifiesto_pdf"
-      file="manifiestos_ambientales.manifiesto_pdf"
+      name="manufiesto_ambiental.manifiesto_pdf"
+      file="manufiesto_ambiental.manifiesto_pdf"
       print_report_name="'Manifiesto_%s' % (object.name)"
     />
   </odoo>

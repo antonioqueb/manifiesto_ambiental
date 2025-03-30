@@ -97,3 +97,7 @@ class ManifiestoAmbiental(models.Model):
             self.codigo_postal = self.partner_id.zip or ''
             self.telefono = self.partner_id.phone or ''
             self.email = self.partner_id.email or ''
+    def action_imprimir_manifiesto(self):
+        return self.env.ref('manifiesto_ambiental.action_report_manifiesto_pdf').with_context(
+            disable_report_customization=True
+        ).report_action(self)

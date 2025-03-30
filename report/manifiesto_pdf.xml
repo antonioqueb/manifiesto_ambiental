@@ -51,7 +51,7 @@
                 <h4>Residuos a Recolectar</h4>
                 <ul>
                   <t t-foreach="doc.residuos_ids" t-as="residuo">
-                    <li><span t-esc="residuo.name"/></li>
+                    <li><span t-esc="residuo.display_name"/></li>
                   </t>
                 </ul>
   

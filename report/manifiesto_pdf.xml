@@ -49,11 +49,22 @@
   
                 <!-- Residuos -->
                 <h4>Residuos a Recolectar</h4>
-                <ul>
-                  <t t-foreach="doc.residuos_ids" t-as="residuo">
-                    <li><span t-esc="residuo.display_name"/></li>
-                  </t>
-                </ul>
+                <table class="table table-sm" style="border-collapse:separate; border-spacing:0; width:100%; border:1px solid #000; border-radius:6px; overflow:hidden;">
+                  <thead>
+                    <tr style="background-color:#f0f0f0;">
+                      <th style="border:1px solid #000; padding:4px; border-top-left-radius:6px;">Clave</th>
+                      <th style="border:1px solid #000; padding:4px; border-top-right-radius:6px;">Descripción</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <t t-foreach="doc.residuos_ids" t-as="residuo">
+                      <tr>
+                        <td style="border:1px solid #000; padding:4px;"><span t-esc="residuo.clave"/></td>
+                        <td style="border:1px solid #000; padding:4px;"><span t-esc="residuo.descripcion"/></td>
+                      </tr>
+                    </t>
+                  </tbody>
+                </table>
   
                 <!-- Ruta e instrucciones -->
                 <h4>Ruta del Transporte</h4>
@@ -79,12 +90,30 @@
                     <td><span t-esc="doc.responsable_recepcion_nombre"/></td>
                   </tr>
                   <tr>
-                    <td><t t-if="doc.responsable_firma"><img t-att-src="'data:image/png;base64,%s' % doc.responsable_firma" width="100"/></t>
-                        <t t-else=""><div style="width:100px; height:40px; border:1px solid #000;"></div></t></td>
-                    <td><t t-if="doc.responsable_transporte_firma"><img t-att-src="'data:image/png;base64,%s' % doc.responsable_transporte_firma" width="100"/></t>
-                        <t t-else=""><div style="width:100px; height:40px; border:1px solid #000;"></div></t></td>
-                    <td><t t-if="doc.responsable_recepcion_firma"><img t-att-src="'data:image/png;base64,%s' % doc.responsable_recepcion_firma" width="100"/></t>
-                        <t t-else=""><div style="width:100px; height:40px; border:1px solid #000;"></div></t></td>
+                    <td>
+                      <t t-if="doc.responsable_firma">
+                        <img t-att-src="'data:image/png;base64,%s' % doc.responsable_firma" width="100"/>
+                      </t>
+                      <t t-else="">
+                        <div style="width:100px; height:40px; border:1px solid #000;"></div>
+                      </t>
+                    </td>
+                    <td>
+                      <t t-if="doc.responsable_transporte_firma">
+                        <img t-att-src="'data:image/png;base64,%s' % doc.responsable_transporte_firma" width="100"/>
+                      </t>
+                      <t t-else="">
+                        <div style="width:100px; height:40px; border:1px solid #000;"></div>
+                      </t>
+                    </td>
+                    <td>
+                      <t t-if="doc.responsable_recepcion_firma">
+                        <img t-att-src="'data:image/png;base64,%s' % doc.responsable_recepcion_firma" width="100"/>
+                      </t>
+                      <t t-else="">
+                        <div style="width:100px; height:40px; border:1px solid #000;"></div>
+                      </t>
+                    </td>
                   </tr>
                   <tr>
                     <td><span t-esc="doc.fecha_generador"/></td>
@@ -100,6 +129,7 @@
       </t>
     </t>
   </template>
+  
   
 
   <!-- Acción del Reporte (integrada aquí) -->

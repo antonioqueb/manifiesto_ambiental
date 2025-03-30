@@ -64,7 +64,7 @@
                       <tr>
                         <td style="border:1px solid #000; padding:4px;"><span t-esc="residuo.clave"/></td>
                         <td style="border:1px solid #000; padding:4px;"><span t-esc="residuo.descripcion"/></td>
-                        <t t-if="residuo == doc.residuos_ids[0]">
+                        <t t-if="loop.index == 1">
                           <td style="border:1px solid #000; padding:4px;" t-attf-rowspan="{{ doc.residuos_ids|length }}"><span t-esc="doc.ruta"/></td>
                           <td style="border:1px solid #000; padding:4px;" t-attf-rowspan="{{ doc.residuos_ids|length }}"><span t-esc="doc.instrucciones"/></td>
                           <td style="border:1px solid #000; padding:4px;" t-attf-rowspan="{{ doc.residuos_ids|length }}"><span t-esc="doc.observaciones"/></td>
@@ -127,6 +127,7 @@
       </t>
     </t>
   </template>
+  
   
   
   

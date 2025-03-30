@@ -12,7 +12,7 @@
   
                 <!-- Generador -->
                 <h4>Datos del Generador</h4>
-                <table style="width:100%; border-collapse:separate; border-spacing:0; border:1px solid #000; border-radius:8px;">
+                <table style="width:100%; border-collapse:separate; border-spacing:0; border:1px solid transparent; border-radius:8px;">
                   <tr><td style="padding:4px;"><strong>Nombre:</strong></td><td style="padding:4px;"><span t-esc="doc.partner_id.name"/></td></tr>
                   <tr><td style="padding:4px;"><strong>Registro Ambiental:</strong></td><td style="padding:4px;"><span t-esc="doc.registro_ambiental"/></td></tr>
                   <tr><td style="padding:4px;"><strong>Dirección:</strong></td><td style="padding:4px;"><span t-esc="doc.calle"/> - <span t-esc="doc.municipio"/> - <span t-esc="doc.estado"/> - C.P. <span t-esc="doc.codigo_postal"/></td></tr>
@@ -22,7 +22,7 @@
   
                 <!-- Transportista -->
                 <h4>Datos del Transportista</h4>
-                <table style="width:100%; border-collapse:separate; border-spacing:0; border:1px solid #000; border-radius:8px;">
+                <table style="width:100%; border-collapse:separate; border-spacing:0; border:1px solid transparent; border-radius:8px;">
                   <tr><td style="padding:4px;"><strong>Nombre:</strong></td><td style="padding:4px;"><span t-esc="doc.transportista_nombre"/></td></tr>
                   <tr><td style="padding:4px;"><strong>Dirección:</strong></td><td style="padding:4px;"><span t-esc="doc.transportista_calle"/> No. <span t-esc="doc.transportista_num_ext"/>, Col. <span t-esc="doc.transportista_colonia"/>, <span t-esc="doc.transportista_municipio"/> - <span t-esc="doc.transportista_estado"/> - C.P. <span t-esc="doc.transportista_cp"/></td></tr>
                   <tr><td style="padding:4px;"><strong>Teléfono:</strong></td><td style="padding:4px;"><span t-esc="doc.transportista_tel"/></td></tr>
@@ -35,7 +35,7 @@
   
                 <!-- Destinatario -->
                 <h4>Datos del Destinatario</h4>
-                <table style="width:100%; border-collapse:separate; border-spacing:0; border:1px solid #000; border-radius:8px;">
+                <table style="width:100%; border-collapse:separate; border-spacing:0; border:1px solid transparent; border-radius:8px;">
                   <tr><td style="padding:4px;"><strong>Nombre:</strong></td><td style="padding:4px;"><span t-esc="doc.destinatario_nombre"/></td></tr>
                   <tr><td style="padding:4px;"><strong>Dirección:</strong></td><td style="padding:4px;"><span t-esc="doc.destinatario_calle"/> No. <span t-esc="doc.destinatario_num_ext"/>, Col. <span t-esc="doc.destinatario_colonia"/>, <span t-esc="doc.destinatario_municipio"/> - <span t-esc="doc.destinatario_estado"/> - C.P. <span t-esc="doc.destinatario_cp"/></td></tr>
                   <tr><td style="padding:4px;"><strong>Teléfono:</strong></td><td style="padding:4px;"><span t-esc="doc.destinatario_tel"/></td></tr>
@@ -46,7 +46,7 @@
   
                 <!-- Residuos -->
                 <h4>Residuos a Recolectar</h4>
-                <table style="width:100%; border-collapse:separate; border-spacing:0; border:1px solid #000; border-radius:8px;">
+                <table style="width:100%; border-collapse:separate; border-spacing:0; border:1px solid transparent; border-radius:8px;">
                   <thead>
                     <tr style="background-color:#f0f0f0;">
                       <th style="padding:4px; border-top-left-radius:8px;">Clave</th>
@@ -75,7 +75,7 @@
   
                 <!-- Firmas -->
                 <h4>Firmas</h4>
-                <table style="width:100%; border-collapse:separate; border-spacing:0; border:1px solid #000; border-radius:8px; text-align:center;">
+                <table style="width:100%; border-collapse:separate; border-spacing:0; border:1px solid transparent; border-radius:8px; text-align:center;">
                   <tr style="background-color:#f0f0f0;">
                     <th style="padding:4px;">Generador</th>
                     <th style="padding:4px;">Transportista</th>

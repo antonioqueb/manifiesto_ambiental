@@ -92,7 +92,7 @@
                         <img t-att-src="'data:image/png;base64,%s' % doc.responsable_firma" width="100"/>
                       </t>
                       <t t-else="">
-                        <div style="width:100px; height:40px; border:1px solid #000;"></div>
+                        <div style="width:100px; height:40px;"></div>
                       </t>
                     </td>
                     <td>
@@ -100,7 +100,7 @@
                         <img t-att-src="'data:image/png;base64,%s' % doc.responsable_transporte_firma" width="100"/>
                       </t>
                       <t t-else="">
-                        <div style="width:100px; height:40px; border:1px solid #000;"></div>
+                        <div style="width:100px; height:40px;"></div>
                       </t>
                     </td>
                     <td>
@@ -108,7 +108,7 @@
                         <img t-att-src="'data:image/png;base64,%s' % doc.responsable_recepcion_firma" width="100"/>
                       </t>
                       <t t-else="">
-                        <div style="width:100px; height:40px; border:1px solid #000;"></div>
+                        <div style="width:100px; height:40px;"></div>
                       </t>
                     </td>
                   </tr>

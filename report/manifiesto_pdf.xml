@@ -1,78 +1,106 @@
 <odoo>
   <template id="manifiesto_pdf">
-      <t t-call="web.html_container">
-          <t t-foreach="docs" t-as="doc">
-              <t t-call="web.external_layout">
-                  <div class="page">
-                      <t t-foreach="['Original Generador', 'Copia Generador', 'Copia Transportista', 'Copia Destinatario']" t-as="copia">
-                          <h2>MANIFIESTO DE ENTREGA, TRANSPORTE Y RECEPCIÓN DE RESIDUOS PELIGROSOS</h2>
-                          <p><strong>Copia:</strong> <span t-esc="copia"/></p>
-                          <p><strong>Núm. de manifiesto:</strong> <span t-esc="doc.name"/></p>
-                          <p><strong>Generador:</strong> <span t-esc="doc.partner_id.name"/></p>
-                          <p><strong>Registro ambiental:</strong> <span t-esc="doc.registro_ambiental"/></p>
-                          <p><strong>Dirección:</strong> <span t-esc="doc.calle"/> - <span t-esc="doc.municipio"/> - <span t-esc="doc.estado"/> - <span t-esc="doc.codigo_postal"/></p>
-
-                          <!-- Residuos -->
-                          <h4>Residuos:</h4>
-                          <ul>
-                              <t t-foreach="doc.residuos_ids" t-as="residuo">
-                                  <li><span t-esc="residuo.name"/></li>
-                              </t>
-                          </ul>
-
-                          <p><strong>Instrucciones:</strong> <span t-esc="doc.instrucciones"/></p>
-                          <p><strong>Observaciones:</strong> <span t-esc="doc.observaciones"/></p>
-
-                          <!-- Firmas -->
-                          <div>
-                              <h5>Firma del Generador</h5>
-                              <p><strong>Nombre:</strong> <span t-esc="doc.responsable_nombre"/></p>
-                              <p><strong>Fecha:</strong> <span t-esc="doc.fecha_generador"/></p>
-                              <t t-if="doc.responsable_firma">
-                                  <img t-att-src="'data:image/png;base64,%s' % doc.responsable_firma" width="150"/>
-                              </t>
-                              <t t-else="">
-                                  <div style="width:150px; height:50px; border:1px solid #000;">
-                                      <span style="visibility: hidden;">_</span>
-                                  </div>
-                              </t>
-                          </div>
-
-                          <div>
-                              <h5>Firma del Transportista</h5>
-                              <p><strong>Nombre:</strong> <span t-esc="doc.responsable_transporte_nombre"/></p>
-                              <p><strong>Fecha:</strong> <span t-esc="doc.fecha_transporte"/></p>
-                              <t t-if="doc.responsable_transporte_firma">
-                                  <img t-att-src="'data:image/png;base64,%s' % doc.responsable_transporte_firma" width="150"/>
-                              </t>
-                              <t t-else="">
-                                  <div style="width:150px; height:50px; border:1px solid #000;">
-                                      <span style="visibility: hidden;">_</span>
-                                  </div>
-                              </t>
-                          </div>
-
-                          <div>
-                              <h5>Firma del Destinatario</h5>
-                              <p><strong>Nombre:</strong> <span t-esc="doc.responsable_recepcion_nombre"/></p>
-                              <p><strong>Fecha:</strong> <span t-esc="doc.fecha_recepcion"/></p>
-                              <t t-if="doc.responsable_recepcion_firma">
-                                  <img t-att-src="'data:image/png;base64,%s' % doc.responsable_recepcion_firma" width="150"/>
-                              </t>
-                              <t t-else="">
-                                  <div style="width:150px; height:50px; border:1px solid #000;">
-                                      <span style="visibility: hidden;">_</span>
-                                  </div>
-                              </t>
-                          </div>
-
-                          <div style="page-break-after: always;"/>
-                      </t>
-                  </div>
-              </t>
-          </t>
+    <t t-call="web.html_container">
+      <t t-foreach="docs" t-as="doc">
+        <t t-call="web.external_layout">
+          <div class="page">
+            <t t-foreach="['Original Generador', 'Copia Generador', 'Copia Transportista', 'Copia Destinatario']" t-as="copia">
+              <div style="font-size:10px;">
+                <h2>MANIFIESTO DE ENTREGA, TRANSPORTE Y RECEPCIÓN DE RESIDUOS PELIGROSOS</h2>
+                <p><strong>Copia:</strong> <span t-esc="copia"/></p>
+                <p><strong>Núm. de manifiesto:</strong> <span t-esc="doc.name"/></p>
+  
+                <!-- Generador -->
+                <h4>Datos del Generador</h4>
+                <table class="table table-sm">
+                  <tr><td><strong>Nombre:</strong></td><td><span t-esc="doc.partner_id.name"/></td></tr>
+                  <tr><td><strong>Registro Ambiental:</strong></td><td><span t-esc="doc.registro_ambiental"/></td></tr>
+                  <tr><td><strong>Dirección:</strong></td>
+                      <td><span t-esc="doc.calle"/> - <span t-esc="doc.municipio"/> - <span t-esc="doc.estado"/> - C.P. <span t-esc="doc.codigo_postal"/></td></tr>
+                  <tr><td><strong>Teléfono:</strong></td><td><span t-esc="doc.telefono"/></td></tr>
+                  <tr><td><strong>Email:</strong></td><td><span t-esc="doc.email"/></td></tr>
+                </table>
+  
+                <!-- Transportista -->
+                <h4>Datos del Transportista</h4>
+                <table class="table table-sm">
+                  <tr><td><strong>Nombre:</strong></td><td><span t-esc="doc.transportista_nombre"/></td></tr>
+                  <tr><td><strong>Dirección:</strong></td>
+                      <td><span t-esc="doc.transportista_calle"/> No. <span t-esc="doc.transportista_num_ext"/>, Col. <span t-esc="doc.transportista_colonia"/>, <span t-esc="doc.transportista_municipio"/> - <span t-esc="doc.transportista_estado"/> - C.P. <span t-esc="doc.transportista_cp"/></td></tr>
+                  <tr><td><strong>Teléfono:</strong></td><td><span t-esc="doc.transportista_tel"/></td></tr>
+                  <tr><td><strong>Email:</strong></td><td><span t-esc="doc.transportista_email"/></td></tr>
+                  <tr><td><strong>Autorización SEMARNAT:</strong></td><td><span t-esc="doc.semarnat_autorizacion"/></td></tr>
+                  <tr><td><strong>Permiso SCT:</strong></td><td><span t-esc="doc.permiso_sct"/></td></tr>
+                  <tr><td><strong>Tipo de Vehículo:</strong></td><td><span t-esc="doc.tipo_vehiculo"/></td></tr>
+                  <tr><td><strong>Placa:</strong></td><td><span t-esc="doc.placa"/></td></tr>
+                </table>
+  
+                <!-- Destinatario -->
+                <h4>Datos del Destinatario</h4>
+                <table class="table table-sm">
+                  <tr><td><strong>Nombre:</strong></td><td><span t-esc="doc.destinatario_nombre"/></td></tr>
+                  <tr><td><strong>Dirección:</strong></td>
+                      <td><span t-esc="doc.destinatario_calle"/> No. <span t-esc="doc.destinatario_num_ext"/>, Col. <span t-esc="doc.destinatario_colonia"/>, <span t-esc="doc.destinatario_municipio"/> - <span t-esc="doc.destinatario_estado"/> - C.P. <span t-esc="doc.destinatario_cp"/></td></tr>
+                  <tr><td><strong>Teléfono:</strong></td><td><span t-esc="doc.destinatario_tel"/></td></tr>
+                  <tr><td><strong>Email:</strong></td><td><span t-esc="doc.destinatario_email"/></td></tr>
+                  <tr><td><strong>Autorización SEMARNAT:</strong></td><td><span t-esc="doc.destinatario_semarnat"/></td></tr>
+                  <tr><td><strong>Receptor:</strong></td><td><span t-esc="doc.destinatario_receptor"/></td></tr>
+                </table>
+  
+                <!-- Residuos -->
+                <h4>Residuos a Recolectar</h4>
+                <ul>
+                  <t t-foreach="doc.residuos_ids" t-as="residuo">
+                    <li><span t-esc="residuo.name"/></li>
+                  </t>
+                </ul>
+  
+                <!-- Ruta e instrucciones -->
+                <h4>Ruta del Transporte</h4>
+                <p><span t-esc="doc.ruta"/></p>
+  
+                <h4>Instrucciones Especiales</h4>
+                <p><span t-esc="doc.instrucciones"/></p>
+  
+                <h4>Observaciones</h4>
+                <p><span t-esc="doc.observaciones"/></p>
+  
+                <!-- Firmas compactas -->
+                <h4>Firmas</h4>
+                <table class="table table-sm" style="width:100%; text-align:center;">
+                  <tr>
+                    <th>Generador</th>
+                    <th>Transportista</th>
+                    <th>Destinatario</th>
+                  </tr>
+                  <tr>
+                    <td><span t-esc="doc.responsable_nombre"/></td>
+                    <td><span t-esc="doc.responsable_transporte_nombre"/></td>
+                    <td><span t-esc="doc.responsable_recepcion_nombre"/></td>
+                  </tr>
+                  <tr>
+                    <td><t t-if="doc.responsable_firma"><img t-att-src="'data:image/png;base64,%s' % doc.responsable_firma" width="100"/></t>
+                        <t t-else=""><div style="width:100px; height:40px; border:1px solid #000;"></div></t></td>
+                    <td><t t-if="doc.responsable_transporte_firma"><img t-att-src="'data:image/png;base64,%s' % doc.responsable_transporte_firma" width="100"/></t>
+                        <t t-else=""><div style="width:100px; height:40px; border:1px solid #000;"></div></t></td>
+                    <td><t t-if="doc.responsable_recepcion_firma"><img t-att-src="'data:image/png;base64,%s' % doc.responsable_recepcion_firma" width="100"/></t>
+                        <t t-else=""><div style="width:100px; height:40px; border:1px solid #000;"></div></t></td>
+                  </tr>
+                  <tr>
+                    <td><span t-esc="doc.fecha_generador"/></td>
+                    <td><span t-esc="doc.fecha_transporte"/></td>
+                    <td><span t-esc="doc.fecha_recepcion"/></td>
+                  </tr>
+                </table>
+              </div>
+              <div style="page-break-after: always;"/>
+            </t>
+          </div>
+        </t>
       </t>
+    </t>
   </template>
+  
 
   <!-- Acción del Reporte (integrada aquí) -->
   <record id="action_report_manifiesto_pdf" model="ir.actions.report">

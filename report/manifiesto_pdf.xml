@@ -60,14 +60,23 @@
                     </tr>
                   </thead>
                   <tbody>
+                    <t t-set="first_row" t-value="True"/>
                     <t t-foreach="doc.residuos_ids" t-as="residuo">
                       <tr>
                         <td style="border:1px solid #000; padding:4px;"><span t-esc="residuo.clave"/></td>
                         <td style="border:1px solid #000; padding:4px;"><span t-esc="residuo.descripcion"/></td>
-                        <t t-if="loop.index == 1">
-                          <td style="border:1px solid #000; padding:4px;" t-attf-rowspan="{{ doc.residuos_ids|length }}"><span t-esc="doc.ruta"/></td>
-                          <td style="border:1px solid #000; padding:4px;" t-attf-rowspan="{{ doc.residuos_ids|length }}"><span t-esc="doc.instrucciones"/></td>
-                          <td style="border:1px solid #000; padding:4px;" t-attf-rowspan="{{ doc.residuos_ids|length }}"><span t-esc="doc.observaciones"/></td>
+  
+                        <t t-if="first_row">
+                          <td style="border:1px solid #000; padding:4px;" t-attf-rowspan="{{ doc.residuos_ids|length }}">
+                            <span t-esc="doc.ruta"/>
+                          </td>
+                          <td style="border:1px solid #000; padding:4px;" t-attf-rowspan="{{ doc.residuos_ids|length }}">
+                            <span t-esc="doc.instrucciones"/>
+                          </td>
+                          <td style="border:1px solid #000; padding:4px;" t-attf-rowspan="{{ doc.residuos_ids|length }}">
+                            <span t-esc="doc.observaciones"/>
+                          </td>
+                          <t t-set="first_row" t-value="False"/>
                         </t>
                       </tr>
                     </t>
@@ -128,9 +137,7 @@
     </t>
   </template>
   
-  
-  
-  
+ 
 
   <!-- Acción del Reporte (integrada aquí) -->
   <record id="action_report_manifiesto_pdf" model="ir.actions.report">

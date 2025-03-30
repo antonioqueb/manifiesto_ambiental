@@ -12,55 +12,54 @@
   
                 <!-- Generador -->
                 <h4>Datos del Generador</h4>
-                <table class="table table-sm">
-                  <tr><td><strong>Nombre:</strong></td><td><span t-esc="doc.partner_id.name"/></td></tr>
-                  <tr><td><strong>Registro Ambiental:</strong></td><td><span t-esc="doc.registro_ambiental"/></td></tr>
-                  <tr><td><strong>Dirección:</strong></td>
-                      <td><span t-esc="doc.calle"/> - <span t-esc="doc.municipio"/> - <span t-esc="doc.estado"/> - C.P. <span t-esc="doc.codigo_postal"/></td></tr>
-                  <tr><td><strong>Teléfono:</strong></td><td><span t-esc="doc.telefono"/></td></tr>
-                  <tr><td><strong>Email:</strong></td><td><span t-esc="doc.email"/></td></tr>
+                <table style="width:100%; border-collapse:separate; border-spacing:0; border:1px solid #000; border-radius:8px; overflow:hidden;">
+                  <tr><td style="padding:4px; border-bottom:1px solid #ccc;"><strong>Nombre:</strong></td><td style="padding:4px; border-bottom:1px solid #ccc;"><span t-esc="doc.partner_id.name"/></td></tr>
+                  <tr><td style="padding:4px; border-bottom:1px solid #ccc;"><strong>Registro Ambiental:</strong></td><td style="padding:4px; border-bottom:1px solid #ccc;"><span t-esc="doc.registro_ambiental"/></td></tr>
+                  <tr><td style="padding:4px; border-bottom:1px solid #ccc;"><strong>Dirección:</strong></td><td style="padding:4px; border-bottom:1px solid #ccc;"><span t-esc="doc.calle"/> - <span t-esc="doc.municipio"/> - <span t-esc="doc.estado"/> - C.P. <span t-esc="doc.codigo_postal"/></td></tr>
+                  <tr><td style="padding:4px; border-bottom:1px solid #ccc;"><strong>Teléfono:</strong></td><td style="padding:4px; border-bottom:1px solid #ccc;"><span t-esc="doc.telefono"/></td></tr>
+                  <tr><td style="padding:4px;"><strong>Email:</strong></td><td style="padding:4px;"><span t-esc="doc.email"/></td></tr>
                 </table>
   
                 <!-- Transportista -->
                 <h4>Datos del Transportista</h4>
-                <table class="table table-sm">
-                  <tr><td><strong>Nombre:</strong></td><td><span t-esc="doc.transportista_nombre"/></td></tr>
-                  <tr><td><strong>Dirección:</strong></td>
-                      <td><span t-esc="doc.transportista_calle"/> No. <span t-esc="doc.transportista_num_ext"/>, Col. <span t-esc="doc.transportista_colonia"/>, <span t-esc="doc.transportista_municipio"/> - <span t-esc="doc.transportista_estado"/> - C.P. <span t-esc="doc.transportista_cp"/></td></tr>
-                  <tr><td><strong>Teléfono:</strong></td><td><span t-esc="doc.transportista_tel"/></td></tr>
-                  <tr><td><strong>Email:</strong></td><td><span t-esc="doc.transportista_email"/></td></tr>
-                  <tr><td><strong>Autorización SEMARNAT:</strong></td><td><span t-esc="doc.semarnat_autorizacion"/></td></tr>
-                  <tr><td><strong>Permiso SCT:</strong></td><td><span t-esc="doc.permiso_sct"/></td></tr>
-                  <tr><td><strong>Tipo de Vehículo:</strong></td><td><span t-esc="doc.tipo_vehiculo"/></td></tr>
-                  <tr><td><strong>Placa:</strong></td><td><span t-esc="doc.placa"/></td></tr>
+                <table style="width:100%; border-collapse:separate; border-spacing:0; border:1px solid #000; border-radius:8px; overflow:hidden;">
+                  <tr><td style="padding:4px; border-bottom:1px solid #ccc;"><strong>Nombre:</strong></td><td style="padding:4px; border-bottom:1px solid #ccc;"><span t-esc="doc.transportista_nombre"/></td></tr>
+                  <tr><td style="padding:4px; border-bottom:1px solid #ccc;"><strong>Dirección:</strong></td>
+                      <td style="padding:4px; border-bottom:1px solid #ccc;"><span t-esc="doc.transportista_calle"/> No. <span t-esc="doc.transportista_num_ext"/>, Col. <span t-esc="doc.transportista_colonia"/>, <span t-esc="doc.transportista_municipio"/> - <span t-esc="doc.transportista_estado"/> - C.P. <span t-esc="doc.transportista_cp"/></td></tr>
+                  <tr><td style="padding:4px; border-bottom:1px solid #ccc;"><strong>Teléfono:</strong></td><td style="padding:4px; border-bottom:1px solid #ccc;"><span t-esc="doc.transportista_tel"/></td></tr>
+                  <tr><td style="padding:4px; border-bottom:1px solid #ccc;"><strong>Email:</strong></td><td style="padding:4px; border-bottom:1px solid #ccc;"><span t-esc="doc.transportista_email"/></td></tr>
+                  <tr><td style="padding:4px; border-bottom:1px solid #ccc;"><strong>Autorización SEMARNAT:</strong></td><td style="padding:4px; border-bottom:1px solid #ccc;"><span t-esc="doc.semarnat_autorizacion"/></td></tr>
+                  <tr><td style="padding:4px; border-bottom:1px solid #ccc;"><strong>Permiso SCT:</strong></td><td style="padding:4px; border-bottom:1px solid #ccc;"><span t-esc="doc.permiso_sct"/></td></tr>
+                  <tr><td style="padding:4px; border-bottom:1px solid #ccc;"><strong>Tipo de Vehículo:</strong></td><td style="padding:4px; border-bottom:1px solid #ccc;"><span t-esc="doc.tipo_vehiculo"/></td></tr>
+                  <tr><td style="padding:4px;"><strong>Placa:</strong></td><td style="padding:4px;"><span t-esc="doc.placa"/></td></tr>
                 </table>
   
                 <!-- Destinatario -->
                 <h4>Datos del Destinatario</h4>
-                <table class="table table-sm">
-                  <tr><td><strong>Nombre:</strong></td><td><span t-esc="doc.destinatario_nombre"/></td></tr>
-                  <tr><td><strong>Dirección:</strong></td>
-                      <td><span t-esc="doc.destinatario_calle"/> No. <span t-esc="doc.destinatario_num_ext"/>, Col. <span t-esc="doc.destinatario_colonia"/>, <span t-esc="doc.destinatario_municipio"/> - <span t-esc="doc.destinatario_estado"/> - C.P. <span t-esc="doc.destinatario_cp"/></td></tr>
-                  <tr><td><strong>Teléfono:</strong></td><td><span t-esc="doc.destinatario_tel"/></td></tr>
-                  <tr><td><strong>Email:</strong></td><td><span t-esc="doc.destinatario_email"/></td></tr>
-                  <tr><td><strong>Autorización SEMARNAT:</strong></td><td><span t-esc="doc.destinatario_semarnat"/></td></tr>
-                  <tr><td><strong>Receptor:</strong></td><td><span t-esc="doc.destinatario_receptor"/></td></tr>
+                <table style="width:100%; border-collapse:separate; border-spacing:0; border:1px solid #000; border-radius:8px; overflow:hidden;">
+                  <tr><td style="padding:4px; border-bottom:1px solid #ccc;"><strong>Nombre:</strong></td><td style="padding:4px; border-bottom:1px solid #ccc;"><span t-esc="doc.destinatario_nombre"/></td></tr>
+                  <tr><td style="padding:4px; border-bottom:1px solid #ccc;"><strong>Dirección:</strong></td>
+                      <td style="padding:4px; border-bottom:1px solid #ccc;"><span t-esc="doc.destinatario_calle"/> No. <span t-esc="doc.destinatario_num_ext"/>, Col. <span t-esc="doc.destinatario_colonia"/>, <span t-esc="doc.destinatario_municipio"/> - <span t-esc="doc.destinatario_estado"/> - C.P. <span t-esc="doc.destinatario_cp"/></td></tr>
+                  <tr><td style="padding:4px; border-bottom:1px solid #ccc;"><strong>Teléfono:</strong></td><td style="padding:4px; border-bottom:1px solid #ccc;"><span t-esc="doc.destinatario_tel"/></td></tr>
+                  <tr><td style="padding:4px; border-bottom:1px solid #ccc;"><strong>Email:</strong></td><td style="padding:4px; border-bottom:1px solid #ccc;"><span t-esc="doc.destinatario_email"/></td></tr>
+                  <tr><td style="padding:4px; border-bottom:1px solid #ccc;"><strong>Autorización SEMARNAT:</strong></td><td style="padding:4px; border-bottom:1px solid #ccc;"><span t-esc="doc.destinatario_semarnat"/></td></tr>
+                  <tr><td style="padding:4px;"><strong>Receptor:</strong></td><td style="padding:4px;"><span t-esc="doc.destinatario_receptor"/></td></tr>
                 </table>
   
                 <!-- Residuos -->
                 <h4>Residuos a Recolectar</h4>
-                <table class="table table-sm" style="border-collapse:separate; border-spacing:0; width:100%; border:1px solid #000; border-radius:6px; overflow:hidden;">
+                <table style="width:100%; border-collapse:separate; border-spacing:0; border:1px solid #000; border-radius:8px; overflow:hidden;">
                   <thead>
                     <tr style="background-color:#f0f0f0;">
-                      <th style="border:1px solid #000; padding:4px; border-top-left-radius:6px;">Clave</th>
-                      <th style="border:1px solid #000; padding:4px; border-top-right-radius:6px;">Descripción</th>
+                      <th style="padding:4px; border-bottom:1px solid #ccc; border-top-left-radius:8px;">Clave</th>
+                      <th style="padding:4px; border-bottom:1px solid #ccc; border-top-right-radius:8px;">Descripción</th>
                     </tr>
                   </thead>
                   <tbody>
                     <t t-foreach="doc.residuos_ids" t-as="residuo">
                       <tr>
-                        <td style="border:1px solid #000; padding:4px;"><span t-esc="residuo.clave"/></td>
-                        <td style="border:1px solid #000; padding:4px;"><span t-esc="residuo.descripcion"/></td>
+                        <td style="padding:4px; border-bottom:1px solid #ccc;"><span t-esc="residuo.clave"/></td>
+                        <td style="padding:4px; border-bottom:1px solid #ccc;"><span t-esc="residuo.descripcion"/></td>
                       </tr>
                     </t>
                   </tbody>
@@ -76,13 +75,13 @@
                 <h4>Observaciones</h4>
                 <p><span t-esc="doc.observaciones"/></p>
   
-                <!-- Firmas compactas -->
+                <!-- Firmas -->
                 <h4>Firmas</h4>
-                <table class="table table-sm" style="width:100%; text-align:center;">
-                  <tr>
-                    <th>Generador</th>
-                    <th>Transportista</th>
-                    <th>Destinatario</th>
+                <table style="width:100%; border-collapse:separate; border-spacing:0; border:1px solid #000; border-radius:8px; overflow:hidden; text-align:center;">
+                  <tr style="background-color:#f0f0f0;">
+                    <th style="padding:4px;">Generador</th>
+                    <th style="padding:4px;">Transportista</th>
+                    <th style="padding:4px;">Destinatario</th>
                   </tr>
                   <tr>
                     <td><span t-esc="doc.responsable_nombre"/></td>
@@ -129,6 +128,7 @@
       </t>
     </t>
   </template>
+  
   
   
 

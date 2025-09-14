@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Menú principal de Manifiesto Ambiental -->
+    <menuitem id="menu_manifiesto_ambiental_root"
+              name="Manifiestos"
+              sequence="50"/>
+    
+    <!-- Submenú para Manifiestos Actuales -->
+    <menuitem id="menu_manifiesto_ambiental_manifiestos"
+              name="Manifiestos Actuales"
+              parent="menu_manifiesto_ambiental_root"
+              action="action_manifiesto_ambiental"
+              sequence="10"/>
+    
+    <!-- Submenú para Historial de Versiones -->
+    <menuitem id="menu_manifiesto_ambiental_versions"
+              name="Historial de Versiones"
+              parent="menu_manifiesto_ambiental_root"
+              action="action_manifiesto_ambiental_version"
+              sequence="20"/>
+    
+    <!-- Submenú para Todas las Versiones -->
+    <menuitem id="menu_manifiesto_ambiental_all_versions"
+              name="Todas las Versiones"
+              parent="menu_manifiesto_ambiental_root"
+              action="action_manifiesto_ambiental_all_versions"
+              sequence="30"/>
+    
+    <!-- Submenú para configuración -->
+    <menuitem id="menu_manifiesto_ambiental_config"
+              name="Configuración"
+              parent="menu_manifiesto_ambiental_root"
+              sequence="90"/>
+    
+    <!-- Menú para productos de residuos peligrosos -->
+    <menuitem id="menu_product_residuo_peligroso"
+              name="Productos de Residuos"
+              parent="menu_manifiesto_ambiental_config"
+              action="action_product_residuo_peligroso"
+              sequence="10"/>
+</odoo>

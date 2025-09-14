@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Extensión del formulario de productos para residuos peligrosos -->
+    <record id="view_product_template_form_residuo_peligroso" model="ir.ui.view">
+        <field name="name">product.template.form.residuo.peligroso</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_form_view"/>
+        <field name="arch" type="xml">
+            <notebook position="inside">
+                <page string="Residuo Peligroso" name="residuo_peligroso">
+                    <group string="Configuración de Residuo Peligroso" col="2">
+                        <field name="es_residuo_peligroso"/>
+                        <div invisible="not es_residuo_peligroso" 
+                             style="color: #28a745; font-weight: bold;">
+                            ℹ️ Este producto está configurado como residuo peligroso.
+                            Se activará automáticamente el seguimiento por lotes.
+                        </div>
+                    </group>
+                    
+                    <group string="Clasificación CRETIB" 
+                           invisible="not es_residuo_peligroso" 
+                           col="3">
+                        <field name="clasificacion_corrosivo"/>
+                        <field name="clasificacion_reactivo"/>
+                        <field name="clasificacion_explosivo"/>
+                        <field name="clasificacion_toxico"/>
+                        <field name="clasificacion_inflamable"/>
+                        <field name="clasificacion_biologico"/>
+                    </group>
+                    
+                    <group string="Información del Envase" 
+                           invisible="not es_residuo_peligroso" 
+                           col="2">
+                        <field name="envase_tipo_default"/>
+                        <field name="envase_capacidad_default"/>
+                    </group>
+                    
+                    <div invisible="not es_residuo_peligroso" 
+                         class="alert alert-info" 
+                         style="margin: 10px;">
+                        <strong>Nota importante:</strong>
+                        <ul>
+                            <li>La unidad de medida para residuos peligrosos siempre será en kilogramos (kg)</li>
+                            <li>Se activará automáticamente el seguimiento por lotes</li>
+                            <li>Los lotes se generarán automáticamente con el número de manifiesto</li>
+                        </ul>
+                    </div>
+                </page>
+            </notebook>
+        </field>
+    </record>
+
+    <!-- Acción para productos de residuos peligrosos -->
+    <record id="action_product_residuo_peligroso" model="ir.actions.act_window">
+        <field name="name">Productos - Residuos Peligrosos</field>
+        <field name="res_model">product.template</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('es_residuo_peligroso', '=', True)]</field>
+        <field name="context">{'default_es_residuo_peligroso': True, 'default_type': 'product'}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Crear su primer Producto de Residuo Peligroso
+            </p>
+            <p>
+                Los productos de residuos peligrosos son utilizados en los manifiestos ambientales.
+                Estos productos tienen seguimiento por lotes automático y clasificación CRETIB.
+            </p>
+        </field>
+    </record>
+
+    <!-- Vista de lista para productos de residuos peligrosos -->
+    <record id="view_product_template_residuo_peligroso_list" model="ir.ui.view">
+        <field name="name">product.template.residuo.peligroso.list</field>
+        <field name="model">product.template</field>
+        <field name="arch" type="xml">
+            <list string="Productos - Residuos Peligrosos">
+                <field name="name"/>
+                <field name="clasificacion_corrosivo" string="C"/>
+                <field name="clasificacion_reactivo" string="R"/>
+                <field name="clasificacion_explosivo" string="E"/>
+                <field name="clasificacion_toxico" string="T"/>
+                <field name="clasificacion_inflamable" string="I"/>
+                <field name="clasificacion_biologico" string="B"/>
+                <field name="envase_tipo_default"/>
+                <field name="envase_capacidad_default"/>
+                <field name="type"/>
+            </list>
+        </field>
+    </record>
+</odoo>

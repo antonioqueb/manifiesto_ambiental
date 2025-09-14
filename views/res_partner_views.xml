@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Extensión del formulario de contactos para números de dirección -->
+    <record id="view_partner_form_address_numbers" model="ir.ui.view">
+        <field name="name">res.partner.form.address.numbers</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <field name="street" position="after">
+                <field name="street_number" placeholder="Núm. Ext."/>
+                <field name="street_number2" placeholder="Núm. Int."/>
+            </field>
+        </field>
+    </record>
+
+    <!-- Extensión del formulario de contactos para datos ambientales -->
+    <record id="view_partner_form_manifiesto_fields" model="ir.ui.view">
+        <field name="name">res.partner.form.manifiesto.fields</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <notebook position="inside">
+                <page string="Datos Ambientales" name="environmental_data">
+                    <group string="Clasificación" col="3">
+                        <field name="es_generador"/>
+                        <field name="es_transportista"/>
+                        <field name="es_destinatario"/>
+                    </group>
+                    
+                    <group string="Registros y Autorizaciones" col="2">
+                        <group>
+                            <field name="numero_registro_ambiental" 
+                                   invisible="not es_generador"/>
+                            <field name="numero_autorizacion_semarnat" 
+                                   invisible="not es_transportista and not es_destinatario"/>
+                        </group>
+                        <group>
+                            <field name="numero_permiso_sct" 
+                                   invisible="not es_transportista"/>
+                        </group>
+                    </group>
+                    
+                    <group string="Información del Vehículo" 
+                           invisible="not es_transportista" 
+                           col="2">
+                        <field name="tipo_vehiculo"/>
+                        <field name="numero_placa"/>
+                    </group>
+                </page>
+            </notebook>
+        </field>
+    </record>
+</odoo>

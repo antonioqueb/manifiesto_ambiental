@@ -714,13 +714,11 @@
                 <filter string="Último Mes" name="last_month" 
                         domain="[('creation_date', '&gt;=', (context_today() - datetime.timedelta(days=30)).strftime('%Y-%m-%d'))]"/>
                 
-                <group expand="0" string="Agrupar por">
                     <filter string="Manifiesto" name="group_manifiesto" context="{'group_by':'manifiesto_id'}"/>
                     <filter string="Creado por" name="group_user" context="{'group_by':'created_by'}"/>
                     <filter string="Fecha de Creación" name="group_date" context="{'group_by':'creation_date:month'}"/>
                     <filter string="Estado al Guardar" name="group_state" context="{'group_by':'state_at_creation'}"/>
                     <filter string="Tenía Doc. Físico" name="group_physical" context="{'group_by':'tenia_documento_fisico'}"/>
-                </group>
             </search>
         </field>
     </record>

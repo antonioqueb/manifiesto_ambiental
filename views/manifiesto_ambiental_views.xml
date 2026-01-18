@@ -260,6 +260,9 @@
                             
                             <field name="residuo_ids" readonly="not is_current_version">
                                 <list editable="bottom" edit="is_current_version">
+                                    <!-- NUEVO CAMPO: TIPO DE RESIDUO -->
+                                    <field name="residue_type" string="Tipo" optional="show"/>
+                                    
                                     <field name="product_id" 
                                            placeholder="Seleccionar producto/residuo..."
                                            options="{'no_create': True, 'no_create_edit': True}"/>
@@ -270,8 +273,12 @@
                                     <field name="clasificacion_toxico" string="T"/>
                                     <field name="clasificacion_inflamable" string="I"/>
                                     <field name="clasificacion_biologico" string="B"/>
-                                    <field name="clasificaciones_display" string="CRETIB"/>
-                                    <field name="envase_tipo"/>
+                                    <field name="clasificaciones_display" string="CRETIB" optional="hide"/>
+                                    
+                                    <!-- NUEVO CAMPO: EMBALAJE (Reemplaza visualmente a envase_tipo si hay datos) -->
+                                    <field name="packaging_id" string="Embalaje" optional="show"/>
+                                    <field name="envase_tipo" string="Envase (Legacy)" optional="hide"/>
+                                    
                                     <field name="envase_capacidad"/>
                                     <field name="cantidad"/>
                                     <field name="unidad" readonly="1"/>
@@ -281,11 +288,18 @@
                                 </list>
                                 <form string="Residuo">
                                     <sheet>
-                                        <group string="Producto/Residuo" col="2">
-                                            <field name="product_id" 
-                                                   placeholder="Seleccionar producto/residuo..."
-                                                   options="{'no_create': True, 'no_create_edit': True}"/>
-                                            <field name="nombre_residuo"/>
+                                        <group>
+                                            <group string="Producto/Residuo">
+                                                <!-- NUEVO CAMPO TIPO -->
+                                                <field name="residue_type" string="Tipo de Residuo"/>
+                                                <field name="product_id" 
+                                                       placeholder="Seleccionar producto/residuo..."
+                                                       options="{'no_create': True, 'no_create_edit': True}"/>
+                                                <field name="nombre_residuo"/>
+                                            </group>
+                                            <group string="Trazabilidad">
+                                                <field name="lot_id" readonly="1"/>
+                                            </group>
                                         </group>
                                         
                                         <group string="Clasificación CRETIB" col="3">
@@ -298,6 +312,8 @@
                                         </group>
                                         
                                         <group string="Información del Envase" col="2">
+                                            <!-- NUEVO CAMPO EMBALAJE -->
+                                            <field name="packaging_id" string="Unidad de Embalaje"/>
                                             <field name="envase_tipo"/>
                                             <field name="envase_capacidad"/>
                                         </group>
@@ -307,10 +323,6 @@
                                             <field name="unidad" readonly="1"/>
                                             <field name="etiqueta_si"/>
                                             <field name="etiqueta_no"/>
-                                        </group>
-                                        
-                                        <group string="Trazabilidad" col="1">
-                                            <field name="lot_id" readonly="1"/>
                                         </group>
                                     </sheet>
                                 </form>

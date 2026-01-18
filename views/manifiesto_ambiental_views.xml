@@ -568,12 +568,12 @@
                 <filter string="En Tránsito" name="in_transit" domain="[('state','=','in_transit')]"/>
                 <filter string="Entregado" name="delivered" domain="[('state','=','delivered')]"/>
                 
-                    <filter string="Estado" name="group_state" context="{'group_by':'state'}"/>
-                    <filter string="Generador" name="group_generator" context="{'group_by':'generador_nombre'}"/>
-                    <filter string="Número de Manifiesto" name="group_number" context="{'group_by':'numero_manifiesto'}"/>
-                    <filter string="Versión" name="group_version" context="{'group_by':'version'}"/>
-                    <filter string="Tiene Doc. Físico" name="group_physical_doc" context="{'group_by':'tiene_documento_fisico'}"/>
-                    <filter string="Fecha" name="group_date" context="{'group_by':'generador_fecha'}"/>
+                <filter string="Estado" name="group_state" context="{'group_by':'state'}"/>
+                <filter string="Generador" name="group_generator" context="{'group_by':'generador_nombre'}"/>
+                <filter string="Número de Manifiesto" name="group_number" context="{'group_by':'numero_manifiesto'}"/>
+                <filter string="Versión" name="group_version" context="{'group_by':'version'}"/>
+                <filter string="Tiene Doc. Físico" name="group_physical_doc" context="{'group_by':'tiene_documento_fisico'}"/>
+                <filter string="Fecha" name="group_date" context="{'group_by':'generador_fecha'}"/>
             </search>
         </field>
     </record>

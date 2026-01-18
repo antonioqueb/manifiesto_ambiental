@@ -73,8 +73,8 @@ class ServiceOrder(models.Model):
                 'product_id': prod.id,
                 'nombre_residuo': line.description or prod.name, # Usar descripción personalizada si existe
                 'cantidad': cantidad_final,
-                # CORRECCIÓN AQUÍ: Se lee 'residue_type' (origen) y se asigna a 'residuo_type' (destino)
-                'residuo_type': line.residue_type, 
+                # CORRECCIÓN AQUÍ: Se lee 'residue_type' (origen) y se asigna a 'residue_type' (destino)
+                'residue_type': line.residue_type, 
                 'packaging_id': line.packaging_id.id if line.packaging_id else False, # Propagar Unidad de embalaje
                 
                 # Propagar CRETIB desde el producto

@@ -1063,8 +1063,8 @@ class ManifiestoAmbientalResiduo(models.Model):
         required=True
     )
     
-    # NUEVO: Tipo de residuo (RSU, RME, RP)
-    residuo_type = fields.Selection(
+    # NUEVO: Tipo de residuo (RSU, RME, RP) - CORREGIDO A INGLÉS PARA COINCIDIR CON VIEW
+    residue_type = fields.Selection(
         [('rsu', 'RSU'), ('rme', 'RME'), ('rp', 'RP')],
         string='Tipo de Residuo',
         help='Clasificación general del residuo (propio de la orden de servicio)'

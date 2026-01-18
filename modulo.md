@@ -1824,7 +1824,8 @@ class ServiceOrder(models.Model):
                 'product_id': prod.id,
                 'nombre_residuo': line.description or prod.name, # Usar descripción personalizada si existe
                 'cantidad': cantidad_final,
-                'residuo_type': line.residuo_type, # Propagar Tipo de residuo
+                # CORRECCIÓN AQUÍ: Se lee 'residue_type' (origen) y se asigna a 'residuo_type' (destino)
+                'residuo_type': line.residue_type, 
                 'packaging_id': line.packaging_id.id if line.packaging_id else False, # Propagar Unidad de embalaje
                 
                 # Propagar CRETIB desde el producto
@@ -2084,10 +2085,29 @@ class ServiceOrder(models.Model):
 
                         <!-- 5. IDENTIFICACIÓN DE LOS RESIDUOS -->
                         <table>
+                            <!-- Definir anchos de columna para consistencia -->
+                            <colgroup>
+                                <col style="width:5%"/>  <!-- Tipo -->
+                                <col style="width:25%"/> <!-- Nombre -->
+                                <col style="width:3%"/>  <!-- C -->
+                                <col style="width:3%"/>  <!-- R -->
+                                <col style="width:3%"/>  <!-- E -->
+                                <col style="width:3%"/>  <!-- T -->
+                                <col style="width:3%"/>  <!-- I -->
+                                <col style="width:3%"/>  <!-- B -->
+                                <col style="width:3%"/>  <!-- M (vacío) -->
+                                <col style="width:12%"/> <!-- Embalaje -->
+                                <col style="width:10%"/> <!-- Capacidad -->
+                                <col style="width:10%"/> <!-- Cantidad -->
+                                <col style="width:3%"/>  <!-- Si -->
+                                <col style="width:3%"/>  <!-- No -->
+                            </colgroup>
+
                             <tr>
-                                <th colspan="13" class="header-table">5. Identificación de los residuos</th>
+                                <th colspan="14" class="header-table">5. Identificación de los residuos</th>
                             </tr>
                             <tr>
+                                <th class="header-table">Tipo</th>
                                 <th class="header-table">Nombre del residuo</th>
                                 <th class="header-table" colspan="7">Clasificación</th>
                                 <th class="header-table" colspan="2">Envase</th>
@@ -2096,6 +2116,7 @@ class ServiceOrder(models.Model):
                             </tr>
                             <tr>
                                 <th class="header-table"></th>
+                                <th class="header-table"></th>
                                 <th class="header-table">C</th>
                                 <th class="header-table">R</th>
                                 <th class="header-table">E</th>
@@ -2103,7 +2124,7 @@ class ServiceOrder(models.Model):
                                 <th class="header-table">I</th>
                                 <th class="header-table">B</th>
                                 <th class="header-table">M</th>
-                                <th class="header-table">Tipo</th>
+                                <th class="header-table">Embalaje</th>
                                 <th class="header-table">Capacidad</th>
                                 <th class="header-table"></th>
                                 <th class="header-table">Sí</th>
@@ -2113,7 +2134,13 @@ class ServiceOrder(models.Model):
                             <!-- Filas con datos -->
                             <t t-foreach="doc.residuo_ids" t-as="residuo">
                                 <tr>
+                                    <!-- Nueva Columna: TIPO -->
+                                    <td class="center-text">
+                                        <span t-if="residuo.residue_type" t-field="residuo.residue_type" style="text-transform: uppercase;"/>
+                                    </td>
+                                    
                                     <td><span t-field="residuo.nombre_residuo"/></td>
+                                    
                                     <td class="center-text"><span t-if="residuo.clasificacion_corrosivo">X</span></td>
                                     <td class="center-text"><span t-if="residuo.clasificacion_reactivo">X</span></td>
                                     <td class="center-text"><span t-if="residuo.clasificacion_explosivo">X</span></td>
@@ -2121,9 +2148,15 @@ class ServiceOrder(models.Model):
                                     <td class="center-text"><span t-if="residuo.clasificacion_inflamable">X</span></td>
                                     <td class="center-text"><span t-if="residuo.clasificacion_biologico">X</span></td>
                                     <td class="center-text"></td>
-                                    <td><span t-field="residuo.envase_tipo"/></td>
-                                    <td><span t-field="residuo.envase_capacidad"/></td>
-                                    <td><span t-field="residuo.cantidad"/> kg</td>
+                                    
+                                    <!-- Columna Embalaje: Packaging ID o Envase Tipo -->
+                                    <td class="center-text">
+                                        <span t-if="residuo.packaging_id" t-field="residuo.packaging_id.name"/>
+                                        <span t-elif="residuo.envase_tipo" t-field="residuo.envase_tipo"/>
+                                    </td>
+                                    
+                                    <td class="center-text"><span t-field="residuo.envase_capacidad"/></td>
+                                    <td class="center-text"><span t-field="residuo.cantidad"/> kg</td>
                                     <td class="center-text"><span t-if="residuo.etiqueta_si">X</span></td>
                                     <td class="center-text"><span t-if="residuo.etiqueta_no">X</span></td>
                                 </tr>
@@ -2137,7 +2170,7 @@ class ServiceOrder(models.Model):
                                 <tr style="height: 22px;">
                                     <td>&#160;</td><td>&#160;</td><td>&#160;</td><td>&#160;</td><td>&#160;</td>
                                     <td>&#160;</td><td>&#160;</td><td>&#160;</td><td>&#160;</td><td>&#160;</td>
-                                    <td>&#160;</td><td>&#160;</td><td>&#160;</td>
+                                    <td>&#160;</td><td>&#160;</td><td>&#160;</td><td>&#160;</td>
                                 </tr>
                             </t>
                         </table>
@@ -2321,8 +2354,7 @@ class ServiceOrder(models.Model):
             </t>
         </t>
     </template>
-</odoo>
-```
+</odoo>```
 
 ## ./views/manifiesto_ambiental_menus.xml
 ```xml
@@ -2632,6 +2664,9 @@ class ServiceOrder(models.Model):
                             
                             <field name="residuo_ids" readonly="not is_current_version">
                                 <list editable="bottom" edit="is_current_version">
+                                    <!-- NUEVO CAMPO: TIPO DE RESIDUO -->
+                                    <field name="residue_type" string="Tipo" optional="show"/>
+                                    
                                     <field name="product_id" 
                                            placeholder="Seleccionar producto/residuo..."
                                            options="{'no_create': True, 'no_create_edit': True}"/>
@@ -2642,8 +2677,12 @@ class ServiceOrder(models.Model):
                                     <field name="clasificacion_toxico" string="T"/>
                                     <field name="clasificacion_inflamable" string="I"/>
                                     <field name="clasificacion_biologico" string="B"/>
-                                    <field name="clasificaciones_display" string="CRETIB"/>
-                                    <field name="envase_tipo"/>
+                                    <field name="clasificaciones_display" string="CRETIB" optional="hide"/>
+                                    
+                                    <!-- NUEVO CAMPO: EMBALAJE (Reemplaza visualmente a envase_tipo si hay datos) -->
+                                    <field name="packaging_id" string="Embalaje" optional="show"/>
+                                    <field name="envase_tipo" string="Envase (Legacy)" optional="hide"/>
+                                    
                                     <field name="envase_capacidad"/>
                                     <field name="cantidad"/>
                                     <field name="unidad" readonly="1"/>
@@ -2653,11 +2692,18 @@ class ServiceOrder(models.Model):
                                 </list>
                                 <form string="Residuo">
                                     <sheet>
-                                        <group string="Producto/Residuo" col="2">
-                                            <field name="product_id" 
-                                                   placeholder="Seleccionar producto/residuo..."
-                                                   options="{'no_create': True, 'no_create_edit': True}"/>
-                                            <field name="nombre_residuo"/>
+                                        <group>
+                                            <group string="Producto/Residuo">
+                                                <!-- NUEVO CAMPO TIPO -->
+                                                <field name="residue_type" string="Tipo de Residuo"/>
+                                                <field name="product_id" 
+                                                       placeholder="Seleccionar producto/residuo..."
+                                                       options="{'no_create': True, 'no_create_edit': True}"/>
+                                                <field name="nombre_residuo"/>
+                                            </group>
+                                            <group string="Trazabilidad">
+                                                <field name="lot_id" readonly="1"/>
+                                            </group>
                                         </group>
                                         
                                         <group string="Clasificación CRETIB" col="3">
@@ -2670,6 +2716,8 @@ class ServiceOrder(models.Model):
                                         </group>
                                         
                                         <group string="Información del Envase" col="2">
+                                            <!-- NUEVO CAMPO EMBALAJE -->
+                                            <field name="packaging_id" string="Unidad de Embalaje"/>
                                             <field name="envase_tipo"/>
                                             <field name="envase_capacidad"/>
                                         </group>
@@ -2679,10 +2727,6 @@ class ServiceOrder(models.Model):
                                             <field name="unidad" readonly="1"/>
                                             <field name="etiqueta_si"/>
                                             <field name="etiqueta_no"/>
-                                        </group>
-                                        
-                                        <group string="Trazabilidad" col="1">
-                                            <field name="lot_id" readonly="1"/>
                                         </group>
                                     </sheet>
                                 </form>

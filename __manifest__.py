@@ -1,6 +1,6 @@
 {
     'name': 'Manifiesto Ambiental',
-    'version': '18.0.2.0.0',
+    'version': '19.0.2.0.0',
     'category': 'Environmental',
     'summary': 'Gestión de Manifiestos Ambientales para Residuos Peligrosos con Control de Versiones',
     'description': '''
@@ -66,5 +66,5 @@
     'license': 'LGPL-3',
     'images': ['static/description/banner.png'],
     'price': 0.0,
-    'currency': 'USD',
+    'currency': 'MXN',
 }

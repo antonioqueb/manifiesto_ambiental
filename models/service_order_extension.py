@@ -1,5 +1,8 @@
 # models/service_order_extension.py
-from odoo import models, fields
+from odoo import models, fields, api
+import logging
+
+_logger = logging.getLogger(__name__)
 
 class ServiceOrder(models.Model):
     _inherit = 'service.order'
@@ -7,10 +10,10 @@ class ServiceOrder(models.Model):
     def action_create_manifiesto(self):
         self.ensure_one()
         
-        # Determinar el generador (prioridad: generador_id, luego partner_id)
+        # 1. Determinar el generador (prioridad: generador_id, luego partner_id)
         generador = self.generador_id if self.generador_id else self.partner_id
         
-        # Obtener la fecha del servicio para el número de manifiesto
+        # 2. Obtener la fecha del servicio
         fecha_servicio = None
         if hasattr(self, 'date_start') and self.date_start:
             fecha_servicio = self.date_start
@@ -23,31 +26,67 @@ class ServiceOrder(models.Model):
         else:
             fecha_servicio = fields.Date.context_today(self)
         
-        # Lógica para obtener nombre del responsable del generador
+        # 3. Lógica para obtener nombres de responsables (fix previo)
         gen_resp_nombre = ''
         if self.generador_responsable_id:
             gen_resp_nombre = self.generador_responsable_id.name
         
-        # Lógica para obtener nombre del responsable del transportista
         trans_resp_nombre = ''
         if self.transportista_responsable_id:
             trans_resp_nombre = self.transportista_responsable_id.name
 
-        # Lógica para la ruta/ubicación (pickup)
+        # 4. Lógica para la ruta/ubicación
         ruta = ''
         if self.pickup_location_id:
-            # Si hay ubicación ID, intentamos formatear la dirección
             ruta = self.pickup_location_id.contact_address_complete or self.pickup_location_id.name
             ruta = ruta.replace('\n', ', ')
         elif self.pickup_location:
-            # Fallback al campo texto legacy
             ruta = self.pickup_location
 
-        # Crear el manifiesto con datos completos pero SIN RESIDUOS AUTOMÁTICOS
+        # 5. PREPARAR LÍNEAS DE RESIDUOS (NUEVA LÓGICA)
+        residuo_lines = []
+        for line in self.line_ids:
+            # Solo procesar líneas que tengan un producto asociado
+            if not line.product_id:
+                continue
+
+            # Determinar la cantidad: Prioridad al peso (kg), si es 0 usamos la cantidad unitaria
+            # El manifiesto siempre espera KG
+            cantidad_final = line.weight_kg if line.weight_kg > 0.0 else line.product_uom_qty
+
+            # Obtener datos CRETIB y Envase del producto
+            prod = line.product_id
+            
+            residuo_vals = {
+                'product_id': prod.id,
+                'nombre_residuo': line.description or prod.name, # Usar descripción personalizada si existe
+                'cantidad': cantidad_final,
+                
+                # Propagar CRETIB desde el producto
+                'clasificacion_corrosivo': prod.clasificacion_corrosivo,
+                'clasificacion_reactivo': prod.clasificacion_reactivo,
+                'clasificacion_explosivo': prod.clasificacion_explosivo,
+                'clasificacion_toxico': prod.clasificacion_toxico,
+                'clasificacion_inflamable': prod.clasificacion_inflamable,
+                'clasificacion_biologico': prod.clasificacion_biologico,
+                
+                # Propagar configuración de envase desde el producto (si existe)
+                'envase_tipo': prod.envase_tipo_default,
+                'envase_capacidad': prod.envase_capacidad_default,
+                
+                # Opciones por defecto de etiqueta
+                'etiqueta_si': True,
+                'etiqueta_no': False,
+            }
+            
+            # Agregar a la lista de creación One2many (0, 0, vals)
+            residuo_lines.append((0, 0, residuo_vals))
+
+        # 6. Crear el diccionario maestro
         manifiesto_vals = {
             'service_order_id': self.id,
             
-            # Datos del generador
+            # --- GENERADOR ---
             'generador_id': generador.id,
             'numero_registro_ambiental': generador.numero_registro_ambiental or '',
             'generador_nombre': generador.name or '',
@@ -60,11 +99,10 @@ class ServiceOrder(models.Model):
             'generador_estado': generador.state_id.name if generador.state_id else '',
             'generador_telefono': generador.phone or '',
             'generador_email': generador.email or '',
-            # CORREGIDO: Usar generador_responsable_id.name
             'generador_responsable_nombre': gen_resp_nombre,
-            'generador_fecha': fecha_servicio,  # ← IMPORTANTE: Fecha para la nomenclatura
+            'generador_fecha': fecha_servicio,
             
-            # Datos del transportista
+            # --- TRANSPORTISTA ---
             'transportista_id': self.transportista_id.id if self.transportista_id else False,
             'transportista_nombre': self.transportista_id.name if self.transportista_id else '',
             'transportista_codigo_postal': self.transportista_id.zip if self.transportista_id else '',
@@ -78,13 +116,12 @@ class ServiceOrder(models.Model):
             'transportista_email': self.transportista_id.email if self.transportista_id else '',
             'numero_autorizacion_semarnat': self.transportista_id.numero_autorizacion_semarnat if self.transportista_id else '',
             'numero_permiso_sct': self.transportista_id.numero_permiso_sct if self.transportista_id else '',
-            'tipo_vehiculo': self.camion or '',
-            'numero_placa': self.numero_placa or '',
-            # CORREGIDO: Usar transportista_responsable_id.name
+            'tipo_vehiculo': self.camion or (self.transportista_id.tipo_vehiculo if self.transportista_id else ''),
+            'numero_placa': self.numero_placa or (self.transportista_id.numero_placa if self.transportista_id else ''),
             'transportista_responsable_nombre': trans_resp_nombre,
             'transportista_fecha': fecha_servicio,
             
-            # Datos del destinatario (prioridad: destinatario_id, luego partner_id)
+            # --- DESTINATARIO ---
             'destinatario_id': self.destinatario_id.id if self.destinatario_id else self.partner_id.id,
             'destinatario_nombre': (self.destinatario_id.name if self.destinatario_id else self.partner_id.name) or '',
             'destinatario_codigo_postal': (self.destinatario_id.zip if self.destinatario_id else self.partner_id.zip) or '',
@@ -99,16 +136,17 @@ class ServiceOrder(models.Model):
             'numero_autorizacion_semarnat_destinatario': (self.destinatario_id.numero_autorizacion_semarnat if self.destinatario_id else self.partner_id.numero_autorizacion_semarnat) or '',
             'destinatario_fecha': fecha_servicio,
             
-            # Información adicional
+            # --- OTROS ---
             'nombre_persona_recibe': self.contact_name or '',
-            'ruta_empresa': ruta, # Usamos la ruta calculada arriba
+            'ruta_empresa': ruta,
             'instrucciones_especiales': self.observaciones or '',
+            
+            # --- RESIDUOS (AQUÍ SE ASIGNAN) ---
+            'residuo_ids': residuo_lines, 
         }
         
+        # 7. Crear el registro (Odoo 19 compatible con create_multi aunque pasemos un dict único aquí)
         manifiesto = self.env['manifiesto.ambiental'].create(manifiesto_vals)
-        
-        # NO crear residuos automáticamente - el usuario los agregará manualmente
-        # desde el catálogo de productos de residuos peligrosos
         
         return {
             'name': 'Manifiesto Ambiental',

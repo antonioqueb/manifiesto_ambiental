@@ -850,7 +850,7 @@ class ManifiestoAmbiental(models.Model):
                 'clasificaciones': residuo.clasificaciones_display or '',
                 'envase': {
                     'tipo': residuo.envase_tipo or '',
-                    'capacidad': residuo.envase_capacidad or 0,
+                    'capacidad': residuo.envase_capacidad or '',
                 },
                 'etiquetado': 'Sí' if residuo.etiqueta_si else 'No',
             }
@@ -1165,6 +1165,13 @@ class ManifiestoAmbientalResiduo(models.Model):
         required=True
     )
     
+    # NUEVO: Tipo de residuo (RSU, RME, RP)
+    residuo_type = fields.Selection(
+        [('rsu', 'RSU'), ('rme', 'RME'), ('rp', 'RP')],
+        string='Tipo de Residuo',
+        help='Clasificación general del residuo (propio de la orden de servicio)'
+    )
+
     # Campos de clasificación CRETIB (múltiples selecciones)
     clasificacion_corrosivo = fields.Boolean(string='Corrosivo (C)')
     clasificacion_reactivo = fields.Boolean(string='Reactivo (R)')
@@ -1192,10 +1199,19 @@ class ManifiestoAmbientalResiduo(models.Model):
         ('otro', 'Otro'),
     ], string='Tipo de Envase')
     
-    envase_capacidad = fields.Float(
-        string='Capacidad',
-        help='Capacidad del envase'
+    # NUEVO: Unidad de Embalaje (Propagado desde Service Order Line -> packaging_id)
+    packaging_id = fields.Many2one(
+        'uom.uom', 
+        string='Unidad de Embalaje',
+        help='Tipo de embalaje o presentación del residuo (ej. Tambor 200L)'
     )
+
+    # --- CAMBIO IMPORTANTE: Float -> Char para compatibilidad con Service Order ---
+    envase_capacidad = fields.Char(
+        string='Capacidad',
+        help='Capacidad del envase (ej: 200 L, 50 Kg)'
+    )
+    # --------------------------------------------------------------------------
     
     cantidad = fields.Float(
         string='Cantidad (kg)',
@@ -1274,7 +1290,9 @@ class ManifiestoAmbientalResiduo(models.Model):
                 if hasattr(self.product_id, 'envase_tipo_default'):
                     self.envase_tipo = self.product_id.envase_tipo_default
                 if hasattr(self.product_id, 'envase_capacidad_default'):
-                    self.envase_capacidad = self.product_id.envase_capacidad_default
+                    # Convertir a String para el nuevo campo Char
+                    val = self.product_id.envase_capacidad_default
+                    self.envase_capacidad = str(val) if val else ''
             else:
                 # Si no es residuo peligroso, solo el nombre
                 self.nombre_residuo = self.product_id.name
@@ -1783,6 +1801,13 @@ class ServiceOrder(models.Model):
             if not line.product_id:
                 continue
 
+            # CONDICIONAL: Si el nombre del producto empieza con "Servicio de", se omite
+            # Se usa upper() para ignorar mayúsculas/minúsculas
+            prod_name = line.product_id.name or ''
+            if prod_name.strip().upper().startswith('SERVICIO DE'):
+                _logger.info(f"Omitiendo línea {line.name} porque inicia con 'Servicio de'")
+                continue
+
             # Determinar la cantidad: Prioridad al peso (kg), si es 0 usamos la cantidad unitaria
             # El manifiesto siempre espera KG
             cantidad_final = line.weight_kg if line.weight_kg > 0.0 else line.product_uom_qty
@@ -1790,10 +1815,17 @@ class ServiceOrder(models.Model):
             # Obtener datos CRETIB y Envase del producto
             prod = line.product_id
             
+            # Obtener Capacidad: Prioridad a la línea (Char), luego default del producto
+            capacidad_final = line.capacity if line.capacity else ''
+            if not capacidad_final and hasattr(prod, 'envase_capacidad_default') and prod.envase_capacidad_default:
+                capacidad_final = str(prod.envase_capacidad_default)
+
             residuo_vals = {
                 'product_id': prod.id,
                 'nombre_residuo': line.description or prod.name, # Usar descripción personalizada si existe
                 'cantidad': cantidad_final,
+                'residuo_type': line.residuo_type, # Propagar Tipo de residuo
+                'packaging_id': line.packaging_id.id if line.packaging_id else False, # Propagar Unidad de embalaje
                 
                 # Propagar CRETIB desde el producto
                 'clasificacion_corrosivo': prod.clasificacion_corrosivo,
@@ -1803,9 +1835,9 @@ class ServiceOrder(models.Model):
                 'clasificacion_inflamable': prod.clasificacion_inflamable,
                 'clasificacion_biologico': prod.clasificacion_biologico,
                 
-                # Propagar configuración de envase desde el producto (si existe)
+                # Propagar configuración de envase (Tipo y Capacidad)
                 'envase_tipo': prod.envase_tipo_default,
-                'envase_capacidad': prod.envase_capacidad_default,
+                'envase_capacidad': capacidad_final,
                 
                 # Opciones por defecto de etiqueta
                 'etiqueta_si': True,

@@ -300,7 +300,6 @@ class ManifiestoAmbiental(models.Model):
         razon_social = generador_partner.name.upper()
         
         # Extraer las iniciales de la razón social
-        # Eliminar palabras comunes (S.A., DE, C.V., etc.) y obtener iniciales
         palabras_excluir = [
             'S.A.', 'SA', 'S.A', 'DE', 'C.V.', 'CV', 'C.V', 'S.A.P.I.', 'SAPI',
             'S. DE R.L.', 'S.R.L.', 'SRL', 'SOCIEDAD', 'ANONIMA', 'CIVIL',
@@ -389,51 +388,63 @@ class ManifiestoAmbiental(models.Model):
             self.generador_telefono = self.generador_id.phone or ''
             self.generador_email = self.generador_id.email or ''
 
-    @api.model
-    def create(self, vals):
-        # Solo generar secuencia si no es una remanifestación y no tiene número
-        if not vals.get('created_by_remanifest') and not vals.get('numero_manifiesto'):
-            # Obtener el generador para crear el número personalizado
-            generador_id = vals.get('generador_id')
-            if generador_id:
-                generador_partner = self.env['res.partner'].browse(generador_id)
-                vals['numero_manifiesto'] = self._generate_manifiesto_number(
-                    generador_partner, 
-                    vals.get('generador_fecha')
-                )
-            else:
-                # Fallback a secuencia estándar si no hay generador
-                vals['numero_manifiesto'] = self.env['ir.sequence'].next_by_code('manifiesto.salida') or 'New'
+    # =========================================================================
+    # CORRECCIÓN AQUÍ: Uso de create_multi para manejar la creación por lotes
+    # =========================================================================
+    @api.model_create_multi
+    def create(self, vals_list):
+        for vals in vals_list:
+            # Solo generar secuencia si no es una remanifestación y no tiene número
+            if not vals.get('created_by_remanifest') and not vals.get('numero_manifiesto'):
+                # Obtener el generador para crear el número personalizado
+                generador_id = vals.get('generador_id')
+                if generador_id:
+                    generador_partner = self.env['res.partner'].browse(generador_id)
+                    vals['numero_manifiesto'] = self._generate_manifiesto_number(
+                        generador_partner, 
+                        vals.get('generador_fecha')
+                    )
+                else:
+                    # Fallback a secuencia estándar si no hay generador
+                    vals['numero_manifiesto'] = self.env['ir.sequence'].next_by_code('manifiesto.salida') or 'New'
+            
+            # Auto-llenar datos del generador si se proporciona generador_id
+            if vals.get('generador_id'):
+                partner = self.env['res.partner'].browse(vals['generador_id'])
+                # Solo actualizar si el campo no viene ya en vals
+                update_vals = {
+                    'numero_registro_ambiental': partner.numero_registro_ambiental or '',
+                    'generador_nombre': partner.name or '',
+                    'generador_codigo_postal': partner.zip or '',
+                    'generador_calle': partner.street or '',
+                    'generador_num_ext': partner.street_number or '',
+                    'generador_num_int': partner.street_number2 or '',
+                    'generador_colonia': partner.street2 or '',
+                    'generador_municipio': partner.city or '',
+                    'generador_estado': partner.state_id.name if partner.state_id else '',
+                    'generador_telefono': partner.phone or '',
+                    'generador_email': partner.email or '',
+                }
+                # Actualizar vals asegurando no sobrescribir si el usuario envió un valor explícito
+                # aunque normalmente vals tiene prioridad, aquí llenamos por defecto si faltan
+                for key, value in update_vals.items():
+                    if key not in vals:
+                        vals[key] = value
         
-        # Auto-llenar datos del generador si se proporciona generador_id
-        if vals.get('generador_id'):
-            partner = self.env['res.partner'].browse(vals['generador_id'])
-            vals.update({
-                'numero_registro_ambiental': partner.numero_registro_ambiental or '',
-                'generador_nombre': partner.name or '',
-                'generador_codigo_postal': partner.zip or '',
-                'generador_calle': partner.street or '',
-                'generador_num_ext': partner.street_number or '',
-                'generador_num_int': partner.street_number2 or '',
-                'generador_colonia': partner.street2 or '',
-                'generador_municipio': partner.city or '',
-                'generador_estado': partner.state_id.name if partner.state_id else '',
-                'generador_telefono': partner.phone or '',
-                'generador_email': partner.email or '',
-            })
+        # Crear los registros en lote
+        records = super().create(vals_list)
         
-        # Crear el manifiesto
-        result = super().create(vals)
+        # Lógica post-creación para cada registro
+        for record in records:
+            # Si es la primera versión, establecer original_manifiesto_id a sí mismo
+            if not record.original_manifiesto_id:
+                record.original_manifiesto_id = record.id
+            
+            # Crear automáticamente lotes para todos los residuos
+            for residuo in record.residuo_ids:
+                residuo._create_lot_for_residuo()
         
-        # Si es la primera versión, establecer original_manifiesto_id a sí mismo
-        if not result.original_manifiesto_id:
-            result.original_manifiesto_id = result.id
-        
-        # Crear automáticamente lotes para todos los residuos
-        for residuo in result.residuo_ids:
-            residuo._create_lot_for_residuo()
-        
-        return result
+        return records
 
     @api.onchange('transportista_id')
     def _onchange_transportista_id(self):

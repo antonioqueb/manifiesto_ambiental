@@ -73,6 +73,8 @@ class ServiceOrder(models.Model):
                 'product_id': prod.id,
                 'nombre_residuo': line.description or prod.name, # Usar descripción personalizada si existe
                 'cantidad': cantidad_final,
+                'residuo_type': line.residuo_type, # Propagar Tipo de residuo
+                'packaging_id': line.packaging_id.id if line.packaging_id else False, # Propagar Unidad de embalaje
                 
                 # Propagar CRETIB desde el producto
                 'clasificacion_corrosivo': prod.clasificacion_corrosivo,
@@ -82,10 +84,8 @@ class ServiceOrder(models.Model):
                 'clasificacion_inflamable': prod.clasificacion_inflamable,
                 'clasificacion_biologico': prod.clasificacion_biologico,
                 
-                # Propagar configuración de envase
-                # Tipo: Usamos el default del producto si existe
+                # Propagar configuración de envase (Tipo y Capacidad)
                 'envase_tipo': prod.envase_tipo_default,
-                # Capacidad: Usamos la calculada arriba (Linea > Producto)
                 'envase_capacidad': capacidad_final,
                 
                 # Opciones por defecto de etiqueta

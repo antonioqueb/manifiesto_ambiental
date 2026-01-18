@@ -1063,6 +1063,13 @@ class ManifiestoAmbientalResiduo(models.Model):
         required=True
     )
     
+    # NUEVO: Tipo de residuo (RSU, RME, RP)
+    residuo_type = fields.Selection(
+        [('rsu', 'RSU'), ('rme', 'RME'), ('rp', 'RP')],
+        string='Tipo de Residuo',
+        help='Clasificación general del residuo (propio de la orden de servicio)'
+    )
+
     # Campos de clasificación CRETIB (múltiples selecciones)
     clasificacion_corrosivo = fields.Boolean(string='Corrosivo (C)')
     clasificacion_reactivo = fields.Boolean(string='Reactivo (R)')
@@ -1090,6 +1097,13 @@ class ManifiestoAmbientalResiduo(models.Model):
         ('otro', 'Otro'),
     ], string='Tipo de Envase')
     
+    # NUEVO: Unidad de Embalaje (Propagado desde Service Order Line -> packaging_id)
+    packaging_id = fields.Many2one(
+        'uom.uom', 
+        string='Unidad de Embalaje',
+        help='Tipo de embalaje o presentación del residuo (ej. Tambor 200L)'
+    )
+
     # --- CAMBIO IMPORTANTE: Float -> Char para compatibilidad con Service Order ---
     envase_capacidad = fields.Char(
         string='Capacidad',

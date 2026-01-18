@@ -50,6 +50,13 @@ class ServiceOrder(models.Model):
             if not line.product_id:
                 continue
 
+            # CONDICIONAL: Si el nombre del producto empieza con "Servicio de", se omite
+            # Se usa upper() para ignorar mayúsculas/minúsculas
+            prod_name = line.product_id.name or ''
+            if prod_name.strip().upper().startswith('SERVICIO DE'):
+                _logger.info(f"Omitiendo línea {line.name} porque inicia con 'Servicio de'")
+                continue
+
             # Determinar la cantidad: Prioridad al peso (kg), si es 0 usamos la cantidad unitaria
             # El manifiesto siempre espera KG
             cantidad_final = line.weight_kg if line.weight_kg > 0.0 else line.product_uom_qty
@@ -57,6 +64,11 @@ class ServiceOrder(models.Model):
             # Obtener datos CRETIB y Envase del producto
             prod = line.product_id
             
+            # Obtener Capacidad: Prioridad a la línea (Char), luego default del producto
+            capacidad_final = line.capacity if line.capacity else ''
+            if not capacidad_final and hasattr(prod, 'envase_capacidad_default') and prod.envase_capacidad_default:
+                capacidad_final = str(prod.envase_capacidad_default)
+
             residuo_vals = {
                 'product_id': prod.id,
                 'nombre_residuo': line.description or prod.name, # Usar descripción personalizada si existe
@@ -70,9 +82,11 @@ class ServiceOrder(models.Model):
                 'clasificacion_inflamable': prod.clasificacion_inflamable,
                 'clasificacion_biologico': prod.clasificacion_biologico,
                 
-                # Propagar configuración de envase desde el producto (si existe)
+                # Propagar configuración de envase
+                # Tipo: Usamos el default del producto si existe
                 'envase_tipo': prod.envase_tipo_default,
-                'envase_capacidad': prod.envase_capacidad_default,
+                # Capacidad: Usamos la calculada arriba (Linea > Producto)
+                'envase_capacidad': capacidad_final,
                 
                 # Opciones por defecto de etiqueta
                 'etiqueta_si': True,

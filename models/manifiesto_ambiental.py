@@ -748,7 +748,7 @@ class ManifiestoAmbiental(models.Model):
                 'clasificaciones': residuo.clasificaciones_display or '',
                 'envase': {
                     'tipo': residuo.envase_tipo or '',
-                    'capacidad': residuo.envase_capacidad or 0,
+                    'capacidad': residuo.envase_capacidad or '',
                 },
                 'etiquetado': 'Sí' if residuo.etiqueta_si else 'No',
             }
@@ -1090,10 +1090,12 @@ class ManifiestoAmbientalResiduo(models.Model):
         ('otro', 'Otro'),
     ], string='Tipo de Envase')
     
-    envase_capacidad = fields.Float(
+    # --- CAMBIO IMPORTANTE: Float -> Char para compatibilidad con Service Order ---
+    envase_capacidad = fields.Char(
         string='Capacidad',
-        help='Capacidad del envase'
+        help='Capacidad del envase (ej: 200 L, 50 Kg)'
     )
+    # --------------------------------------------------------------------------
     
     cantidad = fields.Float(
         string='Cantidad (kg)',
@@ -1172,7 +1174,9 @@ class ManifiestoAmbientalResiduo(models.Model):
                 if hasattr(self.product_id, 'envase_tipo_default'):
                     self.envase_tipo = self.product_id.envase_tipo_default
                 if hasattr(self.product_id, 'envase_capacidad_default'):
-                    self.envase_capacidad = self.product_id.envase_capacidad_default
+                    # Convertir a String para el nuevo campo Char
+                    val = self.product_id.envase_capacidad_default
+                    self.envase_capacidad = str(val) if val else ''
             else:
                 # Si no es residuo peligroso, solo el nombre
                 self.nombre_residuo = self.product_id.name

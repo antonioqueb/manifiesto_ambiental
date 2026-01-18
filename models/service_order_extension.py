@@ -1,5 +1,4 @@
-# models/service_order_extension.py - REEMPLAZAR COMPLETAMENTE en módulo manifiesto_ambiental
-
+# models/service_order_extension.py
 from odoo import models, fields
 
 class ServiceOrder(models.Model):
@@ -19,9 +18,31 @@ class ServiceOrder(models.Model):
             fecha_servicio = self.scheduled_date
         elif hasattr(self, 'service_date') and self.service_date:
             fecha_servicio = self.service_date
+        elif hasattr(self, 'date_order') and self.date_order:
+            fecha_servicio = self.date_order
         else:
             fecha_servicio = fields.Date.context_today(self)
         
+        # Lógica para obtener nombre del responsable del generador
+        gen_resp_nombre = ''
+        if self.generador_responsable_id:
+            gen_resp_nombre = self.generador_responsable_id.name
+        
+        # Lógica para obtener nombre del responsable del transportista
+        trans_resp_nombre = ''
+        if self.transportista_responsable_id:
+            trans_resp_nombre = self.transportista_responsable_id.name
+
+        # Lógica para la ruta/ubicación (pickup)
+        ruta = ''
+        if self.pickup_location_id:
+            # Si hay ubicación ID, intentamos formatear la dirección
+            ruta = self.pickup_location_id.contact_address_complete or self.pickup_location_id.name
+            ruta = ruta.replace('\n', ', ')
+        elif self.pickup_location:
+            # Fallback al campo texto legacy
+            ruta = self.pickup_location
+
         # Crear el manifiesto con datos completos pero SIN RESIDUOS AUTOMÁTICOS
         manifiesto_vals = {
             'service_order_id': self.id,
@@ -39,7 +60,8 @@ class ServiceOrder(models.Model):
             'generador_estado': generador.state_id.name if generador.state_id else '',
             'generador_telefono': generador.phone or '',
             'generador_email': generador.email or '',
-            'generador_responsable_nombre': self.generador_responsable or '',
+            # CORREGIDO: Usar generador_responsable_id.name
+            'generador_responsable_nombre': gen_resp_nombre,
             'generador_fecha': fecha_servicio,  # ← IMPORTANTE: Fecha para la nomenclatura
             
             # Datos del transportista
@@ -58,7 +80,8 @@ class ServiceOrder(models.Model):
             'numero_permiso_sct': self.transportista_id.numero_permiso_sct if self.transportista_id else '',
             'tipo_vehiculo': self.camion or '',
             'numero_placa': self.numero_placa or '',
-            'transportista_responsable_nombre': self.transportista_responsable or '',
+            # CORREGIDO: Usar transportista_responsable_id.name
+            'transportista_responsable_nombre': trans_resp_nombre,
             'transportista_fecha': fecha_servicio,
             
             # Datos del destinatario (prioridad: destinatario_id, luego partner_id)
@@ -78,7 +101,7 @@ class ServiceOrder(models.Model):
             
             # Información adicional
             'nombre_persona_recibe': self.contact_name or '',
-            'ruta_empresa': self.pickup_location or '',
+            'ruta_empresa': ruta, # Usamos la ruta calculada arriba
             'instrucciones_especiales': self.observaciones or '',
         }
         

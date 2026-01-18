@@ -388,9 +388,6 @@ class ManifiestoAmbiental(models.Model):
             self.generador_telefono = self.generador_id.phone or ''
             self.generador_email = self.generador_id.email or ''
 
-    # =========================================================================
-    # CORRECCIÓN AQUÍ: Uso de create_multi para manejar la creación por lotes
-    # =========================================================================
     @api.model_create_multi
     def create(self, vals_list):
         for vals in vals_list:
@@ -426,7 +423,6 @@ class ManifiestoAmbiental(models.Model):
                     'generador_email': partner.email or '',
                 }
                 # Actualizar vals asegurando no sobrescribir si el usuario envió un valor explícito
-                # aunque normalmente vals tiene prioridad, aquí llenamos por defecto si faltan
                 for key, value in update_vals.items():
                     if key not in vals:
                         vals[key] = value
@@ -440,9 +436,8 @@ class ManifiestoAmbiental(models.Model):
             if not record.original_manifiesto_id:
                 record.original_manifiesto_id = record.id
             
-            # Crear automáticamente lotes para todos los residuos
-            for residuo in record.residuo_ids:
-                residuo._create_lot_for_residuo()
+            # NOTA: No llamamos a _create_lot_for_residuo() aquí porque
+            # se llama automáticamente en el create del modelo de residuo.
         
         return records
 
@@ -1192,33 +1187,43 @@ class ManifiestoAmbientalResiduo(models.Model):
         if self.etiqueta_no:
             self.etiqueta_si = False
 
-    @api.model
-    def create(self, vals):
+    # =========================================================================
+    # CORRECCIÓN IMPORTANTE AQUÍ: create_multi y bucle en _create_lot_for_residuo
+    # =========================================================================
+    @api.model_create_multi
+    def create(self, vals_list):
         """Crear automáticamente el lote al crear el residuo"""
-        result = super().create(vals)
-        result._create_lot_for_residuo()
-        return result
+        # Crear registros (posiblemente múltiples)
+        records = super().create(vals_list)
+        
+        # Llamar al método de creación de lote (que ahora maneja iteración interna)
+        records._create_lot_for_residuo()
+        
+        return records
 
     def _create_lot_for_residuo(self):
         """Crear lote automáticamente usando el número de manifiesto"""
-        if self.product_id and self.manifiesto_id.numero_manifiesto:
-            # Buscar si ya existe un lote con este nombre para este producto
-            existing_lot = self.env['stock.lot'].search([
-                ('name', '=', self.manifiesto_id.numero_manifiesto),
-                ('product_id', '=', self.product_id.id)
-            ], limit=1)
-            
-            if not existing_lot:
-                # Crear nuevo lote
-                lot_vals = {
-                    'name': self.manifiesto_id.numero_manifiesto,
-                    'product_id': self.product_id.id,
-                    'company_id': self.manifiesto_id.company_id.id,
-                }
-                lot = self.env['stock.lot'].create(lot_vals)
-                self.lot_id = lot.id
-            else:
-                self.lot_id = existing_lot.id
+        # Se agrega el bucle 'for record in self' para manejar Singletons o RecordSets
+        for record in self:
+            if record.product_id and record.manifiesto_id.numero_manifiesto:
+                # Buscar si ya existe un lote con este nombre para este producto
+                existing_lot = self.env['stock.lot'].search([
+                    ('name', '=', record.manifiesto_id.numero_manifiesto),
+                    ('product_id', '=', record.product_id.id),
+                    ('company_id', '=', record.manifiesto_id.company_id.id)
+                ], limit=1)
+                
+                if not existing_lot:
+                    # Crear nuevo lote
+                    lot_vals = {
+                        'name': record.manifiesto_id.numero_manifiesto,
+                        'product_id': record.product_id.id,
+                        'company_id': record.manifiesto_id.company_id.id,
+                    }
+                    lot = self.env['stock.lot'].create(lot_vals)
+                    record.lot_id = lot.id
+                else:
+                    record.lot_id = existing_lot.id
 
 
 class ManifiestoAmbientalVersion(models.Model):

@@ -53,7 +53,6 @@
         'data/sequences.xml',
         'views/res_partner_views.xml',
         'views/manifiesto_ambiental_views.xml',  # ← PRIMERO las vistas (con las acciones)
-        'views/product_views.xml',
         'views/manifiesto_ambiental_menus.xml',  # ← DESPUÉS los menús
         'views/service_order_manifiesto_button.xml',
         'reports/manifiesto_ambiental_report.xml',

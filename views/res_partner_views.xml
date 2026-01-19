@@ -1,50 +1,83 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
-    <!-- Extensión del formulario de contactos para números de dirección -->
+    <!-- 1. MEJORA EN DIRECCIÓN: Números en la misma línea que la calle -->
     <record id="view_partner_form_address_numbers" model="ir.ui.view">
         <field name="name">res.partner.form.address.numbers</field>
         <field name="model">res.partner</field>
         <field name="inherit_id" ref="base.view_partner_form"/>
         <field name="arch" type="xml">
-            <field name="street" position="after">
-                <field name="street_number" placeholder="Núm. Ext."/>
-                <field name="street_number2" placeholder="Núm. Int."/>
-            </field>
+            <!-- Insertamos un div con clase o_row después de la calle (street) -->
+            <xpath expr="//field[@name='street']" position="after">
+                <div class="o_row" style="margin-top: 4px;">
+                    <div class="o_col">
+                        <label for="street_number" string="No. Ext." class="oe_edit_only" style="font-weight: bold; font-size: 0.9em; margin-right: 5px;"/>
+                        <field name="street_number" placeholder="123" style="width: 40%;"/>
+                    </div>
+                    <div class="o_col" style="margin-left: 10px;">
+                        <label for="street_number2" string="No. Int." class="oe_edit_only" style="font-weight: bold; font-size: 0.9em; margin-right: 5px;"/>
+                        <field name="street_number2" placeholder="4B" style="width: 40%;"/>
+                    </div>
+                </div>
+            </xpath>
         </field>
     </record>
 
-    <!-- Extensión del formulario de contactos para datos ambientales -->
+    <!-- 2. MEJORA EN DATOS AMBIENTALES: Mejor estructura y estilo -->
     <record id="view_partner_form_manifiesto_fields" model="ir.ui.view">
         <field name="name">res.partner.form.manifiesto.fields</field>
         <field name="model">res.partner</field>
         <field name="inherit_id" ref="base.view_partner_form"/>
         <field name="arch" type="xml">
             <notebook position="inside">
-                <page string="Datos Ambientales" name="environmental_data">
-                    <group string="Clasificación" col="3">
-                        <field name="es_generador"/>
-                        <field name="es_transportista"/>
-                        <field name="es_destinatario"/>
-                    </group>
+                <page string="Datos Ambientales" name="environmental_data" icon="fa-leaf">
                     
-                    <group string="Registros y Autorizaciones" col="2">
+                    <!-- Encabezado con Clasificación (Toggles) -->
+                    <group>
+                        <group string="Tipo de Actor Ambiental">
+                            <field name="es_generador" widget="boolean_toggle"/>
+                            <field name="es_transportista" widget="boolean_toggle"/>
+                            <field name="es_destinatario" widget="boolean_toggle"/>
+                        </group>
+                        
+                        <!-- Panel Informativo dinámico (Opcional, solo visual) -->
+                        <group>
+                            <div class="alert alert-info" role="alert" style="margin-bottom:0px;" 
+                                 invisible="not es_generador and not es_transportista and not es_destinatario">
+                                <i class="fa fa-info-circle"/> 
+                                <span invisible="not es_generador"> Este contacto generará residuos.</span>
+                                <span invisible="not es_transportista"> Proveedor de logística.</span>
+                                <span invisible="not es_destinatario"> Sitio de disposición final.</span>
+                            </div>
+                        </group>
+                    </group>
+
+                    <separator string="Documentación y Permisos"/>
+
+                    <group>
+                        <!-- Columna Izquierda: Generador y Destino -->
                         <group>
                             <field name="numero_registro_ambiental" 
-                                   invisible="not es_generador"/>
+                                   invisible="not es_generador"
+                                   placeholder="Ej. NRA-123456"
+                                   decoration-bf="1"/>
+                                   
                             <field name="numero_autorizacion_semarnat" 
-                                   invisible="not es_transportista and not es_destinatario"/>
+                                   invisible="not es_transportista and not es_destinatario"
+                                   placeholder="Ej. AUT-SEM-001"/>
                         </group>
-                        <group>
+
+                        <!-- Columna Derecha: Transportista (SCT y Vehículo) -->
+                        <group invisible="not es_transportista">
                             <field name="numero_permiso_sct" 
-                                   invisible="not es_transportista"/>
+                                   placeholder="Ej. SCT-TX-999"/>
+                            
+                            <label for="tipo_vehiculo" string="Unidad de Transporte"/>
+                            <div class="o_row">
+                                <field name="tipo_vehiculo" placeholder="Tipo (ej. Torton)"/>
+                                <span class="text-muted">Placa:</span>
+                                <field name="numero_placa" placeholder="ABC-123"/>
+                            </div>
                         </group>
-                    </group>
-                    
-                    <group string="Información del Vehículo" 
-                           invisible="not es_transportista" 
-                           col="2">
-                        <field name="tipo_vehiculo"/>
-                        <field name="numero_placa"/>
                     </group>
                 </page>
             </notebook>

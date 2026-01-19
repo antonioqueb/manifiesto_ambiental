@@ -54,6 +54,16 @@
                                 border-bottom: none !important;
                             }
 
+                            /* ======================================================= */
+                            /* NUEVO: Ocultar el pie de página (Footer) completamente */
+                            /* ======================================================= */
+                            .footer, .o_company_document_layout .footer {
+                                display: none !important;
+                                height: 0px !important;
+                                padding: 0px !important;
+                                margin: 0px !important;
+                            }
+
                             .page-title {
                                 text-align: center;
                                 font-size: 12px;

@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
     <!-- Menú principal de Manifiesto Ambiental -->
+    <!-- AGREGADO: web_icon="nombre_modulo,ruta_imagen" -->
     <menuitem id="menu_manifiesto_ambiental_root"
               name="Manifiestos"
-              sequence="50"/>
+              sequence="50"
+              web_icon="manifiesto_ambiental,static/description/icon.png"/>
     
     <!-- Submenú para Manifiestos Actuales -->
     <menuitem id="menu_manifiesto_ambiental_manifiestos"

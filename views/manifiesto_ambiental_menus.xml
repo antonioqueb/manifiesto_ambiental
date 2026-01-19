@@ -33,11 +33,5 @@
               name="Configuración"
               parent="menu_manifiesto_ambiental_root"
               sequence="90"/>
-    
-    <!-- Menú para productos de residuos peligrosos -->
-    <menuitem id="menu_product_residuo_peligroso"
-              name="Productos de Residuos"
-              parent="menu_manifiesto_ambiental_config"
-              action="action_product_residuo_peligroso"
-              sequence="10"/>
+
 </odoo>

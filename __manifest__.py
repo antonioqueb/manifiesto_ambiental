@@ -47,7 +47,7 @@
     ''',
     'author': 'Alphaqueb Consulting',
     'website': 'https://alphaqueb.com',
-    'depends': ['base', 'contacts', 'service_order', 'product', 'stock'],
+    'depends': ['base', 'contacts', 'service_order', 'stock'],
     'data': [
         'security/ir.model.access.csv',
         'data/sequences.xml',

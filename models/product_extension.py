@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from odoo import models, fields, api
 
-
 class ProductTemplate(models.Model):
     _inherit = 'product.template'
     
@@ -37,22 +36,30 @@ class ProductTemplate(models.Model):
         help='Capacidad del envase en litros'
     )
     
-    @api.model
-    def create(self, vals):
-        # Si es residuo peligroso, configurar automáticamente algunos campos
-        if vals.get('es_residuo_peligroso'):
-            vals.update({
-                'type': 'product',  # Producto almacenable
-            })
+    @api.model_create_multi
+    def create(self, vals_list):
+        """
+        Sobreescritura del método create para manejar la creación masiva (vals_list)
+        y evitar el error RPC_ERROR al duplicar.
+        """
+        # 1. Pre-procesamiento: Modificar los valores antes de crear
+        for vals in vals_list:
+            if vals.get('es_residuo_peligroso'):
+                vals.update({
+                    'type': 'product',  # Producto almacenable
+                })
         
-        result = super().create(vals)
+        # 2. Llamada al método padre con la lista
+        templates = super(ProductTemplate, self).create(vals_list)
         
-        # Configurar tracking en las variantes después de crear el template
-        if vals.get('es_residuo_peligroso'):
-            for product in result.product_variant_ids:
-                product.tracking = 'lot'
+        # 3. Post-procesamiento: Configurar variantes
+        for template in templates:
+            # Verificamos directamente en el objeto creado si es peligroso
+            if template.es_residuo_peligroso:
+                for variant in template.product_variant_ids:
+                    variant.tracking = 'lot'
         
-        return result
+        return templates
     
     def write(self, vals):
         # Si se marca como residuo peligroso, actualizar configuración
@@ -61,9 +68,10 @@ class ProductTemplate(models.Model):
                 'type': 'product',
             })
         
-        result = super().write(vals)
+        result = super(ProductTemplate, self).write(vals)
         
         # Configurar tracking en las variantes después de escribir
+        # Nota: Usamos 'for record in self' para manejar la escritura en múltiples registros
         if vals.get('es_residuo_peligroso'):
             for record in self:
                 for product in record.product_variant_ids:
@@ -77,6 +85,7 @@ class ProductProduct(models.Model):
     
     def get_clasificaciones_cretib(self):
         """Retorna las clasificaciones CRETIB activas para este producto"""
+        self.ensure_one() # Buena práctica para asegurar que se llama sobre un solo registro
         clasificaciones = []
         if self.clasificacion_corrosivo:
             clasificaciones.append('C')

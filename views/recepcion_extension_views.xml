@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Extender vista de formulario de recepción -->
+    <record id="view_residuo_recepcion_form_manifiesto" model="ir.ui.view">
+        <field name="name">residuo.recepcion.form.manifiesto</field>
+        <field name="model">residuo.recepcion</field>
+        <field name="inherit_id" ref="residuo_recepcion.view_residuo_recepcion_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='sale_order_id']" position="after">
+                <field name="manifiesto_id" 
+                       readonly="1" 
+                       invisible="not manifiesto_id"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Extender vista de lista de recepción -->
+    <record id="view_residuo_recepcion_list_manifiesto" model="ir.ui.view">
+        <field name="name">residuo.recepcion.list.manifiesto</field>
+        <field name="model">residuo.recepcion</field>
+        <field name="inherit_id" ref="residuo_recepcion.view_residuo_recepcion_list"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='sale_order_id']" position="after">
+                <field name="manifiesto_id" optional="show"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Extender búsqueda de recepción -->
+    <record id="view_residuo_recepcion_search_manifiesto" model="ir.ui.view">
+        <field name="name">residuo.recepcion.search.manifiesto</field>
+        <field name="model">residuo.recepcion</field>
+        <field name="inherit_id" ref="residuo_recepcion.view_residuo_recepcion_search"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='sale_order_id']" position="after">
+                <field name="manifiesto_id"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

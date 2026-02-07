@@ -15,6 +15,7 @@
         'views/manifiesto_ambiental_views.xml',
         'views/manifiesto_ambiental_menus.xml',
         'views/service_order_manifiesto_button.xml',
+        'views/recepcion_extension_views.xml',
         'reports/manifiesto_ambiental_report.xml',
     ],
 

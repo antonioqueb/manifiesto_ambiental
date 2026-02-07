@@ -77,11 +77,21 @@
         <field name="arch" type="xml">
             <form string="Manifiesto Ambiental">
                 <header>
+                    <!-- ============================================ -->
+                    <!-- NUEVO BOTÓN: RECIBIR RESIDUOS -->
+                    <!-- ============================================ -->
+                    <button name="action_recibir_residuos"
+                            string="📥 Recibir Residuos"
+                            type="object"
+                            class="btn-primary"
+                            invisible="state not in ['in_transit', 'delivered'] or not is_current_version"
+                            confirm="¿Desea generar la recepción de inventario para estos residuos?"/>
+
                     <!-- Botones de estado -->
                     <button name="action_confirm"
                             string="Confirmar"
                             type="object"
-                            class="btn-primary"
+                            class="btn-secondary"
                             invisible="state != 'draft'"/>
                     <button name="action_in_transit"
                             string="En Tránsito"
@@ -98,7 +108,7 @@
                             type="object"
                             invisible="state not in ['draft','confirmed','in_transit']"/>
                     
-                    <!-- Botones de Remanifestación - CORREGIDOS -->
+                    <!-- Botones de Remanifestación -->
                     <button name="action_remanifestar"
                             string="🔄 Remanifestar (PDF)"
                             type="object"
@@ -133,8 +143,19 @@
                            statusbar_visible="draft,confirmed,in_transit,delivered"/>
                 </header>
                 <sheet>
-                    <!-- Información de Versión (destacada) -->
+                    <!-- ============================================ -->
+                    <!-- SMART BUTTONS -->
+                    <!-- ============================================ -->
                     <div class="oe_button_box" name="button_box">
+                        <!-- NUEVO SMART BUTTON: RECEPCIONES -->
+                        <button name="action_view_recepciones"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-truck"
+                                invisible="recepcion_count == 0">
+                            <field name="recepcion_count" widget="statinfo" string="Recepciones"/>
+                        </button>
+
                         <button name="action_view_version_history"
                                 type="object"
                                 class="oe_stat_button"
@@ -149,7 +170,7 @@
                                 <span class="o_stat_text">Todas las Versiones</span>
                             </div>
                         </button>
-                        <!-- BOTÓN CORREGIDO: Solo mostrar estado del documento físico -->
+                        <!-- Solo mostrar estado del documento físico -->
                         <div class="oe_stat_button" style="pointer-events: none;">
                             <div class="o_field_widget o_stat_info">
                                 <span class="o_stat_value">

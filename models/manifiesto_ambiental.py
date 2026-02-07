@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from odoo import models, fields, api
+from odoo import models, fields, api, _
 from odoo.exceptions import UserError
 from datetime import date
 import base64
@@ -71,6 +71,20 @@ class ManifiestoAmbiental(models.Model):
         compute='_compute_tiene_documento_fisico',
         store=True,
         help='Indica si esta versión tiene un documento físico escaneado'
+    )
+
+    # ==============================================================
+    # INTEGRACIÓN CON RECEPCIÓN DE RESIDUOS (NUEVOS CAMPOS)
+    # ==============================================================
+    recepcion_ids = fields.One2many(
+        'residuo.recepcion',
+        'manifiesto_id',
+        string='Recepciones Generadas'
+    )
+    
+    recepcion_count = fields.Integer(
+        string='No. Recepciones',
+        compute='_compute_recepcion_count'
     )
 
     # 1. Núm. de registro ambiental
@@ -372,6 +386,12 @@ class ManifiestoAmbiental(models.Model):
         for record in self:
             record.tiene_documento_fisico = bool(record.documento_fisico)
 
+    @api.depends('recepcion_ids')
+    def _compute_recepcion_count(self):
+        """Computa el número de recepciones vinculadas"""
+        for rec in self:
+            rec.recepcion_count = len(rec.recepcion_ids)
+
     # MÉTODOS ONCHANGE PARA AUTOCOMPLETAR
     @api.onchange('generador_id')
     def _onchange_generador_id(self):
@@ -492,6 +512,77 @@ class ManifiestoAmbiental(models.Model):
     def action_cancel(self):
         for rec in self:
             rec.state = 'cancel'
+
+    # ---------------------------------------------------------
+    # INTEGRACIÓN CON RECEPCIÓN DE RESIDUOS
+    # ---------------------------------------------------------
+    def action_recibir_residuos(self):
+        """Genera un registro de Recepción de Residuos basado en este Manifiesto"""
+        self.ensure_one()
+        
+        # Validar estado (opcional: solo permitir si está en tránsito o entregado)
+        if self.state not in ['in_transit', 'delivered']:
+            raise UserError(_("El manifiesto debe estar 'En Tránsito' o 'Entregado' para recibir residuos."))
+            
+        if not self.residuo_ids:
+            raise UserError(_("No hay residuos en el manifiesto para recibir."))
+
+        # Preparar líneas de recepción
+        lineas_recepcion = []
+        productos_faltantes = False
+        
+        for residuo in self.residuo_ids:
+            # Solo procesar si tiene producto vinculado
+            if residuo.product_id:
+                lineas_recepcion.append((0, 0, {
+                    'product_id': residuo.product_id.id,
+                    'cantidad': residuo.cantidad,
+                }))
+            else:
+                productos_faltantes = True
+
+        if not lineas_recepcion:
+            raise UserError(_("Los residuos definidos no tienen productos vinculados. Edite los residuos y asigne un producto."))
+            
+        if productos_faltantes:
+            # Advertencia no bloqueante (se crea con los que sí tienen producto)
+            _logger.warning("Algunos residuos del manifiesto %s no tienen producto y fueron omitidos en la recepción.", self.numero_manifiesto)
+
+        # Crear la recepción
+        vals = {
+            'manifiesto_id': self.id,
+            'partner_id': self.generador_id.id, # El generador es el cliente en la recepción
+            'company_id': self.company_id.id,
+            'fecha_recepcion': fields.Date.context_today(self),
+            'linea_ids': lineas_recepcion,
+            'notas': f"<p>Generado desde Manifiesto: <strong>{self.numero_manifiesto}</strong> (Versión {self.version})</p>"
+        }
+        
+        try:
+            recepcion = self.env['residuo.recepcion'].create(vals)
+            
+            # Mensaje de éxito
+            return {
+                'type': 'ir.actions.act_window',
+                'res_model': 'residuo.recepcion',
+                'view_mode': 'form',
+                'res_id': recepcion.id,
+                'target': 'current',
+            }
+        except Exception as e:
+            raise UserError(_("Error al crear la recepción: %s") % str(e))
+
+    def action_view_recepciones(self):
+        """Abre la vista de recepciones asociadas"""
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('Recepciones de Residuos'),
+            'res_model': 'residuo.recepcion',
+            'view_mode': 'list,form',
+            'domain': [('manifiesto_id', '=', self.id)],
+            'context': {'default_manifiesto_id': self.id},
+        }
 
     # MÉTODOS DE REMANIFESTACIÓN - VERSIÓN CORREGIDA
     def action_remanifestar(self):

@@ -1567,4 +1567,4 @@ class ManifiestoAmbientalVersion(models.Model):
         """
         if any(version.version_number == 1 for version in self):
             raise UserError("No se puede eliminar la versión 1 (original) del manifiesto.")
-        return super().unlink()```
+        return super().unlink()

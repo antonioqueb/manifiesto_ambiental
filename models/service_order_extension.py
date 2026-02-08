@@ -1,11 +1,44 @@
 # models/service_order_extension.py
-from odoo import models, fields, api
+# -*- coding: utf-8 -*-
+from odoo import models, fields, api, _
 import logging
 
 _logger = logging.getLogger(__name__)
 
 class ServiceOrder(models.Model):
     _inherit = 'service.order'
+
+    # ====================================================================
+    # AGREGADO: Relación y Contador para Smart Button
+    # ====================================================================
+    manifiesto_ids = fields.One2many(
+        'manifiesto.ambiental',
+        'service_order_id',
+        string='Manifiestos Generados'
+    )
+
+    manifiesto_count = fields.Integer(
+        string='No. Manifiestos',
+        compute='_compute_manifiesto_count'
+    )
+
+    @api.depends('manifiesto_ids')
+    def _compute_manifiesto_count(self):
+        for rec in self:
+            rec.manifiesto_count = len(rec.manifiesto_ids)
+
+    def action_view_manifiestos(self):
+        """Acción del Smart Button para ver los manifiestos vinculados"""
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('Manifiestos Ambientales'),
+            'res_model': 'manifiesto.ambiental',
+            'view_mode': 'list,form',
+            'domain': [('service_order_id', '=', self.id)],
+            'context': {'default_service_order_id': self.id},
+        }
+    # ====================================================================
 
     def action_create_manifiesto(self):
         self.ensure_one()

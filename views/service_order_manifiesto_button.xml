@@ -5,12 +5,26 @@
     <field name="model">service.order</field>
     <field name="inherit_id" ref="service_order.view_service_order_form"/>
     <field name="arch" type="xml">
+      
+      <!-- 1. Smart Button (Contador) en la parte superior -->
+      <xpath expr="//div[@name='button_box']" position="inside">
+        <button name="action_view_manifiestos"
+                type="object"
+                class="oe_stat_button"
+                icon="fa-file-text-o"
+                invisible="manifiesto_count == 0">
+            <field name="manifiesto_count" widget="statinfo" string="Manifiestos"/>
+        </button>
+      </xpath>
+
+      <!-- 2. Botón de Acción en el Header -->
       <xpath expr="//header/button[@name='action_cancel']" position="after">
         <button name="action_create_manifiesto"
                 string="Crear Manifiesto"
                 type="object"
                 class="btn-primary"/>
       </xpath>
+      
     </field>
   </record>
 </odoo>

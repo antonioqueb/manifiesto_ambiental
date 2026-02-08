@@ -455,9 +455,6 @@ class ManifiestoAmbiental(models.Model):
             # Si es la primera versión, establecer original_manifiesto_id a sí mismo
             if not record.original_manifiesto_id:
                 record.original_manifiesto_id = record.id
-            
-            # NOTA: No llamamos a _create_lot_for_residuo() aquí porque
-            # se llama automáticamente en el create del modelo de residuo.
         
         return records
 
@@ -529,24 +526,21 @@ class ManifiestoAmbiental(models.Model):
 
         # Preparar líneas de recepción
         lineas_recepcion = []
-        productos_faltantes = False
         
         for residuo in self.residuo_ids:
-            # Solo procesar si tiene producto vinculado
-            if residuo.product_id:
-                lineas_recepcion.append((0, 0, {
-                    'product_id': residuo.product_id.id,
-                    'cantidad': residuo.cantidad,
-                }))
-            else:
-                productos_faltantes = True
+            # Lógica Modificada: 
+            # 1. Se pasa la descripción original.
+            # 2. Se deja vacío el product_id (False) para forzar selección.
+            # 3. Se asigna el número de manifiesto como lote.
+            lineas_recepcion.append((0, 0, {
+                'descripcion_origen': residuo.nombre_residuo or (residuo.product_id.name if residuo.product_id else 'Sin descripción'),
+                'product_id': False,
+                'cantidad': residuo.cantidad,
+                'lote_asignado': self.numero_manifiesto,
+            }))
 
         if not lineas_recepcion:
-            raise UserError(_("Los residuos definidos no tienen productos vinculados. Edite los residuos y asigne un producto."))
-            
-        if productos_faltantes:
-            # Advertencia no bloqueante (se crea con los que sí tienen producto)
-            _logger.warning("Algunos residuos del manifiesto %s no tienen producto y fueron omitidos en la recepción.", self.numero_manifiesto)
+             raise UserError(_("No se pudieron generar líneas para la recepción."))
 
         # Crear la recepción
         vals = {
@@ -1573,4 +1567,4 @@ class ManifiestoAmbientalVersion(models.Model):
         """
         if any(version.version_number == 1 for version in self):
             raise UserError("No se puede eliminar la versión 1 (original) del manifiesto.")
-        return super().unlink()
+        return super().unlink()```

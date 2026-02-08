@@ -7,7 +7,7 @@
     'author': 'Alphaqueb Consulting',
     'website': 'https://alphaqueb.com',
     # AGREGADO: Dependencia a 'residuo_recepcion'
-    'depends': ['base', 'contacts', 'service_order', 'stock', 'residuo_recepcion'],
+    'depends': ['base', 'contacts', 'service_order', 'stock', 'residuo_recepcion_sai'],
     'data': [
         'security/ir.model.access.csv',
         'data/sequences.xml',

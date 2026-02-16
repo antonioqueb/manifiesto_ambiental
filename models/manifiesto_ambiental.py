@@ -513,49 +513,49 @@ class ManifiestoAmbiental(models.Model):
     # ---------------------------------------------------------
     # INTEGRACIÓN CON RECEPCIÓN DE RESIDUOS
     # ---------------------------------------------------------
+    
     def action_recibir_residuos(self):
-        """Genera un registro de Recepción de Residuos basado en este Manifiesto"""
+        """Genera Recepción de Residuos propagando CRETIB desde el manifiesto."""
         self.ensure_one()
-        
-        # Validar estado (opcional: solo permitir si está en tránsito o entregado)
+
         if self.state not in ['in_transit', 'delivered']:
             raise UserError(_("El manifiesto debe estar 'En Tránsito' o 'Entregado' para recibir residuos."))
-            
+
         if not self.residuo_ids:
             raise UserError(_("No hay residuos en el manifiesto para recibir."))
 
-        # Preparar líneas de recepción
         lineas_recepcion = []
-        
         for residuo in self.residuo_ids:
-            # Lógica Modificada: 
-            # 1. Se pasa la descripción original.
-            # 2. Se deja vacío el product_id (False) para forzar selección.
-            # 3. Se asigna el número de manifiesto como lote.
             lineas_recepcion.append((0, 0, {
-                'descripcion_origen': residuo.nombre_residuo or (residuo.product_id.name if residuo.product_id else 'Sin descripción'),
+                'descripcion_origen': residuo.nombre_residuo or (
+                    residuo.product_id.name if residuo.product_id else 'Sin descripción'),
                 'product_id': False,
                 'cantidad': residuo.cantidad,
                 'lote_asignado': self.numero_manifiesto,
+                # --- CRETIB propagado desde manifiesto (editable en recepción) ---
+                'clasificacion_corrosivo': residuo.clasificacion_corrosivo,
+                'clasificacion_reactivo': residuo.clasificacion_reactivo,
+                'clasificacion_explosivo': residuo.clasificacion_explosivo,
+                'clasificacion_toxico': residuo.clasificacion_toxico,
+                'clasificacion_inflamable': residuo.clasificacion_inflamable,
+                'clasificacion_biologico': residuo.clasificacion_biologico,
             }))
 
         if not lineas_recepcion:
-             raise UserError(_("No se pudieron generar líneas para la recepción."))
+            raise UserError(_("No se pudieron generar líneas para la recepción."))
 
-        # Crear la recepción
         vals = {
             'manifiesto_id': self.id,
-            'partner_id': self.generador_id.id, # El generador es el cliente en la recepción
+            'partner_id': self.generador_id.id,
             'company_id': self.company_id.id,
             'fecha_recepcion': fields.Date.context_today(self),
             'linea_ids': lineas_recepcion,
-            'notas': f"<p>Generado desde Manifiesto: <strong>{self.numero_manifiesto}</strong> (Versión {self.version})</p>"
+            'notas': "<p>Generado desde Manifiesto: <strong>%s</strong> (Versión %s)</p>" % (
+                self.numero_manifiesto, self.version),
         }
-        
+
         try:
             recepcion = self.env['residuo.recepcion'].create(vals)
-            
-            # Mensaje de éxito
             return {
                 'type': 'ir.actions.act_window',
                 'res_model': 'residuo.recepcion',
@@ -565,7 +565,8 @@ class ManifiestoAmbiental(models.Model):
             }
         except Exception as e:
             raise UserError(_("Error al crear la recepción: %s") % str(e))
-
+    
+    
     def action_view_recepciones(self):
         """Abre la vista de recepciones asociadas"""
         self.ensure_one()

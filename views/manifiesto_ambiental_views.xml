@@ -54,7 +54,8 @@
         <field name="model">manifiesto.ambiental</field>
         <field name="type">list</field>
         <field name="arch" type="xml">
-            <list string="Manifiestos Ambientales" default_order="numero_manifiesto desc, version desc">
+            <list string="Manifiestos Ambientales" default_order="sequence_number desc, version desc">
+                <field name="sequence_number" string="Seq." optional="show"/>
                 <field name="numero_manifiesto_display"/>
                 <field name="numero_registro_ambiental"/>
                 <field name="generador_nombre"/>
@@ -77,9 +78,6 @@
         <field name="arch" type="xml">
             <form string="Manifiesto Ambiental">
                 <header>
-                    <!-- ============================================ -->
-                    <!-- NUEVO BOTÓN: RECIBIR RESIDUOS -->
-                    <!-- ============================================ -->
                     <button name="action_recibir_residuos"
                             string="📥 Recibir Residuos"
                             type="object"
@@ -87,7 +85,6 @@
                             invisible="state not in ['in_transit', 'delivered'] or not is_current_version"
                             confirm="¿Desea generar la recepción de inventario para estos residuos?"/>
 
-                    <!-- Botones de estado -->
                     <button name="action_confirm"
                             string="Confirmar"
                             type="object"
@@ -108,7 +105,6 @@
                             type="object"
                             invisible="state not in ['draft','confirmed','in_transit']"/>
                     
-                    <!-- Botones de Remanifestación -->
                     <button name="action_remanifestar"
                             string="🔄 Remanifestar (PDF)"
                             type="object"
@@ -123,7 +119,6 @@
                             invisible="not is_current_version or state == 'draft'"
                             confirm="¿Está seguro de que desea crear una nueva versión? Se guardarán los datos estructurados de la versión actual."/>
                     
-                    <!-- Botones de navegación de versiones -->
                     <button name="action_view_version_history"
                             string="📋 Historial"
                             type="object"
@@ -143,11 +138,8 @@
                            statusbar_visible="draft,confirmed,in_transit,delivered"/>
                 </header>
                 <sheet>
-                    <!-- ============================================ -->
                     <!-- SMART BUTTONS -->
-                    <!-- ============================================ -->
                     <div class="oe_button_box" name="button_box">
-                        <!-- NUEVO SMART BUTTON: RECEPCIONES -->
                         <button name="action_view_recepciones"
                                 type="object"
                                 class="oe_stat_button"
@@ -170,13 +162,21 @@
                                 <span class="o_stat_text">Todas las Versiones</span>
                             </div>
                         </button>
-                        <!-- Solo mostrar estado del documento físico -->
                         <div class="oe_stat_button" style="pointer-events: none;">
                             <div class="o_field_widget o_stat_info">
                                 <span class="o_stat_value">
                                     <field name="tiene_documento_fisico" widget="boolean"/>
                                 </span>
                                 <span class="o_stat_text">Doc. Físico</span>
+                            </div>
+                        </div>
+                        <!-- Secuencia interna (solo informativo) -->
+                        <div class="oe_stat_button" style="pointer-events: none;">
+                            <div class="o_field_widget o_stat_info">
+                                <span class="o_stat_value">
+                                    <field name="sequence_number" readonly="1"/>
+                                </span>
+                                <span class="o_stat_text">Sec. Interna</span>
                             </div>
                         </div>
                     </div>
@@ -201,15 +201,18 @@
                         <strong>✅ VERSIÓN ACTUAL:</strong> Esta es la versión más reciente del manifiesto.
                     </div>
 
-                    <!-- Información Básica (1-3) -->
+                    <!-- TÍTULO CON NÚMERO DE MANIFIESTO EDITABLE -->
                     <div class="oe_title">
+                        <label for="numero_manifiesto" string="Núm. de Manifiesto"/>
                         <h1>
-                            <field name="numero_manifiesto_display" readonly="1"/>
+                            <field name="numero_manifiesto"
+                                   readonly="not is_current_version"
+                                   placeholder="Número de manifiesto..."/>
                         </h1>
-                        <h3 style="color: #6c757d;">
-                            <span invisible="version &lt;= 1">Versión </span>
-                            <field name="version" invisible="version &lt;= 1" readonly="1"/>
-                            <span invisible="not is_current_version or version &lt;= 1"> (Actual)</span>
+                        <h3 style="color: #6c757d;" invisible="version &lt;= 1">
+                            <span>Versión </span>
+                            <field name="version" readonly="1"/>
+                            <span invisible="not is_current_version"> (Actual)</span>
                         </h3>
                     </div>
                     
@@ -220,7 +223,7 @@
                         <field name="company_id" groups="base.group_multi_company"/>
                     </group>
 
-                    <!-- Campos de control de versiones (solo para versiones no iniciales) -->
+                    <!-- Campos de control de versiones -->
                     <group string="Control de Versiones" 
                            invisible="version &lt;= 1" 
                            col="2">
@@ -281,9 +284,7 @@
                             
                             <field name="residuo_ids" readonly="not is_current_version">
                                 <list editable="bottom" edit="is_current_version">
-                                    <!-- NUEVO CAMPO: TIPO DE RESIDUO -->
                                     <field name="residue_type" string="Tipo" optional="show"/>
-                                    
                                     <field name="product_id" 
                                            placeholder="Seleccionar producto/residuo..."
                                            options="{'no_create': True, 'no_create_edit': True}"/>
@@ -295,11 +296,8 @@
                                     <field name="clasificacion_inflamable" string="I"/>
                                     <field name="clasificacion_biologico" string="B"/>
                                     <field name="clasificaciones_display" string="CRETIB" optional="hide"/>
-                                    
-                                    <!-- NUEVO CAMPO: EMBALAJE (Reemplaza visualmente a envase_tipo si hay datos) -->
                                     <field name="packaging_id" string="Embalaje" optional="show"/>
                                     <field name="envase_tipo" string="Envase (Legacy)" optional="hide"/>
-                                    
                                     <field name="envase_capacidad"/>
                                     <field name="cantidad"/>
                                     <field name="unidad" readonly="1"/>
@@ -311,7 +309,6 @@
                                     <sheet>
                                         <group>
                                             <group string="Producto/Residuo">
-                                                <!-- NUEVO CAMPO TIPO -->
                                                 <field name="residue_type" string="Tipo de Residuo"/>
                                                 <field name="product_id" 
                                                        placeholder="Seleccionar producto/residuo..."
@@ -333,7 +330,6 @@
                                         </group>
                                         
                                         <group string="Información del Envase" col="2">
-                                            <!-- NUEVO CAMPO EMBALAJE -->
                                             <field name="packaging_id" string="Unidad de Embalaje"/>
                                             <field name="envase_tipo"/>
                                             <field name="envase_capacidad"/>
@@ -372,7 +368,6 @@
                                 Para subir nuevos documentos, vaya a la versión actual.
                             </div>
                             
-                            <!-- Información del archivo y estado -->
                             <group string="Información del Documento" col="3">
                                 <field name="documento_fisico_filename" readonly="not is_current_version"/>
                                 <field name="tiene_documento_fisico" readonly="1"/>
@@ -386,7 +381,6 @@
                                 </div>
                             </group>
                             
-                            <!-- Visor de PDF con altura fija -->
                             <group string="Documento Físico Escaneado" col="1">
                                 <div style="width: 100%; height: 600px; border: 1px solid #ddd; background: #f9f9f9;">
                                     <field name="documento_fisico" 
@@ -568,6 +562,7 @@
                         <field name="original_manifiesto_id"/>
                         <field name="created_by_remanifest"/>
                         <field name="tiene_documento_fisico"/>
+                        <field name="sequence_number"/>
                     </group>
                 </sheet>
             </form>
@@ -587,15 +582,14 @@
                 <field name="destinatario_nombre"/>
                 <field name="version"/>
                 <field name="change_reason"/>
+                <field name="sequence_number" string="Secuencia"/>
                 
-                <!-- Filtros específicos de versiones -->
                 <filter string="Solo Versiones Actuales" name="current_versions" domain="[('is_current_version','=',True)]"/>
                 <filter string="Solo Versiones Históricas" name="historical_versions" domain="[('is_current_version','=',False)]"/>
                 <filter string="Remanifestaciones" name="remanifested" domain="[('version','>',1)]"/>
                 <filter string="Con Documento Físico" name="with_physical_doc" domain="[('tiene_documento_fisico','=',True)]"/>
                 <filter string="Sin Documento Físico" name="without_physical_doc" domain="[('tiene_documento_fisico','=',False)]"/>
                 
-                <!-- Filtros de estado -->
                 <filter string="Borrador" name="draft" domain="[('state','=','draft')]"/>
                 <filter string="Confirmado" name="confirmed" domain="[('state','=','confirmed')]"/>
                 <filter string="En Tránsito" name="in_transit" domain="[('state','=','in_transit')]"/>
@@ -747,11 +741,11 @@
                 <filter string="Último Mes" name="last_month" 
                         domain="[('creation_date', '&gt;=', (context_today() - datetime.timedelta(days=30)).strftime('%Y-%m-%d'))]"/>
                 
-                    <filter string="Manifiesto" name="group_manifiesto" context="{'group_by':'manifiesto_id'}"/>
-                    <filter string="Creado por" name="group_user" context="{'group_by':'created_by'}"/>
-                    <filter string="Fecha de Creación" name="group_date" context="{'group_by':'creation_date:month'}"/>
-                    <filter string="Estado al Guardar" name="group_state" context="{'group_by':'state_at_creation'}"/>
-                    <filter string="Tenía Doc. Físico" name="group_physical" context="{'group_by':'tenia_documento_fisico'}"/>
+                <filter string="Manifiesto" name="group_manifiesto" context="{'group_by':'manifiesto_id'}"/>
+                <filter string="Creado por" name="group_user" context="{'group_by':'created_by'}"/>
+                <filter string="Fecha de Creación" name="group_date" context="{'group_by':'creation_date:month'}"/>
+                <filter string="Estado al Guardar" name="group_state" context="{'group_by':'state_at_creation'}"/>
+                <filter string="Tenía Doc. Físico" name="group_physical" context="{'group_by':'tenia_documento_fisico'}"/>
             </search>
         </field>
     </record>

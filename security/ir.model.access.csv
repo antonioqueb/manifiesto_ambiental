@@ -2,3 +2,5 @@ id,name,model_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_manifiesto_ambiental,access_manifiesto_ambiental,model_manifiesto_ambiental,1,1,1,1
 access_manifiesto_ambiental_residuo,access_manifiesto_ambiental_residuo,model_manifiesto_ambiental_residuo,1,1,1,1
 access_manifiesto_ambiental_version,access_manifiesto_ambiental_version,model_manifiesto_ambiental_version,1,1,1,0
+access_manifiesto_discrepancia_user,manifiesto.discrepancia.user,model_manifiesto_discrepancia,base.group_user,1,1,1,1
+access_manifiesto_discrepancia_linea_user,manifiesto.discrepancia.linea.user,model_manifiesto_discrepancia_linea,base.group_user,1,1,1,1

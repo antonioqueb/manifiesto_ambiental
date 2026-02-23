@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <!-- Acción para discrepancias -->
+    <record id="action_manifiesto_discrepancia" model="ir.actions.act_window">
+        <field name="name">Reportes de Discrepancias</field>
+        <field name="res_model">manifiesto.discrepancia</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <!-- Lista -->
+    <record id="view_manifiesto_discrepancia_list" model="ir.ui.view">
+        <field name="name">manifiesto.discrepancia.list</field>
+        <field name="model">manifiesto.discrepancia</field>
+        <field name="arch" type="xml">
+            <list string="Reportes de Discrepancias" default_order="fecha_inspeccion desc">
+                <field name="name"/>
+                <field name="numero_manifiesto"/>
+                <field name="fecha_manifiesto"/>
+                <field name="generador_nombre"/>
+                <field name="transportista_nombre"/>
+                <field name="fecha_inspeccion"/>
+                <field name="revisado_por"/>
+                <field name="tiene_discrepancias" string="Hay Diferencias" widget="boolean_toggle"/>
+                <field name="state" decoration-success="state == 'done'" decoration-warning="state == 'draft'"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Formulario -->
+    <record id="view_manifiesto_discrepancia_form" model="ir.ui.view">
+        <field name="name">manifiesto.discrepancia.form</field>
+        <field name="model">manifiesto.discrepancia</field>
+        <field name="arch" type="xml">
+            <form string="Reporte de Discrepancias">
+                <header>
+                    <button name="action_print_discrepancia"
+                            string="🖨️ Imprimir Reporte"
+                            type="object"
+                            class="btn-primary"/>
+                    <button name="action_finalizar"
+                            string="Finalizar"
+                            type="object"
+                            class="btn-success"
+                            invisible="state == 'done'"/>
+                    <button name="action_borrador"
+                            string="Volver a Borrador"
+                            type="object"
+                            invisible="state == 'draft'"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,done"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name" readonly="1"/></h1>
+                    </div>
+
+                    <!-- Encabezado del reporte -->
+                    <group string="Datos del Manifiesto" col="2">
+                        <group>
+                            <field name="manifiesto_id"
+                                   options="{'no_create': True, 'no_create_edit': True}"
+                                   domain="[('is_current_version', '=', True)]"/>
+                            <field name="numero_manifiesto" readonly="1"/>
+                            <field name="fecha_manifiesto" readonly="1"/>
+                            <field name="generador_nombre" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="transportista_nombre" readonly="1"/>
+                            <field name="numero_placa" readonly="1"/>
+                            <field name="operador_nombre"/>
+                            <field name="fecha_inspeccion"/>
+                            <field name="revisado_por"/>
+                        </group>
+                    </group>
+
+                    <!-- Tabla de discrepancias -->
+                    <notebook>
+                        <page string="Discrepancias por Residuo">
+                            <field name="linea_ids">
+                                <list editable="bottom">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="residuo_manifiesto_id"
+                                           string="Residuo (autocompletar)"
+                                           optional="show"/>
+                                    <field name="nombre_residuo"/>
+                                    <field name="cantidad_manifestada" string="Cant. Manifestada"/>
+                                    <field name="contenedor_manifestado" string="Cont. Manifestado"/>
+                                    <field name="cantidad_real" string="Cant. Real"/>
+                                    <field name="contenedor_real" string="Cont. Real"/>
+                                    <field name="tipo_discrepancia" string="Tipo"/>
+                                    <field name="observacion" string="Observación"/>
+                                    <field name="tiene_diferencia" string="⚠️" widget="boolean"/>
+                                </list>
+                                <form string="Línea de Discrepancia">
+                                    <sheet>
+                                        <group string="Autocompletar desde Manifiesto">
+                                            <field name="residuo_manifiesto_id"
+                                                   options="{'no_create': True}"/>
+                                        </group>
+                                        <group string="Lo que decía el Manifiesto" col="2">
+                                            <field name="nombre_residuo"/>
+                                            <field name="cantidad_manifestada"/>
+                                            <field name="contenedor_manifestado"/>
+                                        </group>
+                                        <group string="Lo que se Recibió Realmente" col="2">
+                                            <field name="cantidad_real"/>
+                                            <field name="contenedor_real"/>
+                                        </group>
+                                        <group string="Resultado" col="2">
+                                            <field name="tipo_discrepancia"/>
+                                            <field name="tiene_diferencia" readonly="1"/>
+                                            <field name="observacion"/>
+                                        </group>
+                                    </sheet>
+                                </form>
+                            </field>
+                        </page>
+                    </notebook>
+
+                    <group string="Observaciones Generales">
+                        <field name="observaciones_generales" nolabel="1"
+                               placeholder="Observaciones adicionales del reporte..."/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Búsqueda -->
+    <record id="view_manifiesto_discrepancia_search" model="ir.ui.view">
+        <field name="name">manifiesto.discrepancia.search</field>
+        <field name="model">manifiesto.discrepancia</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="numero_manifiesto"/>
+                <field name="generador_nombre"/>
+                <field name="transportista_nombre"/>
+                <field name="revisado_por"/>
+                <filter string="Con Discrepancias" name="con_disc" domain="[('tiene_discrepancias','=',True)]"/>
+                <filter string="Sin Discrepancias" name="sin_disc" domain="[('tiene_discrepancias','=',False)]"/>
+                <filter string="Borrador" name="draft" domain="[('state','=','draft')]"/>
+                <filter string="Finalizado" name="done" domain="[('state','=','done')]"/>
+                <filter string="Generador" name="group_gen" context="{'group_by':'generador_nombre'}"/>
+                <filter string="Fecha Inspección" name="group_fecha" context="{'group_by':'fecha_inspeccion:month'}"/>
+            </search>
+        </field>
+    </record>
+
+</odoo>

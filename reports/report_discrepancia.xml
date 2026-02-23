@@ -1,0 +1,261 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- FORMATO HOJA -->
+    <record id="paperformat_discrepancia" model="report.paperformat">
+        <field name="name">Reporte Discrepancias</field>
+        <field name="default" eval="False"/>
+        <field name="format">A4</field>
+        <field name="orientation">Portrait</field>
+        <field name="margin_top">10</field>
+        <field name="margin_bottom">10</field>
+        <field name="margin_left">10</field>
+        <field name="margin_right">10</field>
+        <field name="header_line" eval="False"/>
+        <field name="header_spacing">10</field>
+        <field name="dpi">90</field>
+    </record>
+
+    <!-- ACCIÓN DEL REPORTE -->
+    <record id="action_report_discrepancia" model="ir.actions.report">
+        <field name="name">Reporte de Discrepancias</field>
+        <field name="model">manifiesto.discrepancia</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">manifiesto_ambiental.report_discrepancia_document</field>
+        <field name="report_file">manifiesto_ambiental.report_discrepancia_document</field>
+        <field name="binding_model_id" ref="model_manifiesto_discrepancia"/>
+        <field name="binding_type">report</field>
+        <field name="paperformat_id" ref="manifiesto_ambiental.paperformat_discrepancia"/>
+    </record>
+
+    <!-- PLANTILLA QWEB -->
+    <template id="report_discrepancia_document">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <style>
+                            @page { margin: 10mm; size: A4; }
+                            body, td, th {
+                                font-family: "DejaVu Sans", Arial, sans-serif !important;
+                                font-size: 10px;
+                                line-height: 1.2;
+                            }
+                            .footer, .o_company_document_layout .footer {
+                                display: none !important;
+                            }
+                            .report-title {
+                                text-align: center;
+                                font-size: 13px;
+                                font-weight: bold;
+                                margin: 4px 0 8px;
+                                text-transform: uppercase;
+                                border-bottom: 2px solid #333;
+                                padding-bottom: 4px;
+                            }
+                            .header-table {
+                                width: 100%;
+                                border-collapse: collapse;
+                                margin-bottom: 8px;
+                            }
+                            .header-table td {
+                                padding: 3px 6px;
+                                border: none;
+                                font-size: 10px;
+                            }
+                            .header-label { font-weight: bold; width: 35%; }
+                            .header-value { width: 65%; }
+                            table.discrepancia-table {
+                                width: 100%;
+                                border-collapse: collapse;
+                                margin-bottom: 10px;
+                            }
+                            table.discrepancia-table th {
+                                background-color: #2c5f2e !important;
+                                color: #ffffff !important;
+                                font-weight: bold;
+                                text-align: center;
+                                padding: 5px 4px;
+                                border: 1px solid #2c5f2e;
+                                font-size: 9px;
+                                -webkit-print-color-adjust: exact;
+                                print-color-adjust: exact;
+                            }
+                            table.discrepancia-table td {
+                                border: 1px solid #aaa;
+                                padding: 4px 5px;
+                                vertical-align: middle;
+                                font-size: 9.5px;
+                            }
+                            table.discrepancia-table tr.row-discrepancia {
+                                background-color: #fff3cd !important;
+                                -webkit-print-color-adjust: exact;
+                                print-color-adjust: exact;
+                            }
+                            table.discrepancia-table tr.row-ok {
+                                background-color: #d4edda !important;
+                                -webkit-print-color-adjust: exact;
+                                print-color-adjust: exact;
+                            }
+                            .center { text-align: center; }
+                            .firma-section {
+                                margin-top: 30px;
+                                text-align: right;
+                                font-size: 10px;
+                            }
+                            .firma-line {
+                                display: inline-block;
+                                border-top: 1px solid #333;
+                                width: 200px;
+                                margin-top: 30px;
+                                text-align: center;
+                                padding-top: 3px;
+                            }
+                            .obs-section {
+                                margin-top: 8px;
+                                border: 1px solid #aaa;
+                                padding: 5px 8px;
+                                min-height: 40px;
+                                font-size: 9.5px;
+                            }
+                            .badge-diff {
+                                font-weight: bold;
+                                color: #856404;
+                            }
+                            .badge-ok {
+                                font-weight: bold;
+                                color: #155724;
+                            }
+                            .section-header {
+                                font-weight: bold;
+                                font-size: 10px;
+                                background-color: #f0f0f0 !important;
+                                -webkit-print-color-adjust: exact;
+                                print-color-adjust: exact;
+                            }
+                        </style>
+
+                        <!-- TÍTULO -->
+                        <div class="report-title">
+                            Reporte de Discrepancias – Recepción de Residuos Peligrosos
+                        </div>
+
+                        <!-- ENCABEZADO -->
+                        <table class="header-table">
+                            <tr>
+                                <td class="header-label">Número de Manifiesto:</td>
+                                <td class="header-value"><strong><t t-esc="doc.numero_manifiesto or ''"/></strong></td>
+                                <td class="header-label">Fecha:</td>
+                                <td class="header-value">
+                                    <t t-if="doc.fecha_manifiesto">
+                                        <t t-esc="doc.fecha_manifiesto.strftime('%d/%m/%Y')"/>
+                                    </t>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="header-label">Transportista:</td>
+                                <td class="header-value"><t t-esc="doc.transportista_nombre or ''"/></td>
+                                <td class="header-label">Placa:</td>
+                                <td class="header-value"><t t-esc="doc.numero_placa or ''"/></td>
+                            </tr>
+                            <tr>
+                                <td class="header-label">Operador:</td>
+                                <td class="header-value"><t t-esc="doc.operador_nombre or ''"/></td>
+                                <td class="header-label">Generador:</td>
+                                <td class="header-value"><t t-esc="doc.generador_nombre or ''"/></td>
+                            </tr>
+                            <tr>
+                                <td class="header-label">Fecha de Inspección:</td>
+                                <td class="header-value">
+                                    <t t-if="doc.fecha_inspeccion">
+                                        <t t-esc="doc.fecha_inspeccion.strftime('%d/%m/%Y')"/>
+                                    </t>
+                                </td>
+                                <td class="header-label">Revisó:</td>
+                                <td class="header-value"><t t-esc="doc.revisado_por or ''"/></td>
+                            </tr>
+                        </table>
+
+                        <!-- TABLA DE DISCREPANCIAS -->
+                        <table class="discrepancia-table">
+                            <!-- Encabezados de grupos -->
+                            <tr>
+                                <th rowspan="2" style="width:24%;">Nombre del Residuo</th>
+                                <th colspan="2" style="width:26%; background-color:#1a3e1c !important;">LO QUE DECÍA EL MANIFIESTO</th>
+                                <th colspan="2" style="width:26%; background-color:#4a7c4e !important;">LO QUE SE RECIBIÓ</th>
+                                <th rowspan="2" style="width:10%;">Resultado</th>
+                                <th rowspan="2" style="width:14%;">Observación</th>
+                            </tr>
+                            <tr>
+                                <th style="background-color:#1a3e1c !important;">Cantidad Manifestada</th>
+                                <th style="background-color:#1a3e1c !important;">Contenedor Manifestado</th>
+                                <th style="background-color:#4a7c4e !important;">Cantidad Real</th>
+                                <th style="background-color:#4a7c4e !important;">Contenedor Real</th>
+                            </tr>
+
+                            <t t-foreach="doc.linea_ids" t-as="linea">
+                                <tr t-attf-class="{{ 'row-discrepancia' if linea.tiene_diferencia else 'row-ok' }}">
+                                    <td><t t-esc="linea.nombre_residuo or ''"/></td>
+                                    <td class="center">
+                                        <t t-if="linea.cantidad_manifestada">
+                                            <t t-esc="int(linea.cantidad_manifestada) if linea.cantidad_manifestada == int(linea.cantidad_manifestada) else linea.cantidad_manifestada"/>
+                                        </t>
+                                        <t t-else="">----</t>
+                                    </td>
+                                    <td class="center"><t t-esc="linea.contenedor_manifestado or '--------'"/></td>
+                                    <td class="center">
+                                        <t t-if="linea.cantidad_real">
+                                            <t t-esc="int(linea.cantidad_real) if linea.cantidad_real == int(linea.cantidad_real) else linea.cantidad_real"/>
+                                        </t>
+                                        <t t-else="">----</t>
+                                    </td>
+                                    <td class="center"><t t-esc="linea.contenedor_real or '--------'"/></td>
+                                    <td class="center">
+                                        <t t-if="linea.tiene_diferencia">
+                                            <span class="badge-diff">
+                                                <t t-esc="dict([('ok','OK'),('cantidad','Dif. Cantidad'),('contenedor','Dif. Contenedor'),('no_manifestado','No Manifestado'),('faltante','Faltante'),('ambos','Dif. Ambos'),('otro','Otro')]).get(linea.tipo_discrepancia, linea.tipo_discrepancia or '')"/>
+                                            </span>
+                                        </t>
+                                        <t t-else="">
+                                            <span class="badge-ok">OK</span>
+                                        </t>
+                                    </td>
+                                    <td><t t-esc="linea.observacion or ''"/></td>
+                                </tr>
+                            </t>
+
+                            <!-- Si no hay líneas -->
+                            <t t-if="not doc.linea_ids">
+                                <tr>
+                                    <td colspan="7" class="center" style="padding: 10px; font-style: italic; color: #666;">
+                                        Sin líneas de discrepancia registradas
+                                    </td>
+                                </tr>
+                            </t>
+                        </table>
+
+                        <!-- OBSERVACIONES GENERALES -->
+                        <t t-if="doc.observaciones_generales">
+                            <div style="margin-top: 8px;">
+                                <strong>Observaciones Generales:</strong>
+                                <div class="obs-section">
+                                    <t t-esc="doc.observaciones_generales"/>
+                                </div>
+                            </div>
+                        </t>
+
+                        <!-- FIRMA -->
+                        <div class="firma-section">
+                            <div class="firma-line">
+                                <t t-esc="doc.revisado_por or '_______________________'"/>
+                                <br/>
+                                <span style="font-size: 9px;">Firma y Sello</span>
+                            </div>
+                        </div>
+
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+
+</odoo>

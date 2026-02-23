@@ -31,168 +31,110 @@
     <template id="report_discrepancia_document">
         <t t-call="web.html_container">
             <t t-foreach="docs" t-as="doc">
-                <t t-call="web.internal_layout">
+                <t t-call="web.external_layout">
                     <div class="page">
                         <style>
-                            @page { margin: 10mm; size: A4; }
-                            body, td, th {
-                                font-family: "DejaVu Sans", Arial, sans-serif !important;
+                            .formal-table {
+                                width: 100%;
+                                border-collapse: collapse;
                                 font-size: 10px;
-                                line-height: 1.3;
+                                margin-bottom: 15px;
+                                color: #000;
                             }
-
-                            /* ── TÍTULO ── */
-                            .report-title {
-                                text-align: center;
-                                font-size: 14px;
-                                font-weight: bold;
-                                text-transform: uppercase;
-                                border-bottom: 2px solid #2c5f2e;
-                                padding-bottom: 5px;
-                                margin-bottom: 10px;
-                                color: #2c5f2e;
-                                letter-spacing: 0.5px;
-                            }
-
-                            /* ── BLOQUE DE DATOS DEL DOCUMENTO ── */
-                            .info-grid {
-                                width: 100%;
-                                border-collapse: collapse;
-                                margin-bottom: 12px;
-                                border: 1px solid #ccc;
-                            }
-                            .info-grid td {
-                                padding: 4px 8px;
-                                font-size: 9.5px;
-                                border: 1px solid #ddd;
-                                vertical-align: middle;
-                            }
-                            .info-grid .lbl {
-                                font-weight: bold;
-                                background-color: #f5f5f5 !important;
-                                -webkit-print-color-adjust: exact;
-                                print-color-adjust: exact;
-                                width: 18%;
-                                color: #333;
-                            }
-                            .info-grid .val {
-                                width: 32%;
-                            }
-
-                            /* ── TABLA DE DISCREPANCIAS ── */
-                            table.discrepancia-table {
-                                width: 100%;
-                                border-collapse: collapse;
-                                margin-bottom: 12px;
-                            }
-                            table.discrepancia-table th {
-                                background-color: #2c5f2e !important;
-                                color: #ffffff !important;
-                                font-weight: bold;
-                                text-align: center;
-                                padding: 5px 4px;
-                                border: 1px solid #2c5f2e;
-                                font-size: 8.5px;
-                                -webkit-print-color-adjust: exact;
-                                print-color-adjust: exact;
-                            }
-                            table.discrepancia-table th.th-manifesto {
-                                background-color: #1a3e1c !important;
-                            }
-                            table.discrepancia-table th.th-real {
-                                background-color: #4a7c4e !important;
-                            }
-                            table.discrepancia-table td {
-                                border: 1px solid #bbb;
+                            .formal-table th,
+                            .formal-table td {
+                                border: 1px solid #000;
                                 padding: 4px 6px;
                                 vertical-align: middle;
-                                font-size: 9px;
                             }
-                            table.discrepancia-table tr.row-discrepancia td {
+                            .bg-header {
+                                background-color: #f0f0f0;
+                                font-weight: bold;
+                                text-transform: uppercase;
+                                width: 15%;
+                            }
+                            .section-title {
+                                background-color: #2c5f2e;
+                                color: #fff;
+                                padding: 3px 10px;
+                                font-size: 11px;
+                                font-weight: bold;
+                                text-transform: uppercase;
+                                margin-bottom: 0;
+                            }
+                            .text-right  { text-align: right; }
+                            .text-center { text-align: center; }
+
+                            /* Tabla de discrepancias */
+                            .disc-table {
+                                width: 100%;
+                                border-collapse: collapse;
+                                font-size: 9.5px;
+                                margin-bottom: 15px;
+                                color: #000;
+                            }
+                            .disc-table th,
+                            .disc-table td {
+                                border: 1px solid #000;
+                                padding: 4px 6px;
+                                vertical-align: middle;
+                                text-align: center;
+                            }
+                            .disc-table th {
+                                background-color: #2c5f2e !important;
+                                color: #fff !important;
+                                font-weight: bold;
+                                font-size: 9px;
+                                -webkit-print-color-adjust: exact;
+                                print-color-adjust: exact;
+                            }
+                            .disc-table th.th-manifesto {
+                                background-color: #1a3e1c !important;
+                            }
+                            .disc-table th.th-real {
+                                background-color: #4a7c4e !important;
+                            }
+                            .disc-table td.td-left { text-align: left; }
+                            .disc-table tr.row-discrepancia td {
                                 background-color: #fff3cd !important;
                                 -webkit-print-color-adjust: exact;
                                 print-color-adjust: exact;
                             }
-                            table.discrepancia-table tr.row-ok td {
+                            .disc-table tr.row-ok td {
                                 background-color: #d4edda !important;
                                 -webkit-print-color-adjust: exact;
                                 print-color-adjust: exact;
                             }
-                            table.discrepancia-table tr.row-empty td {
-                                font-style: italic;
-                                color: #888;
-                            }
-
-                            /* ── RESULTADO / BADGE ── */
-                            .badge-diff {
-                                font-weight: bold;
-                                color: #856404;
-                            }
-                            .badge-ok {
-                                font-weight: bold;
-                                color: #155724;
-                            }
-
-                            /* ── SECCIÓN OBSERVACIONES ── */
-                            .obs-label {
-                                font-weight: bold;
-                                font-size: 10px;
-                                margin-bottom: 3px;
-                                display: block;
-                            }
-                            .obs-box {
-                                border: 1px solid #bbb;
-                                padding: 6px 8px;
-                                min-height: 45px;
-                                font-size: 9.5px;
-                                background-color: #fafafa !important;
-                                -webkit-print-color-adjust: exact;
-                                print-color-adjust: exact;
-                                margin-bottom: 20px;
-                            }
-
-                            /* ── FIRMA ── */
-                            .firma-row {
-                                display: table;
-                                width: 100%;
-                                margin-top: 10px;
-                            }
-                            .firma-col {
-                                display: table-cell;
-                                width: 50%;
-                                text-align: center;
-                                padding-top: 35px;
-                                font-size: 9.5px;
-                                vertical-align: bottom;
-                            }
-                            .firma-col.right {
-                                text-align: right;
-                                padding-right: 20px;
-                            }
-                            .firma-line {
-                                display: inline-block;
-                                border-top: 1px solid #333;
-                                width: 200px;
-                                text-align: center;
-                                padding-top: 3px;
-                                font-size: 9px;
-                            }
-
-                            .center { text-align: center; }
+                            .badge-diff { font-weight: bold; color: #856404; }
+                            .badge-ok   { font-weight: bold; color: #155724; }
                         </style>
 
-                        <!-- 1. TÍTULO -->
-                        <div class="report-title">
-                            Reporte de Discrepancias – Recepción de Residuos Peligrosos
+                        <div class="oe_structure"/>
+
+                        <!-- ENCABEZADO -->
+                        <div class="row mb16 align-items-center">
+                            <div class="col-8">
+                                <h4 class="m-0" style="font-weight: bold; text-transform: uppercase;">
+                                    Reporte de Discrepancias – Recepción de Residuos Peligrosos
+                                </h4>
+                            </div>
+                            <div class="col-4 text-right">
+                                <div style="border: 2px solid #000; padding: 5px; text-align: center;">
+                                    <strong style="font-size: 13px;">
+                                        MANIFIESTO: <t t-esc="doc.numero_manifiesto or '—'"/>
+                                    </strong>
+                                </div>
+                            </div>
                         </div>
 
-                        <!-- 2. DATOS DEL DOCUMENTO (grid 2 columnas, 4 filas) -->
-                        <table class="info-grid">
+                        <!-- 1. INFORMACIÓN GENERAL -->
+                        <div class="section-title">Información General</div>
+                        <table class="formal-table">
                             <tr>
-                                <td class="lbl">No. Manifiesto</td>
-                                <td class="val"><strong><t t-esc="doc.numero_manifiesto or '—'"/></strong></td>
-                                <td class="lbl">Fecha Manifiesto</td>
-                                <td class="val">
+                                <td class="bg-header">No. Manifiesto</td>
+                                <td style="width: 35%;"><strong><t t-esc="doc.numero_manifiesto or '—'"/></strong></td>
+                                <td class="bg-header">Fecha Manifiesto</td>
+                                <td style="width: 35%;">
                                     <t t-if="doc.fecha_manifiesto">
                                         <t t-esc="doc.fecha_manifiesto.strftime('%d/%m/%Y')"/>
                                     </t>
@@ -200,10 +142,10 @@
                                 </td>
                             </tr>
                             <tr>
-                                <td class="lbl">Generador</td>
-                                <td class="val"><t t-esc="doc.generador_nombre or '—'"/></td>
-                                <td class="lbl">Fecha Inspección</td>
-                                <td class="val">
+                                <td class="bg-header">Generador</td>
+                                <td><t t-esc="doc.generador_nombre or '—'"/></td>
+                                <td class="bg-header">Fecha Inspección</td>
+                                <td>
                                     <t t-if="doc.fecha_inspeccion">
                                         <t t-esc="doc.fecha_inspeccion.strftime('%d/%m/%Y')"/>
                                     </t>
@@ -211,28 +153,29 @@
                                 </td>
                             </tr>
                             <tr>
-                                <td class="lbl">Transportista</td>
-                                <td class="val"><t t-esc="doc.transportista_nombre or '—'"/></td>
-                                <td class="lbl">No. Placa</td>
-                                <td class="val"><t t-esc="doc.numero_placa or '—'"/></td>
+                                <td class="bg-header">Transportista</td>
+                                <td><t t-esc="doc.transportista_nombre or '—'"/></td>
+                                <td class="bg-header">No. Placa</td>
+                                <td><t t-esc="doc.numero_placa or '—'"/></td>
                             </tr>
                             <tr>
-                                <td class="lbl">Operador</td>
-                                <td class="val"><t t-esc="doc.operador_nombre or '—'"/></td>
-                                <td class="lbl">Revisó</td>
-                                <td class="val"><t t-esc="doc.revisado_por or '—'"/></td>
+                                <td class="bg-header">Operador</td>
+                                <td><t t-esc="doc.operador_nombre or '—'"/></td>
+                                <td class="bg-header">Revisó</td>
+                                <td><t t-esc="doc.revisado_por or '—'"/></td>
                             </tr>
                         </table>
 
-                        <!-- 3. TABLA DE DISCREPANCIAS -->
-                        <table class="discrepancia-table">
+                        <!-- 2. TABLA DE DISCREPANCIAS -->
+                        <div class="section-title">Detalle de Discrepancias</div>
+                        <table class="disc-table">
                             <thead>
                                 <tr>
-                                    <th rowspan="2" style="width:24%;">Nombre del Residuo</th>
-                                    <th colspan="2" class="th-manifesto" style="width:26%;">LO QUE DECÍA EL MANIFIESTO</th>
-                                    <th colspan="2" class="th-real" style="width:26%;">LO QUE SE RECIBIÓ</th>
-                                    <th rowspan="2" style="width:10%;">Resultado</th>
-                                    <th rowspan="2" style="width:14%;">Observación</th>
+                                    <th rowspan="2" style="width: 24%;">Nombre del Residuo</th>
+                                    <th colspan="2" class="th-manifesto" style="width: 26%;">LO QUE DECÍA EL MANIFIESTO</th>
+                                    <th colspan="2" class="th-real" style="width: 26%;">LO QUE SE RECIBIÓ</th>
+                                    <th rowspan="2" style="width: 10%;">Resultado</th>
+                                    <th rowspan="2" style="width: 14%;">Observación</th>
                                 </tr>
                                 <tr>
                                     <th class="th-manifesto">Cantidad</th>
@@ -244,22 +187,22 @@
                             <tbody>
                                 <t t-foreach="doc.linea_ids" t-as="linea">
                                     <tr t-attf-class="{{ 'row-discrepancia' if linea.tiene_diferencia else 'row-ok' }}">
-                                        <td><t t-esc="linea.nombre_residuo or ''"/></td>
-                                        <td class="center">
+                                        <td class="td-left"><t t-esc="linea.nombre_residuo or ''"/></td>
+                                        <td>
                                             <t t-if="linea.cantidad_manifestada">
                                                 <t t-esc="int(linea.cantidad_manifestada) if linea.cantidad_manifestada == int(linea.cantidad_manifestada) else linea.cantidad_manifestada"/>
                                             </t>
                                             <t t-else="">—</t>
                                         </td>
-                                        <td class="center"><t t-esc="linea.contenedor_manifestado or '—'"/></td>
-                                        <td class="center">
+                                        <td><t t-esc="linea.contenedor_manifestado or '—'"/></td>
+                                        <td>
                                             <t t-if="linea.cantidad_real">
                                                 <t t-esc="int(linea.cantidad_real) if linea.cantidad_real == int(linea.cantidad_real) else linea.cantidad_real"/>
                                             </t>
                                             <t t-else="">—</t>
                                         </td>
-                                        <td class="center"><t t-esc="linea.contenedor_real or '—'"/></td>
-                                        <td class="center">
+                                        <td><t t-esc="linea.contenedor_real or '—'"/></td>
+                                        <td>
                                             <t t-if="linea.tiene_diferencia">
                                                 <span class="badge-diff">
                                                     <t t-esc="dict([
@@ -277,12 +220,12 @@
                                                 <span class="badge-ok">OK</span>
                                             </t>
                                         </td>
-                                        <td><t t-esc="linea.observacion or ''"/></td>
+                                        <td class="td-left"><t t-esc="linea.observacion or ''"/></td>
                                     </tr>
                                 </t>
                                 <t t-if="not doc.linea_ids">
-                                    <tr class="row-empty">
-                                        <td colspan="7" class="center" style="padding: 12px;">
+                                    <tr>
+                                        <td colspan="7" class="text-center" style="padding: 12px; font-style: italic; color: #666;">
                                             Sin líneas de discrepancia registradas
                                         </td>
                                     </tr>
@@ -290,25 +233,42 @@
                             </tbody>
                         </table>
 
-                        <!-- 4. OBSERVACIONES GENERALES -->
-                        <t t-if="doc.observaciones_generales">
-                            <span class="obs-label">Observaciones Generales:</span>
-                            <div class="obs-box">
-                                <t t-esc="doc.observaciones_generales"/>
+                        <!-- 3. OBSERVACIONES Y FIRMA -->
+                        <div class="row mt16">
+                            <div class="col-7">
+                                <div class="section-title">Observaciones Generales</div>
+                                <div style="border: 1px solid #000; min-height: 80px; padding: 5px; font-size: 10px; background-color: #fff;">
+                                    <t t-if="doc.observaciones_generales">
+                                        <t t-esc="doc.observaciones_generales"/>
+                                    </t>
+                                    <span t-else="" style="color: #ccc; font-style: italic;">Sin observaciones adicionales.</span>
+                                </div>
                             </div>
-                        </t>
 
-                        <!-- 5. FIRMA -->
-                        <div class="firma-row">
-                            <div class="firma-col right">
-                                <div class="firma-line">
-                                    <t t-esc="doc.revisado_por or '_______________________'"/>
-                                    <br/>
-                                    <span>Firma y Sello</span>
+                            <div class="col-5">
+                                <div class="section-title text-center">Autorización</div>
+                                <div style="border: 1px solid #000; padding: 0;">
+                                    <div style="height: 60px; border-bottom: 1px dotted #ccc;"></div>
+                                    <div style="text-align: center; font-size: 9px; font-weight: bold; background-color: #f0f0f0; border-bottom: 1px solid #000; padding: 3px;">
+                                        FIRMA DE CONFORMIDAD
+                                    </div>
+                                    <div style="height: 40px; display: flex; align-items: center; justify-content: center; font-size: 9px; color: #555; padding: 4px;">
+                                        <t t-esc="doc.revisado_por or ''"/>
+                                    </div>
+                                    <div style="text-align: center; font-size: 9px; font-weight: bold; background-color: #f0f0f0; padding: 3px;">
+                                        NOMBRE Y SELLO
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
+                        <div class="row mt16">
+                            <div class="col-12 text-center" style="font-size: 8px; color: #666;">
+                                Este documento es un comprobante interno de inspección de residuos peligrosos.
+                            </div>
+                        </div>
+
+                        <div class="oe_structure"/>
                     </div>
                 </t>
             </t>

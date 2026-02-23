@@ -1,13 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- Secuencia para generar automáticamente el número de manifiesto -->
     <record id="seq_manifiesto_ambiental" model="ir.sequence">
         <field name="name">Manifiesto Ambiental</field>
         <field name="code">manifiesto.ambiental</field>
-        <field name="prefix"></field>  <!-- Sin prefijo fijo -->
-        <field name="padding">0</field>  <!-- Sin padding numérico -->
+        <field name="prefix"></field>
+        <field name="padding">0</field>
         <field name="company_id" eval="False"/>
         <field name="use_date_range" eval="False"/>
-        <field name="implementation">no_gap</field>  <!-- Para control manual -->
+        <field name="implementation">no_gap</field>
     </record>
 </odoo>

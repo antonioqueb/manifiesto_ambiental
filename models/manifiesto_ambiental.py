@@ -55,7 +55,15 @@ class ManifiestoAmbiental(models.Model):
         help='Indica si este manifiesto fue creado por una remanifestación'
     )
 
-    # NUEVO CAMPO PARA DOCUMENTO FÍSICO ESCANEADO
+    # NÚMERO DE SECUENCIA INTERNO - nunca editable, solo avanza
+    sequence_number = fields.Integer(
+        string='Número de Secuencia',
+        readonly=True,
+        copy=False,
+        help='Número de secuencia interno. Avanza siempre independientemente del número de manifiesto visible.'
+    )
+
+    # DOCUMENTO FÍSICO ESCANEADO
     documento_fisico = fields.Binary(
         string='Documento Físico Escaneado',
         help='Suba aquí el manifiesto físico escaneado (papel con firmas, sellos, modificaciones manuales, etc.)'
@@ -74,7 +82,7 @@ class ManifiestoAmbiental(models.Model):
     )
 
     # ==============================================================
-    # INTEGRACIÓN CON RECEPCIÓN DE RESIDUOS (NUEVOS CAMPOS)
+    # INTEGRACIÓN CON RECEPCIÓN DE RESIDUOS
     # ==============================================================
     recepcion_ids = fields.One2many(
         'residuo.recepcion',
@@ -94,14 +102,12 @@ class ManifiestoAmbiental(models.Model):
         help='Número de registro ambiental del generador'
     )
     
-    # 2. Núm. de manifiesto - MODIFICADO para control de versiones
+    # 2. Núm. de manifiesto - AHORA EDITABLE, secuencia es interna
     numero_manifiesto = fields.Char(
         string='2. Núm. de manifiesto',
         required=True,
         copy=False,
-        readonly=True,
-        default=lambda self: self.env['ir.sequence'].next_by_code('manifiesto.salida') or 'New',
-        help='Número único del manifiesto (se mantiene igual en todas las versiones)'
+        help='Número del manifiesto. Puede editarse manualmente. La secuencia interna avanza de forma independiente.'
     )
     
     # Campo computado para mostrar número con versión
@@ -119,7 +125,7 @@ class ManifiestoAmbiental(models.Model):
         help='Número de página del manifiesto'
     )
 
-    # 4. GENERADOR - Referencias a partner
+    # 4. GENERADOR
     generador_id = fields.Many2one(
         'res.partner',
         string='Generador',
@@ -140,14 +146,14 @@ class ManifiestoAmbiental(models.Model):
     generador_telefono = fields.Char(string='Teléfono')
     generador_email = fields.Char(string='Correo electrónico')
 
-    # 5. Identificación de los residuos (relación One2many)
+    # 5. Identificación de los residuos
     residuo_ids = fields.One2many(
         'manifiesto.ambiental.residuo',
         'manifiesto_id',
         string='5. Identificación de los residuos'
     )
 
-    # 6. Instrucciones especiales e información adicional para el manejo seguro
+    # 6. Instrucciones especiales
     instrucciones_especiales = fields.Text(
         string='6. Instrucciones especiales e información adicional para el manejo seguro'
     )
@@ -158,16 +164,11 @@ class ManifiestoAmbiental(models.Model):
         default='Declaro bajo protesta de decir verdad que el contenido de este lote está total y correctamente descrito mediante el número de manifiesto, nombre del residuo, características cretib, debidamente envasado y etiquetado y que se han previsto las condiciones de seguridad para su transporte por vía terrestre de acuerdo con la legislación vigente.',
         readonly=True
     )
-    generador_responsable_nombre = fields.Char(
-        string='Nombre y firma del responsable'
-    )
-    generador_fecha = fields.Date(
-        string='Fecha',
-        default=fields.Date.context_today
-    )
+    generador_responsable_nombre = fields.Char(string='Nombre y firma del responsable')
+    generador_fecha = fields.Date(string='Fecha', default=fields.Date.context_today)
     generador_sello = fields.Char(string='Sello')
 
-    # 8. TRANSPORTISTA - Referencias a partner
+    # 8. TRANSPORTISTA
     transportista_id = fields.Many2one(
         'res.partner',
         string='Transportista',
@@ -208,7 +209,7 @@ class ManifiestoAmbiental(models.Model):
         string='12. Núm. de placa'
     )
 
-    # 13. Ruta de la empresa generadora hasta su entrega
+    # 13. Ruta
     ruta_empresa = fields.Text(
         string='13. Ruta de la empresa generadora hasta su entrega'
     )
@@ -219,16 +220,11 @@ class ManifiestoAmbiental(models.Model):
         default='Declaro bajo protesta de decir verdad que recibí los residuos peligrosos descritos en el manifiesto para su transporte a la empresa destinataria señalada por el generador.',
         readonly=True
     )
-    transportista_responsable_nombre = fields.Char(
-        string='Nombre y firma del responsable'
-    )
-    transportista_fecha = fields.Date(
-        string='Fecha',
-        default=fields.Date.context_today
-    )
+    transportista_responsable_nombre = fields.Char(string='Nombre y firma del responsable')
+    transportista_fecha = fields.Date(string='Fecha', default=fields.Date.context_today)
     transportista_sello = fields.Char(string='Sello')
 
-    # 15. DESTINATARIO - Referencias a partner
+    # 15. DESTINATARIO
     destinatario_id = fields.Many2one(
         'res.partner',
         string='Destinatario',
@@ -249,12 +245,12 @@ class ManifiestoAmbiental(models.Model):
     destinatario_telefono = fields.Char(string='Teléfono')
     destinatario_email = fields.Char(string='Correo electrónico')
 
-    # 16. Núm. autorización de la SEMARNAT
+    # 16. Núm. autorización de la SEMARNAT (destinatario)
     numero_autorizacion_semarnat_destinatario = fields.Char(
         string='16. Núm. autorización de la SEMARNAT'
     )
 
-    # 17. Nombre y cargo de la persona que recibe los residuos
+    # 17. Nombre y cargo de la persona que recibe
     nombre_persona_recibe = fields.Char(
         string='17. Nombre y cargo de la persona que recibe los residuos'
     )
@@ -270,13 +266,8 @@ class ManifiestoAmbiental(models.Model):
         default='Declaro bajo protesta de decir verdad que recibí los residuos peligrosos descritos en el manifiesto.',
         readonly=True
     )
-    destinatario_responsable_nombre = fields.Char(
-        string='Nombre y firma del responsable'
-    )
-    destinatario_fecha = fields.Date(
-        string='Fecha',
-        default=fields.Date.context_today
-    )
+    destinatario_responsable_nombre = fields.Char(string='Nombre y firma del responsable')
+    destinatario_fecha = fields.Date(string='Fecha', default=fields.Date.context_today)
     destinatario_sello = fields.Char(string='Sello')
 
     # Campos de control
@@ -300,20 +291,33 @@ class ManifiestoAmbiental(models.Model):
         default=lambda self: self.env.company
     )
 
-    # MÉTODO PARA GENERAR NOMENCLATURA PERSONALIZADA
-    def _generate_manifiesto_number(self, generador_partner, fecha_servicio=None):
+    # =========================================================================
+    # LÓGICA DE NUMERACIÓN
+    # =========================================================================
+
+    def _get_next_sequence_number(self):
+        """
+        Obtiene el siguiente número de secuencia global.
+        Usa MAX directo en BD para evitar duplicados en concurrencia.
+        """
+        self.env.cr.execute(
+            "SELECT COALESCE(MAX(sequence_number), 0) + 1 FROM manifiesto_ambiental"
+        )
+        return self.env.cr.fetchone()[0]
+
+    def _generate_manifiesto_number(self, generador_partner, fecha_servicio=None, sequence_num=None):
         """
         Genera el número de manifiesto con nomenclatura personalizada:
         Iniciales de Razón Social + Fecha (DDMMAAAA)
         Ejemplo: DENSO MEXICO, S.A. DE C.V. -> DM-28042025
+
+        sequence_num se usa como sufijo en caso de colisión de nombre+fecha.
         """
         if not generador_partner:
             raise UserError("Se requiere un generador para crear el número de manifiesto.")
         
-        # Obtener la razón social del generador
         razon_social = generador_partner.name.upper()
         
-        # Extraer las iniciales de la razón social
         palabras_excluir = [
             'S.A.', 'SA', 'S.A', 'DE', 'C.V.', 'CV', 'C.V', 'S.A.P.I.', 'SAPI',
             'S. DE R.L.', 'S.R.L.', 'SRL', 'SOCIEDAD', 'ANONIMA', 'CIVIL',
@@ -321,57 +325,47 @@ class ManifiestoAmbiental(models.Model):
             'LA', 'EL', 'LOS', 'LAS', 'DEL', 'CON', 'SIN', 'PARA', 'POR'
         ]
         
-        # Limpiar la razón social y dividir en palabras
-        razon_limpia = re.sub(r'[^\w\s]', ' ', razon_social)  # Quitar signos de puntuación
+        razon_limpia = re.sub(r'[^\w\s]', ' ', razon_social)
         palabras = razon_limpia.split()
         
-        # Filtrar palabras significativas
-        palabras_significativas = []
-        for palabra in palabras:
-            if palabra not in palabras_excluir and len(palabra) > 1:
-                palabras_significativas.append(palabra)
+        palabras_significativas = [p for p in palabras if p not in palabras_excluir and len(p) > 1]
         
-        # Tomar las primeras letras de las palabras más significativas
         if len(palabras_significativas) >= 2:
             iniciales = palabras_significativas[0][0] + palabras_significativas[1][0]
         elif len(palabras_significativas) == 1:
             iniciales = palabras_significativas[0][:2]
         else:
-            # Fallback: primeras dos letras de la razón social
             iniciales = razon_social[:2]
         
-        # Obtener la fecha del servicio
         if fecha_servicio:
             if isinstance(fecha_servicio, str):
                 from datetime import datetime
                 fecha = datetime.strptime(fecha_servicio, '%Y-%m-%d').date()
             else:
                 fecha = fecha_servicio
-        elif self.generador_fecha:
-            fecha = self.generador_fecha
         else:
             fecha = fields.Date.context_today(self)
 
-        # Formatear fecha como DDMMAAAA
         fecha_str = fecha.strftime('%d%m%Y')
-        
-        # Generar número base
         numero_base = f"{iniciales}-{fecha_str}"
         
-        # Verificar si ya existe y agregar secuencial si es necesario
+        # Verificar colisión de nombre visible
         existing_count = self.env['manifiesto.ambiental'].search_count([
             ('numero_manifiesto', 'like', f'{numero_base}%')
         ])
         
         if existing_count > 0:
-            # Agregar secuencial
-            numero_final = f"{numero_base}-{existing_count + 1:02d}"
+            sufijo = sequence_num if sequence_num else (existing_count + 1)
+            numero_final = f"{numero_base}-{sufijo:02d}"
         else:
             numero_final = numero_base
         
         return numero_final
 
+    # =========================================================================
     # MÉTODOS COMPUTADOS
+    # =========================================================================
+
     @api.depends('numero_manifiesto', 'version')
     def _compute_numero_manifiesto_display(self):
         for record in self:
@@ -392,7 +386,10 @@ class ManifiestoAmbiental(models.Model):
         for rec in self:
             rec.recepcion_count = len(rec.recepcion_ids)
 
-    # MÉTODOS ONCHANGE PARA AUTOCOMPLETAR
+    # =========================================================================
+    # ONCHANGE
+    # =========================================================================
+
     @api.onchange('generador_id')
     def _onchange_generador_id(self):
         if self.generador_id:
@@ -408,56 +405,6 @@ class ManifiestoAmbiental(models.Model):
             self.generador_telefono = self.generador_id.phone or ''
             self.generador_email = self.generador_id.email or ''
 
-    @api.model_create_multi
-    def create(self, vals_list):
-        for vals in vals_list:
-            # Solo generar secuencia si no es una remanifestación y no tiene número
-            if not vals.get('created_by_remanifest') and not vals.get('numero_manifiesto'):
-                # Obtener el generador para crear el número personalizado
-                generador_id = vals.get('generador_id')
-                if generador_id:
-                    generador_partner = self.env['res.partner'].browse(generador_id)
-                    vals['numero_manifiesto'] = self._generate_manifiesto_number(
-                        generador_partner, 
-                        vals.get('generador_fecha')
-                    )
-                else:
-                    # Fallback a secuencia estándar si no hay generador
-                    vals['numero_manifiesto'] = self.env['ir.sequence'].next_by_code('manifiesto.salida') or 'New'
-            
-            # Auto-llenar datos del generador si se proporciona generador_id
-            if vals.get('generador_id'):
-                partner = self.env['res.partner'].browse(vals['generador_id'])
-                # Solo actualizar si el campo no viene ya en vals
-                update_vals = {
-                    'numero_registro_ambiental': partner.numero_registro_ambiental or '',
-                    'generador_nombre': partner.name or '',
-                    'generador_codigo_postal': partner.zip or '',
-                    'generador_calle': partner.street or '',
-                    'generador_num_ext': partner.street_number or '',
-                    'generador_num_int': partner.street_number2 or '',
-                    'generador_colonia': partner.street2 or '',
-                    'generador_municipio': partner.city or '',
-                    'generador_estado': partner.state_id.name if partner.state_id else '',
-                    'generador_telefono': partner.phone or '',
-                    'generador_email': partner.email or '',
-                }
-                # Actualizar vals asegurando no sobrescribir si el usuario envió un valor explícito
-                for key, value in update_vals.items():
-                    if key not in vals:
-                        vals[key] = value
-        
-        # Crear los registros en lote
-        records = super().create(vals_list)
-        
-        # Lógica post-creación para cada registro
-        for record in records:
-            # Si es la primera versión, establecer original_manifiesto_id a sí mismo
-            if not record.original_manifiesto_id:
-                record.original_manifiesto_id = record.id
-        
-        return records
-
     @api.onchange('transportista_id')
     def _onchange_transportista_id(self):
         if self.transportista_id:
@@ -471,7 +418,6 @@ class ManifiestoAmbiental(models.Model):
             self.transportista_estado = self.transportista_id.state_id.name if self.transportista_id.state_id else ''
             self.transportista_telefono = self.transportista_id.phone or ''
             self.transportista_email = self.transportista_id.email or ''
-            # Datos específicos del transportista
             self.numero_autorizacion_semarnat = self.transportista_id.numero_autorizacion_semarnat or ''
             self.numero_permiso_sct = self.transportista_id.numero_permiso_sct or ''
             self.tipo_vehiculo = self.transportista_id.tipo_vehiculo or ''
@@ -490,10 +436,66 @@ class ManifiestoAmbiental(models.Model):
             self.destinatario_estado = self.destinatario_id.state_id.name if self.destinatario_id.state_id else ''
             self.destinatario_telefono = self.destinatario_id.phone or ''
             self.destinatario_email = self.destinatario_id.email or ''
-            # Datos específicos del destinatario
             self.numero_autorizacion_semarnat_destinatario = self.destinatario_id.numero_autorizacion_semarnat or ''
 
-    # MÉTODOS DE ACCIÓN DE ESTADO
+    # =========================================================================
+    # CREATE - LÓGICA CENTRAL DE SECUENCIA
+    # =========================================================================
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        for vals in vals_list:
+            # Solo asignar secuencia y número en manifiestos nuevos (no remanifestaciones)
+            if not vals.get('created_by_remanifest'):
+                # 1. Siempre asignar el siguiente sequence_number interno
+                next_seq = self._get_next_sequence_number()
+                vals['sequence_number'] = next_seq
+
+                # 2. Solo generar numero_manifiesto si no viene ya en vals
+                if not vals.get('numero_manifiesto'):
+                    generador_id = vals.get('generador_id')
+                    if generador_id:
+                        generador_partner = self.env['res.partner'].browse(generador_id)
+                        vals['numero_manifiesto'] = self._generate_manifiesto_number(
+                            generador_partner,
+                            vals.get('generador_fecha'),
+                            next_seq
+                        )
+                    else:
+                        vals['numero_manifiesto'] = str(next_seq)
+            
+            # Auto-llenar datos del generador si se proporciona generador_id
+            if vals.get('generador_id'):
+                partner = self.env['res.partner'].browse(vals['generador_id'])
+                update_vals = {
+                    'numero_registro_ambiental': partner.numero_registro_ambiental or '',
+                    'generador_nombre': partner.name or '',
+                    'generador_codigo_postal': partner.zip or '',
+                    'generador_calle': partner.street or '',
+                    'generador_num_ext': partner.street_number or '',
+                    'generador_num_int': partner.street_number2 or '',
+                    'generador_colonia': partner.street2 or '',
+                    'generador_municipio': partner.city or '',
+                    'generador_estado': partner.state_id.name if partner.state_id else '',
+                    'generador_telefono': partner.phone or '',
+                    'generador_email': partner.email or '',
+                }
+                for key, value in update_vals.items():
+                    if key not in vals:
+                        vals[key] = value
+        
+        records = super().create(vals_list)
+        
+        for record in records:
+            if not record.original_manifiesto_id:
+                record.original_manifiesto_id = record.id
+        
+        return records
+
+    # =========================================================================
+    # ACCIONES DE ESTADO
+    # =========================================================================
+
     def action_confirm(self):
         for rec in self:
             rec.state = 'confirmed'
@@ -510,9 +512,9 @@ class ManifiestoAmbiental(models.Model):
         for rec in self:
             rec.state = 'cancel'
 
-    # ---------------------------------------------------------
+    # =========================================================================
     # INTEGRACIÓN CON RECEPCIÓN DE RESIDUOS
-    # ---------------------------------------------------------
+    # =========================================================================
     
     def action_recibir_residuos(self):
         """Genera Recepción de Residuos propagando CRETIB desde el manifiesto."""
@@ -532,7 +534,6 @@ class ManifiestoAmbiental(models.Model):
                 'product_id': False,
                 'cantidad': residuo.cantidad,
                 'lote_asignado': self.numero_manifiesto,
-                # --- CRETIB propagado desde manifiesto (editable en recepción) ---
                 'clasificacion_corrosivo': residuo.clasificacion_corrosivo,
                 'clasificacion_reactivo': residuo.clasificacion_reactivo,
                 'clasificacion_explosivo': residuo.clasificacion_explosivo,
@@ -566,7 +567,6 @@ class ManifiestoAmbiental(models.Model):
         except Exception as e:
             raise UserError(_("Error al crear la recepción: %s") % str(e))
     
-    
     def action_view_recepciones(self):
         """Abre la vista de recepciones asociadas"""
         self.ensure_one()
@@ -579,14 +579,16 @@ class ManifiestoAmbiental(models.Model):
             'context': {'default_manifiesto_id': self.id},
         }
 
-    # MÉTODOS DE REMANIFESTACIÓN - VERSIÓN CORREGIDA
+    # =========================================================================
+    # REMANIFESTACIÓN
+    # =========================================================================
+
     def action_remanifestar(self):
         """
-        Acción para remanifestar con PDF - VERSIÓN CORREGIDA
+        Acción para remanifestar con PDF
         """
         self.ensure_one()
         
-        # Validaciones
         if not self.is_current_version:
             raise UserError("Solo se puede remanifestar la versión actual del manifiesto.")
         
@@ -606,7 +608,6 @@ class ManifiestoAmbiental(models.Model):
             # 4. Desactivar versión actual anterior
             self._deactivate_current_version()
             
-            # 5. Mensaje informativo y redirección
             return {
                 'type': 'ir.actions.act_window',
                 'res_model': 'manifiesto.ambiental',
@@ -624,11 +625,10 @@ class ManifiestoAmbiental(models.Model):
 
     def action_remanifestar_sin_pdf(self):
         """
-        Acción para remanifestar SIN generar PDF - MÉTODO ALTERNATIVO
+        Acción para remanifestar SIN generar PDF
         """
         self.ensure_one()
         
-        # Validaciones
         if not self.is_current_version:
             raise UserError("Solo se puede remanifestar la versión actual del manifiesto.")
         
@@ -648,7 +648,6 @@ class ManifiestoAmbiental(models.Model):
             # 4. Desactivar versión actual anterior
             self._deactivate_current_version()
             
-            # 5. Mensaje informativo y redirección
             return {
                 'type': 'ir.actions.act_window',
                 'res_model': 'manifiesto.ambiental',
@@ -666,20 +665,16 @@ class ManifiestoAmbiental(models.Model):
 
     def _generate_current_pdf_corregido(self):
         """
-        Genera el PDF de la versión actual - VERSIÓN CORREGIDA PARA ODOO 18
+        Genera el PDF de la versión actual - VERSIÓN CORREGIDA PARA ODOO 18/19
         """
         try:
-            # Validar datos requeridos antes de generar PDF
             self._validate_required_data()
             
-            # Recargar el registro para asegurar datos frescos
             self.env.cr.commit()
             current_record = self.sudo().browse(self.id)
             
-            # Buscar el reporte de manera más específica
             report = None
             try:
-                # Intentar diferentes formas de encontrar el reporte
                 report = self.env.ref('manifiesto_ambiental.action_report_manifiesto_ambiental')
             except:
                 try:
@@ -693,13 +688,11 @@ class ManifiestoAmbiental(models.Model):
             if not report:
                 raise UserError("No se encontró el reporte PDF del manifiesto. Verifique la configuración.")
             
-            # Limpiar contexto para evitar conflictos - CORREGIDO PARA ODOO 18
             clean_context = {
                 'lang': self.env.user.lang or 'es_ES',
                 'tz': self.env.user.tz or 'UTC',
             }
             
-            # Generar el reporte PDF con contexto limpio - ODOO 18 compatible
             pdf_content, format_type = report.sudo().with_context(clean_context)._render_qweb_pdf(
                 report.report_name,
                 res_ids=[current_record.id],
@@ -709,7 +702,6 @@ class ManifiestoAmbiental(models.Model):
             if not pdf_content:
                 raise UserError("El contenido del PDF generado está vacío.")
             
-            # Codificar en base64
             pdf_data = base64.b64encode(pdf_content)
             
             _logger.info(f"PDF generado exitosamente para manifiesto {current_record.numero_manifiesto} versión {current_record.version}")
@@ -718,7 +710,6 @@ class ManifiestoAmbiental(models.Model):
         except Exception as e:
             _logger.error(f"Error generando PDF para manifiesto {self.numero_manifiesto}: {str(e)}")
             
-            # Mensajes de error más específicos
             if "'list' object has no attribute 'split'" in str(e):
                 raise UserError("Error en los datos del manifiesto. Verifique que todos los campos de texto estén correctamente completados.")
             elif "unhashable type: 'list'" in str(e):
@@ -736,7 +727,6 @@ class ManifiestoAmbiental(models.Model):
         """
         errors = []
         
-        # Validar campos básicos
         if not self.numero_manifiesto:
             errors.append("Número de manifiesto")
         if not self.generador_nombre:
@@ -746,7 +736,6 @@ class ManifiestoAmbiental(models.Model):
         if not self.destinatario_nombre:
             errors.append("Nombre del destinatario")
         
-        # Validar que los campos de texto no sean listas
         text_fields = [
             'numero_registro_ambiental', 'generador_nombre', 'generador_calle',
             'transportista_nombre', 'transportista_calle', 'destinatario_nombre',
@@ -758,7 +747,6 @@ class ManifiestoAmbiental(models.Model):
             if isinstance(value, (list, tuple)):
                 errors.append(f"Campo {field_name} tiene formato incorrecto")
         
-        # Validar residuos
         if not self.residuo_ids:
             errors.append("Debe tener al menos un residuo")
         
@@ -777,7 +765,6 @@ class ManifiestoAmbiental(models.Model):
             'tiene_documento_fisico': self.tiene_documento_fisico,
             'documento_fisico_filename': self.documento_fisico_filename or '',
             
-            # Datos del generador
             'generador': {
                 'numero_registro': self.numero_registro_ambiental or '',
                 'nombre': self.generador_nombre or '',
@@ -798,7 +785,6 @@ class ManifiestoAmbiental(models.Model):
                 'fecha': str(self.generador_fecha) if self.generador_fecha else '',
             },
             
-            # Datos del transportista
             'transportista': {
                 'nombre': self.transportista_nombre or '',
                 'autorizacion_semarnat': self.numero_autorizacion_semarnat or '',
@@ -811,7 +797,6 @@ class ManifiestoAmbiental(models.Model):
                 'fecha': str(self.transportista_fecha) if self.transportista_fecha else '',
             },
             
-            # Datos del destinatario
             'destinatario': {
                 'nombre': self.destinatario_nombre or '',
                 'autorizacion_semarnat': self.numero_autorizacion_semarnat_destinatario or '',
@@ -821,11 +806,9 @@ class ManifiestoAmbiental(models.Model):
                 'fecha': str(self.destinatario_fecha) if self.destinatario_fecha else '',
             },
             
-            # Residuos
             'residuos': []
         }
         
-        # Agregar residuos
         for residuo in self.residuo_ids:
             residuo_data = {
                 'nombre': residuo.nombre_residuo or '',
@@ -847,26 +830,21 @@ class ManifiestoAmbiental(models.Model):
         Guarda la versión actual en el historial con datos estructurados
         """
         try:
-            # Convertir datos a texto formateado
             data_text = self._format_data_as_text(data_estructurados)
             data_encoded = base64.b64encode(data_text.encode('utf-8'))
             
             version_data = {
                 'manifiesto_id': self.original_manifiesto_id.id,
                 'version_number': self.version,
-                'data_file': data_encoded,  # ← CORREGIDO: DATOS VAN EN data_file
-                'data_filename': f"Manifiesto_{self.numero_manifiesto}_v{self.version}_datos.txt",  # ← CORREGIDO: usar data_filename
+                'data_file': data_encoded,
+                'data_filename': f"Manifiesto_{self.numero_manifiesto}_v{self.version}_datos.txt",
                 'creation_date': fields.Datetime.now(),
                 'created_by': self.env.user.id,
                 'state_at_creation': self.state,
                 'change_reason': self.change_reason or f"Versión {self.version} guardada antes de remanifestación",
-                
-                # Guardar documento físico si existe
                 'documento_fisico_original': self.documento_fisico,
                 'documento_fisico_filename_original': self.documento_fisico_filename,
                 'tenia_documento_fisico': self.tiene_documento_fisico,
-                
-                # Datos de referencia
                 'generador_nombre': self.generador_nombre or '',
                 'transportista_nombre': self.transportista_nombre or '',
                 'destinatario_nombre': self.destinatario_nombre or '',
@@ -948,19 +926,15 @@ RESIDUOS
             version_data = {
                 'manifiesto_id': self.original_manifiesto_id.id,
                 'version_number': self.version,
-                'pdf_file': pdf_data,  # PDFs VAN EN pdf_file
-                'pdf_filename': f"Manifiesto_{self.numero_manifiesto}_v{self.version}.pdf",  # Nombre archivo PDF
+                'pdf_file': pdf_data,
+                'pdf_filename': f"Manifiesto_{self.numero_manifiesto}_v{self.version}.pdf",
                 'creation_date': fields.Datetime.now(),
                 'created_by': self.env.user.id,
                 'state_at_creation': self.state,
                 'change_reason': self.change_reason or f"Versión {self.version} guardada antes de remanifestación",
-                
-                # Guardar documento físico si existe
                 'documento_fisico_original': self.documento_fisico,
                 'documento_fisico_filename_original': self.documento_fisico_filename,
                 'tenia_documento_fisico': self.tiene_documento_fisico,
-                
-                # Guardar datos principales para referencia histórica
                 'generador_nombre': self.generador_nombre or '',
                 'transportista_nombre': self.transportista_nombre or '',
                 'destinatario_nombre': self.destinatario_nombre or '',
@@ -979,18 +953,10 @@ RESIDUOS
         Crea una nueva versión del manifiesto basada en la actual
         """
         try:
-            # Calcular siguiente número de versión
             next_version = self.version + 1
-            
-            # Preparar datos para la nueva versión
             new_vals = self._prepare_version_data(next_version)
-            
-            # Crear la nueva versión
             new_version = self.create(new_vals)
-            
-            # Copiar residuos a la nueva versión
             self._copy_residuos_to_version(new_version)
-            
             _logger.info(f"Nueva versión {next_version} creada para manifiesto {self.numero_manifiesto}")
             return new_version
             
@@ -1002,39 +968,36 @@ RESIDUOS
         """
         Prepara los datos para crear una nueva versión
         """
-        # Excluir campos que no deben copiarse
         exclude_fields = {
             'id', 'create_date', 'create_uid', 'write_date', 'write_uid',
             'version_history_ids', 'residuo_ids', '__last_update',
             'display_name'
         }
         
-        # Copiar todos los campos excepto los excluidos
         new_vals = {}
         for field_name, field in self._fields.items():
             if field_name not in exclude_fields:
                 if hasattr(self, field_name):
                     value = getattr(self, field_name)
-                    # Manejar campos relacionales
                     if field.type == 'many2one' and value:
                         new_vals[field_name] = value.id
                     elif field.type not in ['one2many', 'many2many']:
-                        # Asegurar que los valores sean del tipo correcto
                         if isinstance(value, (list, tuple)) and value:
                             new_vals[field_name] = str(value[0]) if value[0] else ''
                         else:
                             new_vals[field_name] = value
         
-        # Configurar campos específicos de la nueva versión
         new_vals.update({
             'version': next_version,
             'is_current_version': True,
             'created_by_remanifest': True,
             'change_reason': '',
             'state': 'draft',
-            # Limpiar documento físico en nueva versión para que se suba uno nuevo
             'documento_fisico': False,
             'documento_fisico_filename': False,
+            # Mantener el mismo numero_manifiesto y sequence_number del original
+            'numero_manifiesto': self.numero_manifiesto,
+            'sequence_number': self.sequence_number,
         })
         
         return new_vals
@@ -1080,11 +1043,12 @@ RESIDUOS
             _logger.error(f"Error desactivando versión actual: {str(e)}")
             raise UserError(f"Error al desactivar la versión actual: {str(e)}")
 
-    # MÉTODOS DE NAVEGACIÓN DE VERSIONES
+    # =========================================================================
+    # NAVEGACIÓN DE VERSIONES
+    # =========================================================================
+
     def action_view_version_history(self):
-        """
-        Acción para ver el historial de versiones
-        """
+        """Ver el historial de versiones"""
         return {
             'name': f'Historial de Versiones - {self.numero_manifiesto}',
             'type': 'ir.actions.act_window',
@@ -1095,9 +1059,7 @@ RESIDUOS
         }
 
     def action_view_current_version(self):
-        """
-        Navegar a la versión actual del manifiesto
-        """
+        """Navegar a la versión actual del manifiesto"""
         current_version = self.search([
             ('original_manifiesto_id', '=', self.original_manifiesto_id.id),
             ('is_current_version', '=', True)
@@ -1113,9 +1075,7 @@ RESIDUOS
             }
 
     def action_view_all_versions(self):
-        """
-        Ver todas las versiones del manifiesto
-        """
+        """Ver todas las versiones del manifiesto"""
         return {
             'name': f'Todas las Versiones - {self.numero_manifiesto}',
             'type': 'ir.actions.act_window',
@@ -1137,7 +1097,6 @@ class ManifiestoAmbientalResiduo(models.Model):
         ondelete='cascade'
     )
     
-    # PRODUCTO - Campo principal para seleccionar productos de residuos peligrosos
     product_id = fields.Many2one(
         'product.product',
         string='Producto/Residuo',
@@ -1149,14 +1108,12 @@ class ManifiestoAmbientalResiduo(models.Model):
         required=True
     )
     
-    # NUEVO: Tipo de residuo (RSU, RME, RP) - CORREGIDO A INGLÉS PARA COINCIDIR CON VIEW
     residue_type = fields.Selection(
         [('rsu', 'RSU'), ('rme', 'RME'), ('rp', 'RP')],
         string='Tipo de Residuo',
-        help='Clasificación general del residuo (propio de la orden de servicio)'
+        help='Clasificación general del residuo'
     )
 
-    # Campos de clasificación CRETIB (múltiples selecciones)
     clasificacion_corrosivo = fields.Boolean(string='Corrosivo (C)')
     clasificacion_reactivo = fields.Boolean(string='Reactivo (R)')
     clasificacion_explosivo = fields.Boolean(string='Explosivo (E)')
@@ -1164,7 +1121,6 @@ class ManifiestoAmbientalResiduo(models.Model):
     clasificacion_inflamable = fields.Boolean(string='Inflamable (I)')
     clasificacion_biologico = fields.Boolean(string='Biológico (B)')
     
-    # Campo computado para mostrar clasificaciones
     clasificaciones_display = fields.Char(
         string='Clasificaciones CRETIB',
         compute='_compute_clasificaciones_display',
@@ -1183,19 +1139,16 @@ class ManifiestoAmbientalResiduo(models.Model):
         ('otro', 'Otro'),
     ], string='Tipo de Envase')
     
-    # NUEVO: Unidad de Embalaje (Propagado desde Service Order Line -> packaging_id)
     packaging_id = fields.Many2one(
         'uom.uom', 
         string='Unidad de Embalaje',
-        help='Tipo de embalaje o presentación del residuo (ej. Tambor 200L)'
+        help='Tipo de embalaje o presentación del residuo'
     )
 
-    # --- CAMBIO IMPORTANTE: Float -> Char para compatibilidad con Service Order ---
     envase_capacidad = fields.Char(
         string='Capacidad',
         help='Capacidad del envase (ej: 200 L, 50 Kg)'
     )
-    # --------------------------------------------------------------------------
     
     cantidad = fields.Float(
         string='Cantidad (kg)',
@@ -1203,24 +1156,15 @@ class ManifiestoAmbientalResiduo(models.Model):
         help='Cantidad siempre en kilogramos'
     )
     
-    # Unidad fija en kg
     unidad = fields.Char(
         string='Unidad',
         default='kg',
         readonly=True
     )
     
-    etiqueta_si = fields.Boolean(
-        string='Etiqueta - Sí',
-        default=True
-    )
+    etiqueta_si = fields.Boolean(string='Etiqueta - Sí', default=True)
+    etiqueta_no = fields.Boolean(string='Etiqueta - No', default=False)
     
-    etiqueta_no = fields.Boolean(
-        string='Etiqueta - No',
-        default=False
-    )
-    
-    # Campo para el lote generado automáticamente
     lot_id = fields.Many2one(
         'stock.lot',
         string='Número de Lote',
@@ -1251,12 +1195,8 @@ class ManifiestoAmbientalResiduo(models.Model):
     def _onchange_product_id(self):
         """Autocompletar campos basados en el producto seleccionado"""
         if self.product_id:
-            # Verificar que sea producto de residuo peligroso
             if hasattr(self.product_id, 'es_residuo_peligroso') and self.product_id.es_residuo_peligroso:
-                # Autocompletar nombre del residuo
                 self.nombre_residuo = self.product_id.name
-                
-                # Autocompletar clasificaciones CRETIB del producto
                 if hasattr(self.product_id, 'clasificacion_corrosivo'):
                     self.clasificacion_corrosivo = self.product_id.clasificacion_corrosivo
                 if hasattr(self.product_id, 'clasificacion_reactivo'):
@@ -1269,16 +1209,12 @@ class ManifiestoAmbientalResiduo(models.Model):
                     self.clasificacion_inflamable = self.product_id.clasificacion_inflamable
                 if hasattr(self.product_id, 'clasificacion_biologico'):
                     self.clasificacion_biologico = self.product_id.clasificacion_biologico
-                
-                # Autocompletar información del envase
                 if hasattr(self.product_id, 'envase_tipo_default'):
                     self.envase_tipo = self.product_id.envase_tipo_default
                 if hasattr(self.product_id, 'envase_capacidad_default'):
-                    # Convertir a String para el nuevo campo Char
                     val = self.product_id.envase_capacidad_default
                     self.envase_capacidad = str(val) if val else ''
             else:
-                # Si no es residuo peligroso, solo el nombre
                 self.nombre_residuo = self.product_id.name
 
     @api.onchange('etiqueta_si')
@@ -1291,26 +1227,17 @@ class ManifiestoAmbientalResiduo(models.Model):
         if self.etiqueta_no:
             self.etiqueta_si = False
 
-    # =========================================================================
-    # CORRECCIÓN IMPORTANTE AQUÍ: create_multi y bucle en _create_lot_for_residuo
-    # =========================================================================
     @api.model_create_multi
     def create(self, vals_list):
         """Crear automáticamente el lote al crear el residuo"""
-        # Crear registros (posiblemente múltiples)
         records = super().create(vals_list)
-        
-        # Llamar al método de creación de lote (que ahora maneja iteración interna)
         records._create_lot_for_residuo()
-        
         return records
 
     def _create_lot_for_residuo(self):
         """Crear lote automáticamente usando el número de manifiesto"""
-        # Se agrega el bucle 'for record in self' para manejar Singletons o RecordSets
         for record in self:
             if record.product_id and record.manifiesto_id.numero_manifiesto:
-                # Buscar si ya existe un lote con este nombre para este producto
                 existing_lot = self.env['stock.lot'].search([
                     ('name', '=', record.manifiesto_id.numero_manifiesto),
                     ('product_id', '=', record.product_id.id),
@@ -1318,7 +1245,6 @@ class ManifiestoAmbientalResiduo(models.Model):
                 ], limit=1)
                 
                 if not existing_lot:
-                    # Crear nuevo lote
                     lot_vals = {
                         'name': record.manifiesto_id.numero_manifiesto,
                         'product_id': record.product_id.id,
@@ -1339,7 +1265,6 @@ class ManifiestoAmbientalVersion(models.Model):
     _order = 'creation_date desc, version_number desc'
     _rec_name = 'display_name'
 
-    # Relación con el manifiesto original
     manifiesto_id = fields.Many2one(
         'manifiesto.ambiental',
         string='Manifiesto Original',
@@ -1348,7 +1273,6 @@ class ManifiestoAmbientalVersion(models.Model):
         help='Referencia al manifiesto original (versión 1)'
     )
     
-    # Información de la versión
     version_number = fields.Integer(
         string='Número de Versión',
         required=True,
@@ -1362,10 +1286,10 @@ class ManifiestoAmbientalVersion(models.Model):
         help='Nombre de visualización de la versión'
     )
     
-    # Archivos PDF - SEPARADOS CORRECTAMENTE
+    # Archivos PDF
     pdf_file = fields.Binary(
         string='Archivo PDF',
-        help='PDF de esta versión del manifiesto (solo para remanifestaciones con PDF)'
+        help='PDF de esta versión del manifiesto'
     )
     
     pdf_filename = fields.Char(
@@ -1373,10 +1297,10 @@ class ManifiestoAmbientalVersion(models.Model):
         help='Nombre del archivo PDF'
     )
     
-    # Archivos de datos estructurados (TXT) - SEPARADOS CORRECTAMENTE
+    # Archivos de datos estructurados
     data_file = fields.Binary(
         string='Archivo de Datos',
-        help='Datos estructurados de esta versión del manifiesto (solo para remanifestaciones sin PDF)'
+        help='Datos estructurados de esta versión del manifiesto'
     )
     
     data_filename = fields.Char(
@@ -1384,7 +1308,7 @@ class ManifiestoAmbientalVersion(models.Model):
         help='Nombre del archivo de datos estructurados'
     )
     
-    # Campos para documento físico histórico
+    # Documento físico histórico
     documento_fisico_original = fields.Binary(
         string='Documento Físico Original',
         help='Documento físico escaneado que tenía esta versión del manifiesto'
@@ -1400,7 +1324,7 @@ class ManifiestoAmbientalVersion(models.Model):
         help='Indica si esta versión histórica tenía un documento físico escaneado'
     )
     
-    # Metadatos de la versión
+    # Metadatos
     creation_date = fields.Datetime(
         string='Fecha de Creación',
         required=True,
@@ -1429,26 +1353,11 @@ class ManifiestoAmbientalVersion(models.Model):
         help='Razón por la cual se guardó esta versión'
     )
     
-    # Datos de referencia para vista rápida
-    generador_nombre = fields.Char(
-        string='Generador',
-        help='Nombre del generador en esta versión'
-    )
-    
-    transportista_nombre = fields.Char(
-        string='Transportista',
-        help='Nombre del transportista en esta versión'
-    )
-    
-    destinatario_nombre = fields.Char(
-        string='Destinatario',
-        help='Nombre del destinatario en esta versión'
-    )
-    
-    total_residuos = fields.Integer(
-        string='Total de Residuos',
-        help='Cantidad de residuos en esta versión'
-    )
+    # Datos de referencia
+    generador_nombre = fields.Char(string='Generador')
+    transportista_nombre = fields.Char(string='Transportista')
+    destinatario_nombre = fields.Char(string='Destinatario')
+    total_residuos = fields.Integer(string='Total de Residuos')
 
     @api.depends('manifiesto_id.numero_manifiesto', 'version_number', 'creation_date')
     def _compute_display_name(self):
@@ -1462,7 +1371,7 @@ class ManifiestoAmbientalVersion(models.Model):
 
     def get_available_file_info(self):
         """
-        Determinar qué tipo de archivo tiene disponible esta versión - CORREGIDO
+        Determinar qué tipo de archivo tiene disponible esta versión
         """
         if self.pdf_file and self.pdf_filename:
             return {
@@ -1494,7 +1403,7 @@ class ManifiestoAmbientalVersion(models.Model):
 
     def action_download_file(self):
         """
-        Acción para descargar el archivo de esta versión (PDF o datos) - CORREGIDA
+        Acción para descargar el archivo de esta versión
         """
         file_info = self.get_available_file_info()
         
@@ -1509,7 +1418,7 @@ class ManifiestoAmbientalVersion(models.Model):
 
     def action_view_file(self):
         """
-        Acción para visualizar el archivo de esta versión (PDF o datos) - CORREGIDA
+        Acción para visualizar el archivo de esta versión
         """
         file_info = self.get_available_file_info()
         

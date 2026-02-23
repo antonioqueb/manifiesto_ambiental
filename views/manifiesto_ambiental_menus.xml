@@ -34,4 +34,10 @@
               parent="menu_manifiesto_ambiental_root"
               sequence="90"/>
 
+    <menuitem id="menu_manifiesto_discrepancia"
+          name="Discrepancias"
+          parent="menu_manifiesto_ambiental_root"
+          action="action_manifiesto_discrepancia"
+          sequence="40"/>
+
 </odoo>

@@ -78,6 +78,14 @@
         <field name="arch" type="xml">
             <form string="Manifiesto Ambiental">
                 <header>
+                    <!-- BOTÓN AGREGADO: Reportar Discrepancias -->
+                    <!-- Precarga los datos y permite reportar diferencias -->
+                    <button name="action_crear_discrepancia"
+                            string="⚠️ Reportar Discrepancias"
+                            type="object"
+                            class="btn-warning"
+                            invisible="state not in ['in_transit', 'delivered'] or not is_current_version"/>
+
                     <button name="action_recibir_residuos"
                             string="📥 Recibir Residuos"
                             type="object"
@@ -140,6 +148,15 @@
                 <sheet>
                     <!-- SMART BUTTONS -->
                     <div class="oe_button_box" name="button_box">
+                        <!-- BOTÓN AGREGADO: Ver Discrepancias -->
+                        <button name="action_view_discrepancias"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-exclamation-triangle"
+                                invisible="discrepancia_count == 0">
+                            <field name="discrepancia_count" widget="statinfo" string="Discrepancias"/>
+                        </button>
+
                         <button name="action_view_recepciones"
                                 type="object"
                                 class="oe_stat_button"

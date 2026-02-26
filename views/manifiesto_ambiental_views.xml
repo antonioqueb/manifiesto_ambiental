@@ -165,31 +165,27 @@
                             </div>
                         </button>
 
-                        <!-- Documento físico: botón clicable que abre la pestaña de documento físico -->
-                        <button name="action_view_documento_fisico_tab"
-                                type="object"
-                                class="oe_stat_button"
-                                icon="fa-file-pdf-o">
+                        <!-- Documento físico (informativo) -->
+                        <div class="oe_stat_button" style="pointer-events: none;">
+                            <i class="fa fa-file-pdf-o" style="font-size:16px; margin-right:4px;"/>
                             <div class="o_field_widget o_stat_info">
                                 <span class="o_stat_value">
                                     <field name="tiene_documento_fisico" widget="boolean"/>
                                 </span>
                                 <span class="o_stat_text">Doc. Físico</span>
                             </div>
-                        </button>
+                        </div>
 
-                        <!-- Secuencia interna -->
-                        <button name="%(action_manifiesto_ambiental_all_versions)d"
-                                type="action"
-                                class="oe_stat_button"
-                                icon="fa-hashtag">
+                        <!-- Secuencia interna (informativo) -->
+                        <div class="oe_stat_button" style="pointer-events: none;">
+                            <i class="fa fa-hashtag" style="font-size:16px; margin-right:4px;"/>
                             <div class="o_field_widget o_stat_info">
                                 <span class="o_stat_value">
                                     <field name="sequence_number" readonly="1"/>
                                 </span>
                                 <span class="o_stat_text">Sec. Interna</span>
                             </div>
-                        </button>
+                        </div>
                     </div>
 
                     <!-- Alerta versión -->

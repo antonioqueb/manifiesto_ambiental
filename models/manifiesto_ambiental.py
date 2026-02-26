@@ -1111,3 +1111,11 @@ class ManifiestoAmbientalVersion(models.Model):
         if any(v.version_number == 1 for v in self):
             raise UserError("No se puede eliminar la versión 1 (original) del manifiesto.")
         return super().unlink()
+
+    def action_open_documento_fisico(self):
+        """Stat button - indica si tiene documento físico adjunto"""
+        return False
+
+    def action_open_secuencia(self):
+        """Stat button - muestra número de secuencia interna"""
+        return False

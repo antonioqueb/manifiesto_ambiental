@@ -164,7 +164,7 @@ class ServiceOrder(models.Model):
             'transportista_email': self.transportista_id.email if self.transportista_id else '',
             'numero_autorizacion_semarnat': self.transportista_id.numero_autorizacion_semarnat if self.transportista_id else '',
             'numero_permiso_sct': self.transportista_id.numero_permiso_sct if self.transportista_id else '',
-            'tipo_vehiculo': self.camion or (self.transportista_id.tipo_vehiculo if self.transportista_id else ''),
+            'tipo_vehiculo': self.vehicle_id.name or (self.transportista_id.tipo_vehiculo if self.transportista_id else ''),
             'numero_placa': self.numero_placa or (self.transportista_id.numero_placa if self.transportista_id else ''),
             'transportista_responsable_nombre': trans_resp_nombre,
             'transportista_fecha': fecha_servicio,

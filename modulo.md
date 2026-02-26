@@ -1981,7 +1981,7 @@ class ServiceOrder(models.Model):
             'transportista_email': self.transportista_id.email if self.transportista_id else '',
             'numero_autorizacion_semarnat': self.transportista_id.numero_autorizacion_semarnat if self.transportista_id else '',
             'numero_permiso_sct': self.transportista_id.numero_permiso_sct if self.transportista_id else '',
-            'tipo_vehiculo': self.camion or (self.transportista_id.tipo_vehiculo if self.transportista_id else ''),
+            'tipo_vehiculo': self.vehicle_id.name or (self.transportista_id.tipo_vehiculo if self.transportista_id else ''),
             'numero_placa': self.numero_placa or (self.transportista_id.numero_placa if self.transportista_id else ''),
             'transportista_responsable_nombre': trans_resp_nombre,
             'transportista_fecha': fecha_servicio,
@@ -2873,6 +2873,14 @@ class ServiceOrder(models.Model):
         <field name="arch" type="xml">
             <form string="Manifiesto Ambiental">
                 <header>
+                    <!-- BOTÓN AGREGADO: Reportar Discrepancias -->
+                    <!-- Precarga los datos y permite reportar diferencias -->
+                    <button name="action_crear_discrepancia"
+                            string="⚠️ Reportar Discrepancias"
+                            type="object"
+                            class="btn-warning"
+                            invisible="state not in ['in_transit', 'delivered'] or not is_current_version"/>
+
                     <button name="action_recibir_residuos"
                             string="📥 Recibir Residuos"
                             type="object"
@@ -2935,6 +2943,15 @@ class ServiceOrder(models.Model):
                 <sheet>
                     <!-- SMART BUTTONS -->
                     <div class="oe_button_box" name="button_box">
+                        <!-- BOTÓN AGREGADO: Ver Discrepancias -->
+                        <button name="action_view_discrepancias"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-exclamation-triangle"
+                                invisible="discrepancia_count == 0">
+                            <field name="discrepancia_count" widget="statinfo" string="Discrepancias"/>
+                        </button>
+
                         <button name="action_view_recepciones"
                                 type="object"
                                 class="oe_stat_button"

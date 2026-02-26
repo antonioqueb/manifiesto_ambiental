@@ -170,7 +170,6 @@
                         <table>
                             <!-- Definir anchos de columna para consistencia -->
                             <colgroup>
-                                <col style="width:5%"/>  <!-- Tipo -->
                                 <col style="width:25%"/> <!-- Nombre -->
                                 <col style="width:3%"/>  <!-- C -->
                                 <col style="width:3%"/>  <!-- R -->
@@ -187,10 +186,9 @@
                             </colgroup>
 
                             <tr>
-                                <th colspan="14" class="header-table">5. Identificación de los residuos</th>
+                                <th colspan="13" class="header-table">5. Identificación de los residuos</th>
                             </tr>
                             <tr>
-                                <th class="header-table">Tipo</th>
                                 <th class="header-table">Nombre del residuo</th>
                                 <th class="header-table" colspan="7">Clasificación</th>
                                 <th class="header-table" colspan="2">Envase</th>
@@ -198,7 +196,6 @@
                                 <th class="header-table" colspan="2">Etiqueta</th>
                             </tr>
                             <tr>
-                                <th class="header-table"></th>
                                 <th class="header-table"></th>
                                 <th class="header-table">C</th>
                                 <th class="header-table">R</th>
@@ -217,13 +214,8 @@
                             <!-- Filas con datos -->
                             <t t-foreach="doc.residuo_ids" t-as="residuo">
                                 <tr>
-                                    <!-- Nueva Columna: TIPO -->
-                                    <td class="center-text">
-                                        <span t-if="residuo.residue_type" t-field="residuo.residue_type" style="text-transform: uppercase;"/>
-                                    </td>
-                                    
                                     <td><span t-field="residuo.nombre_residuo"/></td>
-                                    
+
                                     <td class="center-text"><span t-if="residuo.clasificacion_corrosivo">X</span></td>
                                     <td class="center-text"><span t-if="residuo.clasificacion_reactivo">X</span></td>
                                     <td class="center-text"><span t-if="residuo.clasificacion_explosivo">X</span></td>
@@ -231,13 +223,13 @@
                                     <td class="center-text"><span t-if="residuo.clasificacion_inflamable">X</span></td>
                                     <td class="center-text"><span t-if="residuo.clasificacion_biologico">X</span></td>
                                     <td class="center-text"></td>
-                                    
+
                                     <!-- Columna Embalaje: Packaging ID o Envase Tipo -->
                                     <td class="center-text">
                                         <span t-if="residuo.packaging_id" t-field="residuo.packaging_id.name"/>
                                         <span t-elif="residuo.envase_tipo" t-field="residuo.envase_tipo"/>
                                     </td>
-                                    
+
                                     <td class="center-text"><span t-field="residuo.envase_capacidad"/></td>
                                     <td class="center-text"><span t-field="residuo.cantidad"/> kg</td>
                                     <td class="center-text"><span t-if="residuo.etiqueta_si">X</span></td>
@@ -253,7 +245,7 @@
                                 <tr style="height: 22px;">
                                     <td>&#160;</td><td>&#160;</td><td>&#160;</td><td>&#160;</td><td>&#160;</td>
                                     <td>&#160;</td><td>&#160;</td><td>&#160;</td><td>&#160;</td><td>&#160;</td>
-                                    <td>&#160;</td><td>&#160;</td><td>&#160;</td><td>&#160;</td>
+                                    <td>&#160;</td><td>&#160;</td><td>&#160;</td>
                                 </tr>
                             </t>
                         </table>

@@ -161,7 +161,7 @@
                     <notebook>
                         <!-- 4. GENERADOR -->
                         <page string="4. Generador">
-                            <group string="Generador" col="1">
+                            <group col="1">
                                 <field name="generador_id"
                                        placeholder="Seleccione un generador..."
                                        options="{'no_create': True, 'no_create_edit': True}"
@@ -311,7 +311,7 @@
 
                         <!-- 8-14. TRANSPORTISTA -->
                         <page string="8-14. Transportista">
-                            <group string="Transportista" col="1">
+                            <group col="1">
                                 <field name="transportista_id"
                                        placeholder="Seleccione un transportista..."
                                        options="{'no_create': True, 'no_create_edit': True}"
@@ -387,7 +387,7 @@
 
                         <!-- 15-19. DESTINATARIO -->
                         <page string="15-19. Destinatario">
-                            <group string="Destinatario" col="1">
+                            <group col="1">
                                 <field name="destinatario_id"
                                        placeholder="Seleccione un destinatario..."
                                        options="{'no_create': True, 'no_create_edit': True}"

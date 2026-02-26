@@ -37,8 +37,12 @@ class ServiceOrder(models.Model):
     def action_create_manifiesto(self):
         self.ensure_one()
 
-        # 1. Generador
+        # 1. Generador (para datos de dirección)
         generador = self.generador_id if self.generador_id else self.partner_id
+
+        # El nombre/razón social en el campo 4 siempre es el cliente de la OS
+        # La dirección y demás datos vienen del generador seleccionado
+        nombre_razon_social = self.partner_id.name or generador.name or ''
 
         # 2. Fecha del servicio
         fecha_servicio = (
@@ -94,13 +98,11 @@ class ServiceOrder(models.Model):
         # 5. Destinatario
         dest = self.destinatario_id if self.destinatario_id else self.partner_id
 
-        # 6. Vehículo: tipo se rellena desde fleet.vehicle via compute en el modelo
+        # 6. Vehículo
         vehicle_id = self.vehicle_id.id if self.vehicle_id else False
-        # número de placa: editable, tomamos la de la orden como valor inicial
         numero_placa_inicial = self.numero_placa or (self.vehicle_id.license_plate if self.vehicle_id else '')
 
-        # 7. Transportista: tipo_vehiculo se calcula en el compute del modelo cuando se guarda
-        #    Solo lo pasamos como fallback si no hay vehicle_id
+        # 7. Tipo vehículo fallback si no hay vehicle_id
         tipo_vehiculo_fallback = ''
         if not vehicle_id and self.transportista_id:
             tipo_vehiculo_fallback = self.transportista_id.tipo_vehiculo or ''
@@ -111,7 +113,9 @@ class ServiceOrder(models.Model):
             # --- GENERADOR ---
             'generador_id': generador.id,
             'numero_registro_ambiental': generador.numero_registro_ambiental or '',
-            'generador_nombre': generador.name or '',
+            # Campo 4: Nombre/Razón Social = CLIENTE de la OS
+            'generador_nombre': nombre_razon_social,
+            # Dirección = del generador seleccionado
             'generador_codigo_postal': generador.zip or '',
             'generador_calle': generador.street or '',
             'generador_num_ext': generador.street_number or '',
@@ -121,7 +125,7 @@ class ServiceOrder(models.Model):
             'generador_estado': generador.state_id.name if generador.state_id else '',
             'generador_telefono': generador.phone or '',
             'generador_email': generador.email or '',
-            # Responsable generador como Many2one
+            # Responsable generador
             'generador_responsable_id': self.generador_responsable_id.id if self.generador_responsable_id else False,
             'generador_responsable_nombre': self.generador_responsable_id.name if self.generador_responsable_id else '',
             'generador_fecha': fecha_servicio,
@@ -140,15 +144,10 @@ class ServiceOrder(models.Model):
             'transportista_email': self.transportista_id.email if self.transportista_id else '',
             'numero_autorizacion_semarnat': self.transportista_id.numero_autorizacion_semarnat if self.transportista_id else '',
             'numero_permiso_sct': self.transportista_id.numero_permiso_sct if self.transportista_id else '',
-            # Vehículo como Many2one
             'vehicle_id': vehicle_id,
-            # tipo_vehiculo: si hay vehicle_id lo calcula el compute; si no, fallback
             'tipo_vehiculo': tipo_vehiculo_fallback,
-            # Placa: texto editable
             'numero_placa': numero_placa_inicial,
-            # Chofer como Many2one
             'chofer_id': self.chofer_id.id if self.chofer_id else False,
-            # Responsable transportista como Many2one
             'transportista_responsable_id': self.transportista_responsable_id.id if self.transportista_responsable_id else False,
             'transportista_responsable_nombre': self.transportista_responsable_id.name if self.transportista_responsable_id else '',
             'transportista_fecha': fecha_servicio,

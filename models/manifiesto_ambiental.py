@@ -60,13 +60,13 @@ class ManifiestoAmbiental(models.Model):
     # =========================================================================
     # 4. GENERADOR
     # =========================================================================
-    # Solo empresas principales (razón social) — sin padre, con flag es_generador
     generador_id = fields.Many2one(
         'res.partner',
         string='Generador',
         domain=[('es_generador', '=', True), ('parent_id', '=', False)],
     )
-    # Razón social: autocompleta desde generador_id, editable para override/congelado
+    # Razón social: en manifiestos creados desde OS, contiene el nombre del CLIENTE.
+    # En manifiestos manuales, se autocompleta desde generador_id pero es editable.
     generador_nombre = fields.Char(
         string='4. Nombre o razón social del generador',
         required=True,
@@ -84,7 +84,6 @@ class ManifiestoAmbiental(models.Model):
     generador_telefono = fields.Char(string='Teléfono')
     generador_email = fields.Char(string='Correo electrónico')
 
-    # Responsable: contacto hijo de la empresa generadora (o la empresa misma)
     generador_responsable_id = fields.Many2one(
         'res.partner',
         string='Responsable Generador',
@@ -251,8 +250,12 @@ class ManifiestoAmbiental(models.Model):
     def _compute_generador_nombre(self):
         for rec in self:
             if rec.generador_id:
-                rec.generador_nombre = rec.generador_id.name or ''
-            # Sin generador_id no sobreescribimos: puede haberse llenado manualmente
+                # Si el manifiesto viene de una OS, el nombre ya fue seteado
+                # con el cliente y no debemos sobreescribirlo desde el compute.
+                # Solo sobreescribimos si NO tiene OS vinculada (manifiesto manual).
+                if not rec.service_order_id:
+                    rec.generador_nombre = rec.generador_id.name or ''
+            # Si tiene OS o no tiene generador_id, no tocamos el valor almacenado
 
     @api.depends('generador_responsable_id', 'generador_responsable_id.name')
     def _compute_generador_responsable_nombre(self):
@@ -282,7 +285,12 @@ class ManifiestoAmbiental(models.Model):
         if self.generador_id:
             p = self.generador_id
             self.numero_registro_ambiental = p.numero_registro_ambiental or ''
-            self.generador_nombre = p.name or ''
+            # Nombre/razón social:
+            #   - Si hay OS vinculada → mantenemos el nombre del cliente (no sobreescribimos)
+            #   - Si es manifiesto manual → sí tomamos el nombre del generador
+            if not self.service_order_id:
+                self.generador_nombre = p.name or ''
+            # En todos los casos sí propagamos la dirección del generador
             self.generador_codigo_postal = p.zip or ''
             self.generador_calle = p.street or ''
             self.generador_num_ext = p.street_number or ''
@@ -450,6 +458,9 @@ class ManifiestoAmbiental(models.Model):
                     'generador_telefono': vals.get('generador_telefono') or p.phone or '',
                     'generador_email': vals.get('generador_email') or p.email or '',
                 })
+                # Nota: si viene service_order_id, el generador_nombre ya viene
+                # seteado con el cliente en vals (desde action_create_manifiesto),
+                # por lo que el bloque anterior no entra (generador_nombre ya existe).
 
             if vals.get('generador_responsable_id') and not vals.get('generador_responsable_nombre'):
                 r = self.env['res.partner'].browse(vals['generador_responsable_id'])

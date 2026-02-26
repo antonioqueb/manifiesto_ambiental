@@ -165,13 +165,22 @@
                             </div>
                         </button>
 
-                        <!-- Documento físico -->
-                        <button name="action_open_documento_fisico" type="object" class="oe_stat_button" icon="fa-file-pdf-o">
-                            <field name="tiene_documento_fisico" widget="statinfo" string="Doc. Físico"/>
+                        <!-- Documento físico - reusar action_view_recepciones como proxy o simplemente navegar a doc fisico -->
+                        <button name="action_view_version_history" type="object" class="oe_stat_button" icon="fa-file-pdf-o" invisible="tiene_documento_fisico">
+                            <div class="o_field_widget o_stat_info">
+                                <span class="o_stat_value">No</span>
+                                <span class="o_stat_text">Doc. Físico</span>
+                            </div>
+                        </button>
+                        <button name="action_view_version_history" type="object" class="oe_stat_button" icon="fa-file-pdf-o" invisible="not tiene_documento_fisico">
+                            <div class="o_field_widget o_stat_info">
+                                <span class="o_stat_value">Sí</span>
+                                <span class="o_stat_text">Doc. Físico</span>
+                            </div>
                         </button>
 
                         <!-- Secuencia interna -->
-                        <button name="action_open_secuencia" type="object" class="oe_stat_button" icon="fa-hashtag">
+                        <button name="action_view_all_versions" type="object" class="oe_stat_button" icon="fa-hashtag">
                             <field name="sequence_number" widget="statinfo" string="Sec. Interna"/>
                         </button>
                     </div>

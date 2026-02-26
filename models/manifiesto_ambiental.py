@@ -60,11 +60,20 @@ class ManifiestoAmbiental(models.Model):
     # =========================================================================
     # 4. GENERADOR
     # =========================================================================
+    # Solo empresas principales (razón social) — sin padre, con flag es_generador
     generador_id = fields.Many2one(
-        'res.partner', string='Generador',
-        domain=[('es_generador', '=', True)],
+        'res.partner',
+        string='Generador',
+        domain=[('es_generador', '=', True), ('parent_id', '=', False)],
     )
-    generador_nombre = fields.Char(string='4. Nombre o razón social del generador', required=True)
+    # Razón social: autocompleta desde generador_id, editable para override/congelado
+    generador_nombre = fields.Char(
+        string='4. Nombre o razón social del generador',
+        required=True,
+        compute='_compute_generador_nombre',
+        store=True,
+        readonly=False,
+    )
     generador_codigo_postal = fields.Char(string='Código postal')
     generador_calle = fields.Char(string='Calle')
     generador_num_ext = fields.Char(string='Núm. Ext.')
@@ -75,14 +84,13 @@ class ManifiestoAmbiental(models.Model):
     generador_telefono = fields.Char(string='Teléfono')
     generador_email = fields.Char(string='Correo electrónico')
 
-    # Responsable del generador como Many2one
+    # Responsable: contacto hijo de la empresa generadora (o la empresa misma)
     generador_responsable_id = fields.Many2one(
         'res.partner',
         string='Responsable Generador',
         domain="['|', ('parent_id', '=', generador_id), ('id', '=', generador_id)]",
         help='Contacto responsable del generador.',
     )
-    # Campo Char derivado (para el reporte PDF y congelado en historial)
     generador_responsable_nombre = fields.Char(
         string='Nombre responsable generador',
         compute='_compute_generador_responsable_nombre',
@@ -128,7 +136,6 @@ class ManifiestoAmbiental(models.Model):
     numero_autorizacion_semarnat = fields.Char(string='9. Núm. de autorización de la SEMARNAT')
     numero_permiso_sct = fields.Char(string='10. Núm. de permiso S.C.T.')
 
-    # Vehículo como Many2one a fleet.vehicle
     vehicle_id = fields.Many2one(
         'fleet.vehicle',
         string='Vehículo',
@@ -145,14 +152,12 @@ class ManifiestoAmbiental(models.Model):
         help='Editable manualmente.',
     )
 
-    # Chofer como Many2one
     chofer_id = fields.Many2one(
         'res.partner',
         string='Chofer',
         domain="[('is_driver', '=', True)]",
     )
 
-    # Responsable transportista como Many2one
     transportista_responsable_id = fields.Many2one(
         'res.partner',
         string='Responsable Transportista',
@@ -242,6 +247,13 @@ class ManifiestoAmbiental(models.Model):
         for rec in self:
             rec.discrepancia_count = len(rec.discrepancia_ids)
 
+    @api.depends('generador_id', 'generador_id.name')
+    def _compute_generador_nombre(self):
+        for rec in self:
+            if rec.generador_id:
+                rec.generador_nombre = rec.generador_id.name or ''
+            # Sin generador_id no sobreescribimos: puede haberse llenado manualmente
+
     @api.depends('generador_responsable_id', 'generador_responsable_id.name')
     def _compute_generador_responsable_nombre(self):
         for rec in self:
@@ -261,7 +273,6 @@ class ManifiestoAmbiental(models.Model):
                 brand = rec.vehicle_id.model_id.brand_id.name if rec.vehicle_id.model_id and rec.vehicle_id.model_id.brand_id else ''
                 model = rec.vehicle_id.model_id.name if rec.vehicle_id.model_id else ''
                 rec.tipo_vehiculo = f"{brand} {model}".strip() or rec.vehicle_id.name or ''
-            # Si no hay vehículo, no sobreescribimos (el usuario puede haber escrito manualmente)
 
     # =========================================================================
     # ONCHANGES
@@ -309,7 +320,6 @@ class ManifiestoAmbiental(models.Model):
             self.transportista_email = p.email or ''
             self.numero_autorizacion_semarnat = p.numero_autorizacion_semarnat or ''
             self.numero_permiso_sct = p.numero_permiso_sct or ''
-            # Limpiar responsable si ya no pertenece
             if self.transportista_responsable_id:
                 ok = (self.transportista_responsable_id.id == p.id or
                       self.transportista_responsable_id.parent_id.id == p.id)
@@ -328,10 +338,8 @@ class ManifiestoAmbiental(models.Model):
             brand = v.model_id.brand_id.name if v.model_id and v.model_id.brand_id else ''
             model = v.model_id.name if v.model_id else ''
             self.tipo_vehiculo = f"{brand} {model}".strip() or v.name or ''
-            # Solo rellena placa si está vacía (editable independiente)
             if not self.numero_placa:
                 self.numero_placa = v.license_plate or ''
-        # Si se borra el vehículo no limpiamos tipo_vehiculo ni placa (son editables)
 
     @api.onchange('destinatario_id')
     def _onchange_destinatario_id(self):
@@ -443,17 +451,14 @@ class ManifiestoAmbiental(models.Model):
                     'generador_email': vals.get('generador_email') or p.email or '',
                 })
 
-            # Nombre responsable generador desde Many2one si no viene explícito
             if vals.get('generador_responsable_id') and not vals.get('generador_responsable_nombre'):
                 r = self.env['res.partner'].browse(vals['generador_responsable_id'])
                 vals['generador_responsable_nombre'] = r.name or ''
 
-            # Nombre responsable transportista desde Many2one si no viene explícito
             if vals.get('transportista_responsable_id') and not vals.get('transportista_responsable_nombre'):
                 r = self.env['res.partner'].browse(vals['transportista_responsable_id'])
                 vals['transportista_responsable_nombre'] = r.name or ''
 
-            # tipo_vehiculo desde vehicle_id si no viene explícito
             if vals.get('vehicle_id') and not vals.get('tipo_vehiculo'):
                 v = self.env['fleet.vehicle'].browse(vals['vehicle_id'])
                 brand = v.model_id.brand_id.name if v.model_id and v.model_id.brand_id else ''

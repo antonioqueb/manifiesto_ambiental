@@ -161,13 +161,14 @@
                     <notebook>
                         <!-- 4. GENERADOR -->
                         <page string="4. Generador">
-                            <group string="Seleccionar Generador" col="1">
+                            <group string="Generador" col="1">
                                 <field name="generador_id"
+                                       string="Seleccionar"
                                        placeholder="Seleccione un generador..."
                                        options="{'no_create': True, 'no_create_edit': True}"
                                        readonly="not is_current_version"/>
                             </group>
-                            <group string="Datos del Generador" col="2">
+                            <group string="Datos" col="2">
                                 <group>
                                     <field name="generador_nombre" readonly="not is_current_version"/>
                                     <field name="generador_calle" readonly="not is_current_version"/>
@@ -293,7 +294,6 @@
                             </group>
                             <group string="Firma y Sello" col="2">
                                 <group>
-                                    <!-- Many2one responsable: selecciona y rellena el nombre -->
                                     <field name="generador_responsable_id"
                                            string="Responsable"
                                            options="{'no_create': True, 'no_create_edit': True}"
@@ -312,13 +312,14 @@
 
                         <!-- 8-14. TRANSPORTISTA -->
                         <page string="8-14. Transportista">
-                            <group string="Seleccionar Transportista" col="1">
+                            <group string="Transportista" col="1">
                                 <field name="transportista_id"
+                                       string="Seleccionar"
                                        placeholder="Seleccione un transportista..."
                                        options="{'no_create': True, 'no_create_edit': True}"
                                        readonly="not is_current_version"/>
                             </group>
-                            <group string="8. Datos del Transportista" col="2">
+                            <group string="8. Datos" col="2">
                                 <group>
                                     <field name="transportista_nombre" readonly="not is_current_version"/>
                                     <field name="transportista_calle" readonly="not is_current_version"/>
@@ -341,7 +342,6 @@
                                     <field name="numero_permiso_sct" readonly="not is_current_version"/>
                                 </group>
                                 <group>
-                                    <!-- Vehículo como Many2one -->
                                     <field name="vehicle_id"
                                            string="Vehículo"
                                            options="{'no_create': True, 'no_create_edit': True}"
@@ -350,11 +350,9 @@
                                            string="11. Tipo de vehículo"
                                            readonly="not is_current_version"
                                            help="Se rellena automáticamente desde el vehículo. Editable."/>
-                                    <!-- Placa: siempre editable independiente del vehículo -->
                                     <field name="numero_placa"
                                            string="12. Núm. de placa"
                                            readonly="not is_current_version"/>
-                                    <!-- Chofer como Many2one -->
                                     <field name="chofer_id"
                                            string="Chofer"
                                            options="{'no_create': True, 'no_create_edit': True}"
@@ -373,7 +371,6 @@
                             </group>
                             <group string="Firma y Sello" col="2">
                                 <group>
-                                    <!-- Many2one responsable transportista -->
                                     <field name="transportista_responsable_id"
                                            string="Responsable"
                                            options="{'no_create': True, 'no_create_edit': True}"
@@ -392,13 +389,14 @@
 
                         <!-- 15-19. DESTINATARIO -->
                         <page string="15-19. Destinatario">
-                            <group string="Seleccionar Destinatario" col="1">
+                            <group string="Destinatario" col="1">
                                 <field name="destinatario_id"
+                                       string="Seleccionar"
                                        placeholder="Seleccione un destinatario..."
                                        options="{'no_create': True, 'no_create_edit': True}"
                                        readonly="not is_current_version"/>
                             </group>
-                            <group string="15. Datos del Destinatario" col="2">
+                            <group string="15. Datos" col="2">
                                 <group>
                                     <field name="destinatario_nombre" readonly="not is_current_version"/>
                                     <field name="destinatario_calle" readonly="not is_current_version"/>

@@ -57,25 +57,41 @@
         <field name="arch" type="xml">
             <form string="Manifiesto Ambiental">
                 <header>
-                    <button name="action_crear_discrepancia"
-                            string="⚠️ Reportar Discrepancias"
+                    <!-- Flujo de estado principal -->
+                    <button name="action_confirm"
+                            string="Confirmar"
                             type="object"
-                            class="btn-warning"
-                            invisible="state not in ['in_transit', 'delivered'] or not is_current_version"/>
+                            class="btn-primary"
+                            invisible="state != 'draft'"/>
+                    <button name="action_in_transit"
+                            string="En Tránsito"
+                            type="object"
+                            class="btn-primary"
+                            invisible="state != 'confirmed'"/>
+                    <button name="action_delivered"
+                            string="Entregado"
+                            type="object"
+                            class="btn-primary"
+                            invisible="state != 'in_transit'"/>
+
+                    <!-- Acciones operativas -->
                     <button name="action_recibir_residuos"
                             string="📥 Recibir Residuos"
                             type="object"
-                            class="btn-primary"
+                            class="btn-success"
                             invisible="state not in ['in_transit', 'delivered'] or not is_current_version"
                             confirm="¿Desea generar la recepción de inventario para estos residuos?"/>
-                    <button name="action_confirm" string="Confirmar" type="object" class="btn-secondary" invisible="state != 'draft'"/>
-                    <button name="action_in_transit" string="En Tránsito" type="object" class="btn-warning" invisible="state != 'confirmed'"/>
-                    <button name="action_delivered" string="Entregado" type="object" class="btn-success" invisible="state != 'in_transit'"/>
-                    <button name="action_cancel" string="Cancelar" type="object" invisible="state not in ['draft','confirmed','in_transit']"/>
+                    <button name="action_crear_discrepancia"
+                            string="⚠️ Discrepancias"
+                            type="object"
+                            class="btn-warning"
+                            invisible="state not in ['in_transit', 'delivered'] or not is_current_version"/>
+
+                    <!-- Remanifestación -->
                     <button name="action_remanifestar"
                             string="🔄 Remanifestar (PDF)"
                             type="object"
-                            class="btn-info"
+                            class="btn-secondary"
                             invisible="not is_current_version or state == 'draft'"
                             confirm="¿Está seguro de que desea crear una nueva versión? Se guardará un PDF de la versión actual."/>
                     <button name="action_remanifestar_sin_pdf"
@@ -84,58 +100,116 @@
                             class="btn-secondary"
                             invisible="not is_current_version or state == 'draft'"
                             confirm="¿Está seguro de que desea crear una nueva versión?"/>
-                    <button name="action_view_version_history" string="📋 Historial" type="object" class="btn-secondary"/>
-                    <button name="action_view_current_version" string="🎯 Ver Actual" type="object" class="btn-secondary" invisible="is_current_version"/>
-                    <button name="action_view_all_versions" string="📊 Todas las Versiones" type="object" class="btn-secondary"/>
+
+                    <!-- Navegación de versiones -->
+                    <button name="action_view_version_history"
+                            string="📋 Historial"
+                            type="object"
+                            class="btn-secondary"/>
+                    <button name="action_view_current_version"
+                            string="🎯 Ver Actual"
+                            type="object"
+                            class="btn-info"
+                            invisible="is_current_version"/>
+                    <button name="action_view_all_versions"
+                            string="📊 Todas las Versiones"
+                            type="object"
+                            class="btn-secondary"/>
+
+                    <!-- Cancelar al final -->
+                    <button name="action_cancel"
+                            string="Cancelar"
+                            type="object"
+                            class="btn-danger"
+                            invisible="state not in ['draft','confirmed','in_transit']"/>
+
                     <field name="state" widget="statusbar" statusbar_visible="draft,confirmed,in_transit,delivered"/>
                 </header>
+
                 <sheet>
                     <!-- SMART BUTTONS -->
                     <div class="oe_button_box" name="button_box">
-                        <button name="action_view_discrepancias" type="object" class="oe_stat_button"
-                                icon="fa-exclamation-triangle" invisible="discrepancia_count == 0">
+                        <!-- Discrepancias -->
+                        <button name="action_view_discrepancias"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-exclamation-triangle"
+                                invisible="discrepancia_count == 0">
                             <field name="discrepancia_count" widget="statinfo" string="Discrepancias"/>
                         </button>
-                        <button name="action_view_recepciones" type="object" class="oe_stat_button"
-                                icon="fa-truck" invisible="recepcion_count == 0">
+
+                        <!-- Recepciones -->
+                        <button name="action_view_recepciones"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-truck"
+                                invisible="recepcion_count == 0">
                             <field name="recepcion_count" widget="statinfo" string="Recepciones"/>
                         </button>
-                        <button name="action_view_version_history" type="object" class="oe_stat_button" icon="fa-history">
+
+                        <!-- Versión actual -->
+                        <button name="action_view_version_history"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-history">
                             <field name="version" widget="statinfo" string="Versión"/>
                         </button>
-                        <button name="action_view_all_versions" type="object" class="oe_stat_button" icon="fa-files-o">
+
+                        <!-- Todas las versiones -->
+                        <button name="action_view_all_versions"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-files-o">
                             <div class="o_field_widget o_stat_info">
                                 <span class="o_stat_text">Todas las Versiones</span>
                             </div>
                         </button>
-                        <div class="oe_stat_button" style="pointer-events: none;">
+
+                        <!-- Documento físico: botón clicable que abre la pestaña de documento físico -->
+                        <button name="action_view_documento_fisico_tab"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-file-pdf-o">
                             <div class="o_field_widget o_stat_info">
-                                <span class="o_stat_value"><field name="tiene_documento_fisico" widget="boolean"/></span>
+                                <span class="o_stat_value">
+                                    <field name="tiene_documento_fisico" widget="boolean"/>
+                                </span>
                                 <span class="o_stat_text">Doc. Físico</span>
                             </div>
-                        </div>
-                        <div class="oe_stat_button" style="pointer-events: none;">
+                        </button>
+
+                        <!-- Secuencia interna -->
+                        <button name="%(action_manifiesto_ambiental_all_versions)d"
+                                type="action"
+                                class="oe_stat_button"
+                                icon="fa-hashtag">
                             <div class="o_field_widget o_stat_info">
-                                <span class="o_stat_value"><field name="sequence_number" readonly="1"/></span>
+                                <span class="o_stat_value">
+                                    <field name="sequence_number" readonly="1"/>
+                                </span>
                                 <span class="o_stat_text">Sec. Interna</span>
                             </div>
-                        </div>
+                        </button>
                     </div>
 
-                    <div class="alert alert-warning" style="margin-bottom: 20px;" invisible="is_current_version">
+                    <!-- Alerta versión -->
+                    <div class="alert alert-warning mb-3" invisible="is_current_version">
                         <strong>⚠️ ATENCIÓN:</strong> Esta no es la versión actual del manifiesto.
-                        <button name="action_view_current_version" type="object" class="btn btn-link p-0" style="text-decoration: underline;">
+                        <button name="action_view_current_version" type="object" class="btn btn-link p-0 ms-1" style="text-decoration: underline;">
                             Ir a la versión actual →
                         </button>
                     </div>
-                    <div class="alert alert-success" style="margin-bottom: 20px;" invisible="not is_current_version">
+                    <div class="alert alert-success mb-3" invisible="not is_current_version">
                         <strong>✅ VERSIÓN ACTUAL:</strong> Esta es la versión más reciente del manifiesto.
                     </div>
 
+                    <!-- Título + versión -->
                     <div class="oe_title">
                         <label for="numero_manifiesto" string="Núm. de Manifiesto"/>
                         <h1>
-                            <field name="numero_manifiesto" readonly="not is_current_version" placeholder="Número de manifiesto..."/>
+                            <field name="numero_manifiesto"
+                                   readonly="not is_current_version"
+                                   placeholder="Número de manifiesto..."/>
                         </h1>
                         <h3 style="color: #6c757d;" invisible="version &lt;= 1">
                             <span>Versión </span>
@@ -144,6 +218,7 @@
                         </h3>
                     </div>
 
+                    <!-- Datos básicos en una sola fila compacta -->
                     <group string="Información Básica" col="4">
                         <field name="numero_registro_ambiental"/>
                         <field name="pagina"/>
@@ -151,10 +226,12 @@
                         <field name="company_id" groups="base.group_multi_company"/>
                     </group>
 
+                    <!-- Control de versiones (solo visible si hay remanifestaciones) -->
                     <group string="Control de Versiones" invisible="version &lt;= 1" col="2">
                         <field name="original_manifiesto_id" readonly="1"/>
                         <field name="created_by_remanifest" readonly="1"/>
-                        <field name="change_reason" placeholder="Ingrese el motivo de esta remanifestación..."
+                        <field name="change_reason"
+                               placeholder="Ingrese el motivo de esta remanifestación..."
                                invisible="not is_current_version"/>
                     </group>
 
@@ -167,7 +244,7 @@
                                        options="{'no_create': True, 'no_create_edit': True}"
                                        readonly="not is_current_version"/>
                             </group>
-                            <group string="Datos" col="2">
+                            <group string="Datos del Generador" col="2">
                                 <group>
                                     <field name="generador_nombre" readonly="not is_current_version"/>
                                     <field name="generador_calle" readonly="not is_current_version"/>
@@ -183,20 +260,42 @@
                                     <field name="generador_email" readonly="not is_current_version"/>
                                 </group>
                             </group>
+                            <group string="7. Declaración del Generador" col="2">
+                                <group col="1">
+                                    <field name="declaracion_generador" nolabel="1" readonly="1"/>
+                                </group>
+                            </group>
+                            <group string="Firma y Sello" col="2">
+                                <group>
+                                    <field name="generador_responsable_id"
+                                           string="Responsable"
+                                           options="{'no_create': True, 'no_create_edit': True}"
+                                           readonly="not is_current_version"/>
+                                    <field name="generador_responsable_nombre"
+                                           string="Nombre en documento"
+                                           readonly="not is_current_version"
+                                           help="Se rellena desde el contacto seleccionado. Editable para ajustes."/>
+                                </group>
+                                <group>
+                                    <field name="generador_fecha" readonly="not is_current_version"/>
+                                    <field name="generador_sello" readonly="not is_current_version"/>
+                                </group>
+                            </group>
                         </page>
 
                         <!-- 5. RESIDUOS -->
                         <page string="5. Identificación de Residuos">
-                            <div class="alert alert-info" style="margin-bottom: 15px;" invisible="not is_current_version">
+                            <div class="alert alert-info mb-3" invisible="not is_current_version">
                                 <strong>📋 Instrucciones:</strong> Seleccione productos del catálogo. Las clasificaciones CRETIB se completan automáticamente. La unidad siempre será kg.
                             </div>
-                            <div class="alert alert-warning" style="margin-bottom: 15px;" invisible="is_current_version">
+                            <div class="alert alert-warning mb-3" invisible="is_current_version">
                                 <strong>👁️ SOLO LECTURA:</strong> Versión histórica. Para editar vaya a la versión actual.
                             </div>
                             <field name="residuo_ids" readonly="not is_current_version">
                                 <list editable="bottom" edit="is_current_version">
                                     <field name="residue_type" string="Tipo" optional="show"/>
-                                    <field name="product_id" placeholder="Seleccionar producto/residuo..."
+                                    <field name="product_id"
+                                           placeholder="Seleccionar producto/residuo..."
                                            options="{'no_create': True, 'no_create_edit': True}"/>
                                     <field name="nombre_residuo"/>
                                     <field name="clasificacion_corrosivo" string="C"/>
@@ -220,7 +319,8 @@
                                         <group>
                                             <group string="Producto/Residuo">
                                                 <field name="residue_type" string="Tipo de Residuo"/>
-                                                <field name="product_id" placeholder="Seleccionar producto/residuo..."
+                                                <field name="product_id"
+                                                       placeholder="Seleccionar producto/residuo..."
                                                        options="{'no_create': True, 'no_create_edit': True}"/>
                                                 <field name="nombre_residuo"/>
                                             </group>
@@ -252,60 +352,13 @@
                             </field>
                         </page>
 
-                        <!-- DOCUMENTO FÍSICO -->
-                        <page string="📄 Documento Físico" name="documento_fisico">
-                            <div class="alert alert-info" style="margin-bottom: 15px;">
-                                <strong>📋 Documento Físico Escaneado:</strong>
-                                Suba aquí el manifiesto físico con firmas originales, sellos y anotaciones.
-                            </div>
-                            <div class="alert alert-warning" style="margin-bottom: 15px;" invisible="is_current_version">
-                                <strong>👁️ SOLO LECTURA:</strong> Versión histórica.
-                            </div>
-                            <group string="Información del Documento" col="3">
-                                <field name="documento_fisico_filename" readonly="not is_current_version"/>
-                                <field name="tiene_documento_fisico" readonly="1"/>
-                            </group>
-                            <group string="Documento Físico Escaneado" col="1">
-                                <div style="width: 100%; height: 600px; border: 1px solid #ddd; background: #f9f9f9;">
-                                    <field name="documento_fisico"
-                                           filename="documento_fisico_filename"
-                                           readonly="not is_current_version"
-                                           widget="pdf_viewer"
-                                           style="width: 100%; height: 580px;"
-                                           options="{'accepted_file_extensions': '.pdf,.png,.jpg,.jpeg,.gif,.bmp,.tiff', 'no_download': false}"/>
-                                </div>
-                            </group>
-                        </page>
-
-                        <!-- 6. INSTRUCCIONES -->
+                        <!-- 6. INSTRUCCIONES ESPECIALES -->
                         <page string="6. Instrucciones Especiales">
                             <group>
-                                <field name="instrucciones_especiales" nolabel="1"
+                                <field name="instrucciones_especiales"
+                                       nolabel="1"
                                        placeholder="Instrucciones especiales e información adicional para el manejo seguro"
                                        readonly="not is_current_version"/>
-                            </group>
-                        </page>
-
-                        <!-- 7. DECLARACIÓN GENERADOR -->
-                        <page string="7. Declaración Generador">
-                            <group>
-                                <field name="declaracion_generador" nolabel="1" readonly="1"/>
-                            </group>
-                            <group string="Firma y Sello" col="2">
-                                <group>
-                                    <field name="generador_responsable_id"
-                                           string="Responsable"
-                                           options="{'no_create': True, 'no_create_edit': True}"
-                                           readonly="not is_current_version"/>
-                                    <field name="generador_responsable_nombre"
-                                           string="Nombre en documento"
-                                           readonly="not is_current_version"
-                                           help="Se rellena desde el contacto seleccionado. Editable para ajustes."/>
-                                </group>
-                                <group>
-                                    <field name="generador_fecha" readonly="not is_current_version"/>
-                                    <field name="generador_sello" readonly="not is_current_version"/>
-                                </group>
                             </group>
                         </page>
 
@@ -317,7 +370,7 @@
                                        options="{'no_create': True, 'no_create_edit': True}"
                                        readonly="not is_current_version"/>
                             </group>
-                            <group string="8. Datos" col="2">
+                            <group string="8. Datos del Transportista" col="2">
                                 <group>
                                     <field name="transportista_nombre" readonly="not is_current_version"/>
                                     <field name="transportista_calle" readonly="not is_current_version"/>
@@ -338,12 +391,12 @@
                                 <group>
                                     <field name="numero_autorizacion_semarnat" readonly="not is_current_version"/>
                                     <field name="numero_permiso_sct" readonly="not is_current_version"/>
-                                </group>
-                                <group>
                                     <field name="vehicle_id"
                                            string="Vehículo"
                                            options="{'no_create': True, 'no_create_edit': True}"
                                            readonly="not is_current_version"/>
+                                </group>
+                                <group>
                                     <field name="tipo_vehiculo"
                                            string="11. Tipo de vehículo"
                                            readonly="not is_current_version"
@@ -359,12 +412,13 @@
                             </group>
 
                             <group string="13. Ruta">
-                                <field name="ruta_empresa" nolabel="1"
+                                <field name="ruta_empresa"
+                                       nolabel="1"
                                        placeholder="Ruta de la empresa generadora hasta su entrega"
                                        readonly="not is_current_version"/>
                             </group>
 
-                            <group string="14. Declaración del Transportista">
+                            <group string="14. Declaración del Transportista" col="1">
                                 <field name="declaracion_transportista" nolabel="1" readonly="1"/>
                             </group>
                             <group string="Firma y Sello" col="2">
@@ -393,7 +447,7 @@
                                        options="{'no_create': True, 'no_create_edit': True}"
                                        readonly="not is_current_version"/>
                             </group>
-                            <group string="15. Datos" col="2">
+                            <group string="15. Datos del Destinatario" col="2">
                                 <group>
                                     <field name="destinatario_nombre" readonly="not is_current_version"/>
                                     <field name="destinatario_calle" readonly="not is_current_version"/>
@@ -416,12 +470,13 @@
                                     <field name="nombre_persona_recibe" readonly="not is_current_version"/>
                                 </group>
                                 <group>
-                                    <field name="observaciones_destinatario" placeholder="Observaciones"
+                                    <field name="observaciones_destinatario"
+                                           placeholder="Observaciones"
                                            readonly="not is_current_version"/>
                                 </group>
                             </group>
 
-                            <group string="19. Declaración del Destinatario">
+                            <group string="19. Declaración del Destinatario" col="1">
                                 <field name="declaracion_destinatario" nolabel="1" readonly="1"/>
                             </group>
                             <group string="Firma y Sello" col="3">
@@ -431,9 +486,34 @@
                             </group>
                         </page>
 
+                        <!-- DOCUMENTO FÍSICO -->
+                        <page string="📄 Documento Físico" name="documento_fisico">
+                            <div class="alert alert-info mb-3">
+                                <strong>📋 Documento Físico Escaneado:</strong>
+                                Suba aquí el manifiesto físico con firmas originales, sellos y anotaciones.
+                            </div>
+                            <div class="alert alert-warning mb-3" invisible="is_current_version">
+                                <strong>👁️ SOLO LECTURA:</strong> Versión histórica.
+                            </div>
+                            <group string="Información del Documento" col="3">
+                                <field name="documento_fisico_filename" readonly="not is_current_version"/>
+                                <field name="tiene_documento_fisico" readonly="1"/>
+                            </group>
+                            <group string="Documento Físico Escaneado" col="1">
+                                <div style="width: 100%; height: 600px; border: 1px solid #ddd; background: #f9f9f9;">
+                                    <field name="documento_fisico"
+                                           filename="documento_fisico_filename"
+                                           readonly="not is_current_version"
+                                           widget="pdf_viewer"
+                                           style="width: 100%; height: 580px;"
+                                           options="{'accepted_file_extensions': '.pdf,.png,.jpg,.jpeg,.gif,.bmp,.tiff', 'no_download': false}"/>
+                                </div>
+                            </group>
+                        </page>
+
                         <!-- HISTORIAL DE VERSIONES -->
                         <page string="📋 Historial de Versiones" invisible="version &lt;= 1">
-                            <div class="alert alert-info" style="margin-bottom: 15px;">
+                            <div class="alert alert-info mb-3">
                                 <strong>🔍 Control de Versiones:</strong>
                                 Aquí puede ver todas las versiones guardadas de este manifiesto.
                             </div>
@@ -457,6 +537,7 @@
                         </page>
                     </notebook>
 
+                    <!-- Campos ocultos necesarios para lógica de visibilidad -->
                     <group invisible="1">
                         <field name="is_current_version"/>
                         <field name="original_manifiesto_id"/>

@@ -165,27 +165,15 @@
                             </div>
                         </button>
 
-                        <!-- Documento físico (informativo) -->
-                        <div class="oe_stat_button" style="pointer-events: none;">
-                            <i class="fa fa-file-pdf-o" style="font-size:16px; margin-right:4px;"/>
-                            <div class="o_field_widget o_stat_info">
-                                <span class="o_stat_value">
-                                    <field name="tiene_documento_fisico" widget="boolean"/>
-                                </span>
-                                <span class="o_stat_text">Doc. Físico</span>
-                            </div>
-                        </div>
+                        <!-- Documento físico -->
+                        <button name="action_open_documento_fisico" type="object" class="oe_stat_button" icon="fa-file-pdf-o">
+                            <field name="tiene_documento_fisico" widget="statinfo" string="Doc. Físico"/>
+                        </button>
 
-                        <!-- Secuencia interna (informativo) -->
-                        <div class="oe_stat_button" style="pointer-events: none;">
-                            <i class="fa fa-hashtag" style="font-size:16px; margin-right:4px;"/>
-                            <div class="o_field_widget o_stat_info">
-                                <span class="o_stat_value">
-                                    <field name="sequence_number" readonly="1"/>
-                                </span>
-                                <span class="o_stat_text">Sec. Interna</span>
-                            </div>
-                        </div>
+                        <!-- Secuencia interna -->
+                        <button name="action_open_secuencia" type="object" class="oe_stat_button" icon="fa-hashtag">
+                            <field name="sequence_number" widget="statinfo" string="Sec. Interna"/>
+                        </button>
                     </div>
 
                     <!-- Alerta versión -->

@@ -163,7 +163,6 @@
                         <page string="4. Generador">
                             <group string="Generador" col="1">
                                 <field name="generador_id"
-                                       string="Seleccionar"
                                        placeholder="Seleccione un generador..."
                                        options="{'no_create': True, 'no_create_edit': True}"
                                        readonly="not is_current_version"/>
@@ -314,7 +313,6 @@
                         <page string="8-14. Transportista">
                             <group string="Transportista" col="1">
                                 <field name="transportista_id"
-                                       string="Seleccionar"
                                        placeholder="Seleccione un transportista..."
                                        options="{'no_create': True, 'no_create_edit': True}"
                                        readonly="not is_current_version"/>
@@ -391,7 +389,6 @@
                         <page string="15-19. Destinatario">
                             <group string="Destinatario" col="1">
                                 <field name="destinatario_id"
-                                       string="Seleccionar"
                                        placeholder="Seleccione un destinatario..."
                                        options="{'no_create': True, 'no_create_edit': True}"
                                        readonly="not is_current_version"/>

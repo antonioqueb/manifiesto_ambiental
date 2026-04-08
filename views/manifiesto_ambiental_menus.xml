@@ -1,43 +1,39 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
-    <!-- Menú principal de Manifiesto Ambiental -->
-    <!-- AGREGADO: web_icon="nombre_modulo,ruta_imagen" -->
+
     <menuitem id="menu_manifiesto_ambiental_root"
               name="Manifiestos"
               sequence="50"
               web_icon="manifiesto_ambiental,static/description/icon.png"/>
-    
-    <!-- Submenú para Manifiestos Actuales -->
+
     <menuitem id="menu_manifiesto_ambiental_manifiestos"
               name="Manifiestos Actuales"
               parent="menu_manifiesto_ambiental_root"
               action="action_manifiesto_ambiental"
               sequence="10"/>
-    
-    <!-- Submenú para Historial de Versiones -->
+
     <menuitem id="menu_manifiesto_ambiental_versions"
               name="Historial de Versiones"
               parent="menu_manifiesto_ambiental_root"
               action="action_manifiesto_ambiental_version"
               sequence="20"/>
-    
-    <!-- Submenú para Todas las Versiones -->
+
     <menuitem id="menu_manifiesto_ambiental_all_versions"
               name="Todas las Versiones"
               parent="menu_manifiesto_ambiental_root"
               action="action_manifiesto_ambiental_all_versions"
               sequence="30"/>
-    
-    <!-- Submenú para configuración -->
+
     <menuitem id="menu_manifiesto_ambiental_config"
               name="Configuración"
               parent="menu_manifiesto_ambiental_root"
               sequence="90"/>
 
+    <!-- 🔥 CORREGIDO -->
     <menuitem id="menu_manifiesto_discrepancia"
-          name="Discrepancias"
-          parent="menu_manifiesto_ambiental_root"
-          action="action_manifiesto_discrepancia"
-          sequence="40"/>
+              name="Discrepancias"
+              parent="menu_manifiesto_ambiental_root"
+              action="gestion_discrepancias.action_discrepancy_log"
+              sequence="40"/>
 
 </odoo>

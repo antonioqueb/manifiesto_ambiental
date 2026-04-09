@@ -15,15 +15,14 @@
         <field name="dpi">90</field>
     </record>
 
-    <!-- ACCIÓN DEL REPORTE -->
+    <!-- ACCIÓN DEL REPORTE (Entrada) - SIN binding para que NO aparezca en el engrane -->
     <record id="action_report_manifiesto_ambiental" model="ir.actions.report">
-        <field name="name">Manifiesto Ambiental</field>
+        <field name="name">Manifiesto Ambiental (Entrada)</field>
         <field name="model">manifiesto.ambiental</field>
         <field name="report_type">qweb-pdf</field>
         <field name="report_name">manifiesto_ambiental.manifiesto_ambiental_document</field>
         <field name="report_file">manifiesto_ambiental.manifiesto_ambiental_document</field>
-        <field name="binding_model_id" ref="model_manifiesto_ambiental"/>
-        <field name="binding_type">report</field>
+        <!-- NO binding_model_id - el botón action_print_manifiesto decide qué reporte usar -->
         <field name="paperformat_id" ref="manifiesto_ambiental.paperformat_manifiesto_ambiental_sin_margen"/>
     </record>
 
@@ -54,9 +53,6 @@
                                 border-bottom: none !important;
                             }
 
-                            /* ======================================================= */
-                            /* NUEVO: Ocultar el pie de página (Footer) completamente */
-                            /* ======================================================= */
                             .footer, .o_company_document_layout .footer {
                                 display: none !important;
                                 height: 0px !important;
@@ -84,10 +80,8 @@
                             .no-border { border: none !important; }
                             .center-text { text-align: center; }
 
-                            /* Sección 4 homogénea y a todo ancho */
                             table.section-4 { width: 100%; border-collapse: collapse; table-layout: fixed; }
 
-                            /* Bloques de firma integrados en un solo recuadro (sin divisiones internas) */
                             table.signature-section { width: 100%; border-collapse: separate; border-spacing: 0; margin-bottom: 2px; }
                             table.signature-section > tbody > tr > td { border: none !important; padding: 0; }
                             .signature-container { border: 1px solid #666; padding: 4px; }
@@ -96,7 +90,6 @@
                             .signature-fields .cell { display: table-cell; vertical-align: top; padding-right: 8px; }
                             .signature-fields .cell:last-child { padding-right: 0; }
 
-                            /* Evitar saltos dentro de filas */
                             tr, td { page-break-inside: avoid; }
                         </style>
 
@@ -168,21 +161,20 @@
 
                         <!-- 5. IDENTIFICACIÓN DE LOS RESIDUOS -->
                         <table>
-                            <!-- Definir anchos de columna para consistencia -->
                             <colgroup>
-                                <col style="width:25%"/> <!-- Nombre -->
-                                <col style="width:3%"/>  <!-- C -->
-                                <col style="width:3%"/>  <!-- R -->
-                                <col style="width:3%"/>  <!-- E -->
-                                <col style="width:3%"/>  <!-- T -->
-                                <col style="width:3%"/>  <!-- I -->
-                                <col style="width:3%"/>  <!-- B -->
-                                <col style="width:3%"/>  <!-- M (vacío) -->
-                                <col style="width:12%"/> <!-- Embalaje -->
-                                <col style="width:10%"/> <!-- Capacidad -->
-                                <col style="width:10%"/> <!-- Cantidad -->
-                                <col style="width:3%"/>  <!-- Si -->
-                                <col style="width:3%"/>  <!-- No -->
+                                <col style="width:25%"/>
+                                <col style="width:3%"/>
+                                <col style="width:3%"/>
+                                <col style="width:3%"/>
+                                <col style="width:3%"/>
+                                <col style="width:3%"/>
+                                <col style="width:3%"/>
+                                <col style="width:3%"/>
+                                <col style="width:12%"/>
+                                <col style="width:10%"/>
+                                <col style="width:10%"/>
+                                <col style="width:3%"/>
+                                <col style="width:3%"/>
                             </colgroup>
 
                             <tr>
@@ -211,11 +203,9 @@
                                 <th class="header-table">No</th>
                             </tr>
 
-                            <!-- Filas con datos -->
                             <t t-foreach="doc.residuo_ids" t-as="residuo">
                                 <tr>
                                     <td><span t-field="residuo.nombre_residuo"/></td>
-
                                     <td class="center-text"><span t-if="residuo.clasificacion_corrosivo">X</span></td>
                                     <td class="center-text"><span t-if="residuo.clasificacion_reactivo">X</span></td>
                                     <td class="center-text"><span t-if="residuo.clasificacion_explosivo">X</span></td>
@@ -223,13 +213,10 @@
                                     <td class="center-text"><span t-if="residuo.clasificacion_inflamable">X</span></td>
                                     <td class="center-text"><span t-if="residuo.clasificacion_biologico">X</span></td>
                                     <td class="center-text"></td>
-
-                                    <!-- Columna Embalaje: Packaging ID o Envase Tipo -->
                                     <td class="center-text">
                                         <span t-if="residuo.packaging_id" t-field="residuo.packaging_id.name"/>
                                         <span t-elif="residuo.envase_tipo" t-field="residuo.envase_tipo"/>
                                     </td>
-
                                     <td class="center-text"><span t-field="residuo.envase_capacidad"/></td>
                                     <td class="center-text"><span t-field="residuo.cantidad"/> kg</td>
                                     <td class="center-text"><span t-if="residuo.etiqueta_si">X</span></td>
@@ -237,7 +224,6 @@
                                 </tr>
                             </t>
 
-                            <!-- Filas vacías para completar -->
                             <t t-set="residuos_count" t-value="len(doc.residuo_ids)"/>
                             <t t-set="min_rows" t-value="18"/>
                             <t t-set="empty_rows" t-value="max(0, min_rows - residuos_count)"/>
@@ -262,7 +248,7 @@
                             </tr>
                         </table>
 
-                        <!-- 7. DECLARACIÓN DEL GENERADOR (recuadro único) -->
+                        <!-- 7. DECLARACIÓN DEL GENERADOR -->
                         <table class="signature-section">
                             <tr>
                                 <td>
@@ -333,7 +319,7 @@
                             </tr>
                         </table>
 
-                        <!-- 14. DECLARACIÓN DEL TRANSPORTISTA (recuadro único) -->
+                        <!-- 14. DECLARACIÓN DEL TRANSPORTISTA -->
                         <table class="signature-section">
                             <tr>
                                 <td>
@@ -398,7 +384,7 @@
                             </tr>
                         </table>
 
-                        <!-- 19. DECLARACIÓN DEL DESTINATARIO (recuadro único) -->
+                        <!-- 19. DECLARACIÓN DEL DESTINATARIO -->
                         <table class="signature-section">
                             <tr>
                                 <td>

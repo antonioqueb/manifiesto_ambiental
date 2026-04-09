@@ -32,6 +32,10 @@
         <field name="arch" type="xml">
             <list string="Manifiestos Ambientales" default_order="sequence_number desc, version desc">
                 <field name="sequence_number" string="Seq." optional="show"/>
+                <field name="tipo_manifiesto" string="Tipo"
+                       decoration-info="tipo_manifiesto == 'entrada'"
+                       decoration-success="tipo_manifiesto == 'salida'"
+                       widget="badge"/>
                 <field name="numero_manifiesto_display"/>
                 <field name="numero_registro_ambiental"/>
                 <field name="generador_nombre"/>
@@ -57,6 +61,12 @@
         <field name="arch" type="xml">
             <form string="Manifiesto Ambiental">
                 <header>
+                    <!-- BOTÓN IMPRIMIR INTELIGENTE - siempre visible -->
+                    <button name="action_print_manifiesto"
+                            string="🖨️ Imprimir Manifiesto"
+                            type="object"
+                            class="btn-primary"/>
+
                     <!-- Flujo de estado principal -->
                     <button name="action_confirm"
                             string="Confirmar"
@@ -129,7 +139,6 @@
                 <sheet>
                     <!-- SMART BUTTONS -->
                     <div class="oe_button_box" name="button_box">
-                        <!-- Discrepancias -->
                         <button name="action_view_discrepancias"
                                 type="object"
                                 class="oe_stat_button"
@@ -138,7 +147,6 @@
                             <field name="discrepancia_count" widget="statinfo" string="Discrepancias"/>
                         </button>
 
-                        <!-- Recepciones -->
                         <button name="action_view_recepciones"
                                 type="object"
                                 class="oe_stat_button"
@@ -147,7 +155,6 @@
                             <field name="recepcion_count" widget="statinfo" string="Recepciones"/>
                         </button>
 
-                        <!-- Versión actual -->
                         <button name="action_view_version_history"
                                 type="object"
                                 class="oe_stat_button"
@@ -155,7 +162,6 @@
                             <field name="version" widget="statinfo" string="Versión"/>
                         </button>
 
-                        <!-- Todas las versiones -->
                         <button name="action_view_all_versions"
                                 type="object"
                                 class="oe_stat_button"
@@ -165,7 +171,6 @@
                             </div>
                         </button>
 
-                        <!-- Documento físico - reusar action_view_recepciones como proxy o simplemente navegar a doc fisico -->
                         <button name="action_view_version_history" type="object" class="oe_stat_button" icon="fa-file-pdf-o" invisible="tiene_documento_fisico">
                             <div class="o_field_widget o_stat_info">
                                 <span class="o_stat_value">No</span>
@@ -179,7 +184,6 @@
                             </div>
                         </button>
 
-                        <!-- Secuencia interna -->
                         <button name="action_view_all_versions" type="object" class="oe_stat_button" icon="fa-hashtag">
                             <field name="sequence_number" widget="statinfo" string="Sec. Interna"/>
                         </button>
@@ -194,6 +198,11 @@
                     </div>
                     <div class="alert alert-success mb-3" invisible="not is_current_version">
                         <strong>✅ VERSIÓN ACTUAL:</strong> Esta es la versión más reciente del manifiesto.
+                    </div>
+
+                    <!-- Indicador visual de tipo de manifiesto -->
+                    <div class="alert alert-info mb-3" invisible="tipo_manifiesto != 'salida'">
+                        <strong>📤 MANIFIESTO DE SALIDA:</strong> SAI es el generador en este manifiesto. Se usará el formato de salida al imprimir.
                     </div>
 
                     <!-- Título + versión -->
@@ -213,13 +222,14 @@
 
                     <!-- Datos básicos en una sola fila compacta -->
                     <group string="Información Básica" col="4">
+                        <field name="tipo_manifiesto" readonly="1"/>
                         <field name="numero_registro_ambiental"/>
                         <field name="pagina"/>
                         <field name="service_order_id" readonly="1"/>
                         <field name="company_id" groups="base.group_multi_company"/>
                     </group>
 
-                    <!-- Control de versiones (solo visible si hay remanifestaciones) -->
+                    <!-- Control de versiones -->
                     <group string="Control de Versiones" invisible="version &lt;= 1" col="2">
                         <field name="original_manifiesto_id" readonly="1"/>
                         <field name="created_by_remanifest" readonly="1"/>
@@ -537,6 +547,7 @@
                         <field name="created_by_remanifest"/>
                         <field name="tiene_documento_fisico"/>
                         <field name="sequence_number"/>
+                        <field name="tipo_manifiesto"/>
                     </group>
                 </sheet>
             </form>
@@ -557,15 +568,21 @@
                 <field name="version"/>
                 <field name="change_reason"/>
                 <field name="sequence_number" string="Secuencia"/>
+                <filter string="Solo Entradas" name="tipo_entrada" domain="[('tipo_manifiesto','=','entrada')]"/>
+                <filter string="Solo Salidas" name="tipo_salida" domain="[('tipo_manifiesto','=','salida')]"/>
+                <separator/>
                 <filter string="Solo Versiones Actuales" name="current_versions" domain="[('is_current_version','=',True)]"/>
                 <filter string="Solo Versiones Históricas" name="historical_versions" domain="[('is_current_version','=',False)]"/>
                 <filter string="Remanifestaciones" name="remanifested" domain="[('version','>',1)]"/>
                 <filter string="Con Documento Físico" name="with_physical_doc" domain="[('tiene_documento_fisico','=',True)]"/>
                 <filter string="Sin Documento Físico" name="without_physical_doc" domain="[('tiene_documento_fisico','=',False)]"/>
+                <separator/>
                 <filter string="Borrador" name="draft" domain="[('state','=','draft')]"/>
                 <filter string="Confirmado" name="confirmed" domain="[('state','=','confirmed')]"/>
                 <filter string="En Tránsito" name="in_transit" domain="[('state','=','in_transit')]"/>
                 <filter string="Entregado" name="delivered" domain="[('state','=','delivered')]"/>
+                <separator/>
+                <filter string="Tipo" name="group_tipo" context="{'group_by':'tipo_manifiesto'}"/>
                 <filter string="Estado" name="group_state" context="{'group_by':'state'}"/>
                 <filter string="Generador" name="group_generator" context="{'group_by':'generador_nombre'}"/>
                 <filter string="Número de Manifiesto" name="group_number" context="{'group_by':'numero_manifiesto'}"/>

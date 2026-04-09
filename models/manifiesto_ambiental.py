@@ -48,6 +48,12 @@ class ManifiestoAmbiental(models.Model):
     # =========================================================================
     # CAMPOS PRINCIPALES
     # =========================================================================
+    tipo_manifiesto = fields.Selection([
+        ('entrada', 'Entrada'),
+        ('salida', 'Salida'),
+    ], string='Tipo de Manifiesto', default='entrada', required=True,
+       help='Entrada: SAI recibe residuos (generador externo). Salida: SAI envía residuos (SAI es generador).')
+
     numero_registro_ambiental = fields.Char(string='1. Núm. de registro ambiental', required=True)
     numero_manifiesto = fields.Char(string='2. Núm. de manifiesto', required=True, copy=False)
     numero_manifiesto_display = fields.Char(
@@ -65,8 +71,6 @@ class ManifiestoAmbiental(models.Model):
         string='Generador',
         domain=[('es_generador', '=', True), ('parent_id', '=', False)],
     )
-    # Razón social: en manifiestos creados desde OS, contiene el nombre del CLIENTE.
-    # En manifiestos manuales, se autocompleta desde generador_id pero es editable.
     generador_nombre = fields.Char(
         string='4. Nombre o razón social del generador',
         required=True,
@@ -250,12 +254,8 @@ class ManifiestoAmbiental(models.Model):
     def _compute_generador_nombre(self):
         for rec in self:
             if rec.generador_id:
-                # Si el manifiesto viene de una OS, el nombre ya fue seteado
-                # con el cliente y no debemos sobreescribirlo desde el compute.
-                # Solo sobreescribimos si NO tiene OS vinculada (manifiesto manual).
                 if not rec.service_order_id:
                     rec.generador_nombre = rec.generador_id.name or ''
-            # Si tiene OS o no tiene generador_id, no tocamos el valor almacenado
 
     @api.depends('generador_responsable_id', 'generador_responsable_id.name')
     def _compute_generador_responsable_nombre(self):
@@ -285,12 +285,8 @@ class ManifiestoAmbiental(models.Model):
         if self.generador_id:
             p = self.generador_id
             self.numero_registro_ambiental = p.numero_registro_ambiental or ''
-            # Nombre/razón social:
-            #   - Si hay OS vinculada → mantenemos el nombre del cliente (no sobreescribimos)
-            #   - Si es manifiesto manual → sí tomamos el nombre del generador
             if not self.service_order_id:
                 self.generador_nombre = p.name or ''
-            # En todos los casos sí propagamos la dirección del generador
             self.generador_codigo_postal = p.zip or ''
             self.generador_calle = p.street or ''
             self.generador_num_ext = p.street_number or ''
@@ -300,7 +296,6 @@ class ManifiestoAmbiental(models.Model):
             self.generador_estado = p.state_id.name if p.state_id else ''
             self.generador_telefono = p.phone or ''
             self.generador_email = p.email or ''
-            # Limpiar responsable si ya no pertenece al nuevo generador
             if self.generador_responsable_id:
                 ok = (self.generador_responsable_id.id == p.id or
                       self.generador_responsable_id.parent_id.id == p.id)
@@ -442,7 +437,6 @@ class ManifiestoAmbiental(models.Model):
                     else:
                         vals['numero_manifiesto'] = str(next_seq)
 
-            # Auto-rellenar dirección del generador si viene el ID pero no los campos
             if vals.get('generador_id') and not vals.get('generador_nombre'):
                 p = self.env['res.partner'].browse(vals['generador_id'])
                 vals.update({
@@ -458,9 +452,6 @@ class ManifiestoAmbiental(models.Model):
                     'generador_telefono': vals.get('generador_telefono') or p.phone or '',
                     'generador_email': vals.get('generador_email') or p.email or '',
                 })
-                # Nota: si viene service_order_id, el generador_nombre ya viene
-                # seteado con el cliente en vals (desde action_create_manifiesto),
-                # por lo que el bloque anterior no entra (generador_nombre ya existe).
 
             if vals.get('generador_responsable_id') and not vals.get('generador_responsable_nombre'):
                 r = self.env['res.partner'].browse(vals['generador_responsable_id'])
@@ -483,6 +474,26 @@ class ManifiestoAmbiental(models.Model):
                 record.original_manifiesto_id = record.id
 
         return records
+
+    # =========================================================================
+    # IMPRESIÓN INTELIGENTE
+    # =========================================================================
+    def action_print_manifiesto(self):
+        """Imprime el reporte correcto según el tipo de manifiesto (entrada o salida)."""
+        self.ensure_one()
+        if self.tipo_manifiesto == 'salida':
+            report = self.env.ref(
+                'salida_acopio_manifiesto.action_report_manifiesto_salida',
+                raise_if_not_found=False,
+            )
+        else:
+            report = self.env.ref(
+                'manifiesto_ambiental.action_report_manifiesto_ambiental',
+                raise_if_not_found=False,
+            )
+        if not report:
+            raise UserError(_("No se encontró el reporte correspondiente."))
+        return report.report_action(self)
 
     # =========================================================================
     # ACCIONES DE ESTADO
@@ -664,14 +675,22 @@ class ManifiestoAmbiental(models.Model):
             self._validate_required_data()
             self.env.cr.commit()
             current_record = self.sudo().browse(self.id)
+
+            # Usar el reporte correcto según tipo de manifiesto
             report = None
-            try:
-                report = self.env.ref('manifiesto_ambiental.action_report_manifiesto_ambiental')
-            except Exception:
-                report = self.env['ir.actions.report'].search([
-                    ('model', '=', 'manifiesto.ambiental'),
-                    ('report_type', '=', 'qweb-pdf'),
-                ], limit=1)
+            if current_record.tipo_manifiesto == 'salida':
+                try:
+                    report = self.env.ref('salida_acopio_manifiesto.action_report_manifiesto_salida')
+                except Exception:
+                    pass
+            if not report:
+                try:
+                    report = self.env.ref('manifiesto_ambiental.action_report_manifiesto_ambiental')
+                except Exception:
+                    report = self.env['ir.actions.report'].search([
+                        ('model', '=', 'manifiesto.ambiental'),
+                        ('report_type', '=', 'qweb-pdf'),
+                    ], limit=1)
             if not report:
                 raise UserError("No se encontró el reporte PDF del manifiesto.")
             clean_context = {
@@ -709,6 +728,7 @@ class ManifiestoAmbiental(models.Model):
         return {
             'numero_manifiesto': self.numero_manifiesto or '',
             'version': self.version,
+            'tipo_manifiesto': self.tipo_manifiesto,
             'fecha_generacion': fields.Datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
             'estado': self.state,
             'tiene_documento_fisico': self.tiene_documento_fisico,
@@ -771,10 +791,13 @@ class ManifiestoAmbiental(models.Model):
             raise UserError(f"Error al guardar la versión: {str(e)}")
 
     def _format_data_as_text(self, data):
+        tipo = data.get('tipo_manifiesto', 'entrada')
+        tipo_label = 'SALIDA' if tipo == 'salida' else 'ENTRADA'
         texto = f"""
-MANIFIESTO AMBIENTAL - VERSIÓN {data['version']}
+MANIFIESTO AMBIENTAL ({tipo_label}) - VERSIÓN {data['version']}
 {'='*50}
 Número de Manifiesto: {data['numero_manifiesto']}
+Tipo: {tipo_label}
 Fecha de Generación: {data['fecha_generacion']}
 Estado: {data['estado']}
 
@@ -1113,9 +1136,7 @@ class ManifiestoAmbientalVersion(models.Model):
         return super().unlink()
 
     def action_open_documento_fisico(self):
-        """Stat button - indica si tiene documento físico adjunto"""
         return False
 
     def action_open_secuencia(self):
-        """Stat button - muestra número de secuencia interna"""
         return False

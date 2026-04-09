@@ -40,12 +40,10 @@
         <field name="type">list</field>
         <field name="arch" type="xml">
             <list string="Manifiestos Ambientales"
-                  
                   default_order="sequence_number desc, version desc"
                   decoration-muted="not is_current_version"
                   decoration-bf="is_current_version">
 
-                <!-- Identificación -->
                 <field name="sequence_number" string="Sec." optional="show" width="60px"/>
                 <field name="tipo_manifiesto" string="Tipo" widget="badge"
                        decoration-info="tipo_manifiesto == 'entrada'"
@@ -53,19 +51,16 @@
                 <field name="numero_manifiesto_display" string="Nº Manifiesto"/>
                 <field name="numero_registro_ambiental" string="Reg. Ambiental" optional="show"/>
 
-                <!-- Actores -->
                 <field name="generador_nombre" string="Generador"/>
                 <field name="transportista_nombre" string="Transportista" optional="show"/>
                 <field name="destinatario_nombre" string="Destinatario" optional="show"/>
 
-                <!-- Metadata -->
                 <field name="generador_fecha" string="Fecha"/>
                 <field name="version" string="Ver." width="50px"/>
                 <field name="is_current_version" string="Actual" widget="boolean_toggle" width="60px"/>
                 <field name="tiene_documento_fisico" string="Doc." widget="boolean_toggle"
                        optional="show" width="50px"/>
 
-                <!-- Estado -->
                 <field name="state" widget="badge"
                        decoration-success="state == 'delivered'"
                        decoration-info="state == 'confirmed'"
@@ -76,51 +71,54 @@
     </record>
 
     <!-- ================================================================== -->
-    <!-- FORMULARIO PRINCIPAL -->
+    <!-- FORMULARIO PRINCIPAL V2 -->
     <!-- ================================================================== -->
 
     <record id="view_manifiesto_ambiental_form" model="ir.ui.view">
-        <field name="name">manifiesto.ambiental.form</field>
+        <field name="name">manifiesto.ambiental.form.v2</field>
         <field name="model">manifiesto.ambiental</field>
         <field name="type">form</field>
         <field name="arch" type="xml">
-            <form string="Manifiesto Ambiental" class="o_manifiesto_ambiental_form">
+            <form string="Manifiesto Ambiental" class="o_manifiesto_ambiental_form_v2">
+
                 <header>
-                    <!-- 1. Acción principal -->
-                    <button name="action_print_manifiesto"
-                            string="Imprimir Manifiesto"
-                            type="object"
-                            class="btn-primary"
-                            icon="fa-print"/>
-
-                    <!-- 2. Flujo de estados (mutuamente excluyentes) -->
+                    <!-- Acciones primarias -->
                     <button name="action_confirm" string="Confirmar" type="object"
-                            class="btn-primary" invisible="state != 'draft'"/>
-                    <button name="action_in_transit" string="En Tránsito" type="object"
-                            class="btn-primary" invisible="state != 'confirmed'"/>
-                    <button name="action_delivered" string="Entregado" type="object"
-                            class="btn-primary" invisible="state != 'in_transit'"/>
+                            class="btn-primary"
+                            invisible="state != 'draft'"/>
 
-                    <!-- 3. Acciones operativas -->
+                    <button name="action_in_transit" string="Marcar En Tránsito" type="object"
+                            class="btn-primary"
+                            invisible="state != 'confirmed'"/>
+
+                    <button name="action_delivered" string="Marcar Entregado" type="object"
+                            class="btn-primary"
+                            invisible="state != 'in_transit'"/>
+
+                    <!-- Operativas -->
                     <button name="action_recibir_residuos" string="Recibir Residuos" type="object"
                             class="btn-success" icon="fa-download"
                             invisible="state not in ['in_transit', 'delivered'] or not is_current_version or tipo_manifiesto == 'salida'"
                             confirm="¿Desea generar la recepción de inventario para estos residuos?"/>
+
+                    <button name="action_print_manifiesto" string="Imprimir PDF" type="object"
+                            class="btn-secondary" icon="fa-print"/>
+
+                    <!-- Secundarias -->
                     <button name="action_crear_discrepancia" string="Reportar Discrepancia" type="object"
                             class="btn-warning" icon="fa-exclamation-triangle"
                             invisible="state not in ['in_transit', 'delivered'] or not is_current_version or tipo_manifiesto == 'salida'"/>
 
-                    <!-- 4. Remanifestación -->
                     <button name="action_remanifestar" string="Remanifestar (PDF)" type="object"
                             class="btn-secondary" icon="fa-refresh"
                             invisible="not is_current_version or state == 'draft'"
                             confirm="Se creará una nueva versión y se guardará un PDF de la actual. ¿Continuar?"/>
+
                     <button name="action_remanifestar_sin_pdf" string="Remanifestar (Datos)" type="object"
                             class="btn-secondary"
                             invisible="not is_current_version or state == 'draft'"
                             confirm="Se creará una nueva versión sin respaldo PDF. ¿Continuar?"/>
 
-                    <!-- 5. Cancelar -->
                     <button name="action_cancel" string="Cancelar" type="object"
                             class="btn-danger"
                             invisible="state not in ['draft','confirmed','in_transit']"
@@ -131,100 +129,172 @@
                 </header>
 
                 <sheet>
+
+                    <!-- Smart buttons -->
                     <div class="oe_button_box" name="button_box">
                         <button name="action_view_version_history" type="object"
                                 class="oe_stat_button" icon="fa-history">
                             <field name="version" widget="statinfo" string="Versión"/>
                         </button>
+
                         <button name="action_view_discrepancias" type="object"
                                 class="oe_stat_button" icon="fa-exclamation-triangle"
                                 invisible="discrepancia_count == 0">
                             <field name="discrepancia_count" widget="statinfo" string="Discrepancias"/>
                         </button>
+
                         <button name="action_view_recepciones" type="object"
                                 class="oe_stat_button" icon="fa-truck"
                                 invisible="recepcion_count == 0">
                             <field name="recepcion_count" widget="statinfo" string="Recepciones"/>
                         </button>
+
                         <button type="object" name="action_view_version_history"
                                 class="oe_stat_button" icon="fa-file-pdf-o">
                             <div class="o_field_widget o_stat_info">
                                 <span class="o_stat_value" invisible="not tiene_documento_fisico">Sí</span>
                                 <span class="o_stat_value" invisible="tiene_documento_fisico">No</span>
-                                <span class="o_stat_text">Doc. Físico</span>
+                                <span class="o_stat_text">Doc. físico</span>
                             </div>
                         </button>
                     </div>
 
-                    <div class="alert alert-warning mb-0 rounded-0" invisible="is_current_version">
-                        <strong>Versión histórica</strong> — Esta no es la versión actual.
+                    <!-- Aviso versión histórica -->
+                    <div class="alert alert-warning ma_alert_strip" invisible="is_current_version">
+                        <strong>Versión histórica.</strong>
+                        Este registro no es la versión actual del manifiesto.
                         <button name="action_view_current_version" type="object"
                                 class="btn btn-sm btn-warning ms-2">
                             Ir a versión actual
                         </button>
                     </div>
 
-                    <div class="oe_title">
-                        <label for="numero_manifiesto" string="Número de Manifiesto"/>
-                        <h1>
-                            <field name="numero_manifiesto"
-                                   readonly="not is_current_version"
-                                   placeholder="Ej: MA-2026-001"/>
-                        </h1>
+                    <!-- HERO -->
+                    <div class="ma_hero">
+                        <div class="ma_hero_main">
+                            <div class="ma_eyebrow">Número de manifiesto</div>
+                            <h1 class="ma_title">
+                                <field name="numero_manifiesto"
+                                       readonly="not is_current_version"
+                                       placeholder="Ej: MA-2026-001"/>
+                            </h1>
+
+                            <div class="ma_hero_meta">
+                                <div class="ma_chip_block">
+                                    <span class="ma_chip_label">Tipo</span>
+                                    <field name="tipo_manifiesto" readonly="1" widget="badge"/>
+                                </div>
+
+                                <div class="ma_chip_block">
+                                    <span class="ma_chip_label">Fecha</span>
+                                    <field name="generador_fecha" readonly="not is_current_version"/>
+                                </div>
+
+                                <div class="ma_chip_block" invisible="not service_order_id">
+                                    <span class="ma_chip_label">Orden de servicio</span>
+                                    <field name="service_order_id" readonly="1"/>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="ma_hero_side">
+                            <div class="ma_kpi">
+                                <span class="ma_kpi_label">Versión</span>
+                                <span class="ma_kpi_value">
+                                    <field name="version" readonly="1"/>
+                                </span>
+                            </div>
+
+                            <div class="ma_kpi">
+                                <span class="ma_kpi_label">Documento físico</span>
+                                <span class="ma_kpi_value">
+                                    <span invisible="not tiene_documento_fisico">Sí</span>
+                                    <span invisible="tiene_documento_fisico">No</span>
+                                </span>
+                            </div>
+                        </div>
                     </div>
 
-                    <group col="4">
-                        <field name="tipo_manifiesto" readonly="1" widget="badge"/>
-                        <field name="numero_registro_ambiental"
-                               readonly="not is_current_version"/>
+                    <!-- Metadata compacta -->
+                    <group class="ma_top_group" col="4">
+                        <field name="numero_registro_ambiental" readonly="not is_current_version"/>
                         <field name="pagina" readonly="not is_current_version"/>
-                        <field name="generador_fecha" string="Fecha"
-                               readonly="not is_current_version"/>
-                        <field name="service_order_id" readonly="1"
-                               invisible="not service_order_id"/>
                         <field name="company_id" groups="base.group_multi_company"/>
+                        <field name="service_order_id" invisible="1"/>
                     </group>
 
                     <notebook>
+
+                        <!-- ====================================================== -->
+                        <!-- RESUMEN -->
+                        <!-- ====================================================== -->
+                        <page string="Resumen" name="resumen">
+                            <group col="2" class="ma_summary_grid">
+                                <group string="Generador">
+                                    <field name="generador_id"
+                                           string="Empresa"
+                                           options="{'no_create': True, 'no_create_edit': True}"
+                                           readonly="not is_current_version"/>
+                                    <field name="generador_nombre" string="Razón Social"
+                                           readonly="not is_current_version"/>
+                                    <field name="generador_estado" readonly="not is_current_version"/>
+                                    <field name="generador_municipio" readonly="not is_current_version"/>
+                                </group>
+
+                                <group string="Destino">
+                                    <field name="destinatario_id"
+                                           string="Empresa"
+                                           options="{'no_create': True, 'no_create_edit': True}"
+                                           readonly="not is_current_version"/>
+                                    <field name="destinatario_nombre" string="Razón Social"
+                                           readonly="not is_current_version"/>
+                                    <field name="destinatario_estado" readonly="not is_current_version"/>
+                                    <field name="destinatario_municipio" readonly="not is_current_version"/>
+                                </group>
+                            </group>
+
+                            <group string="Resumen de residuos" col="1">
+                                <field name="residuo_ids" readonly="1">
+                                    <list string="Residuos" create="false" delete="false">
+                                        <field name="product_id" string="Residuo"/>
+                                        <field name="nombre_residuo" string="Descripción"/>
+                                        <field name="cantidad"/>
+                                        <field name="unidad"/>
+                                        <field name="packaging_id" string="Embalaje" optional="show"/>
+                                        <field name="lot_id" optional="show"/>
+                                        <field name="clasificaciones_display" string="CRETIB" optional="show"/>
+                                    </list>
+                                </field>
+                            </group>
+
+                            <group col="2">
+                                <group string="Control">
+                                    <field name="state" readonly="1"/>
+                                    <field name="is_current_version" readonly="1"/>
+                                    <field name="created_by_remanifest" readonly="1"/>
+                                </group>
+
+                                <group string="Referencia">
+                                    <field name="original_manifiesto_id" readonly="1"
+                                           invisible="not original_manifiesto_id"/>
+                                    <field name="sequence_number" readonly="1"/>
+                                </group>
+                            </group>
+                        </page>
+
+                        <!-- ====================================================== -->
+                        <!-- GENERADOR -->
+                        <!-- ====================================================== -->
                         <page string="Generador" name="generador">
-                            <group>
-                                <group>
+                            <group col="2">
+                                <group string="Empresa">
                                     <field name="generador_id"
                                            string="Empresa Generadora"
                                            placeholder="Seleccione generador..."
                                            options="{'no_create': True, 'no_create_edit': True}"
                                            readonly="not is_current_version"/>
                                 </group>
-                                <group/>
-                            </group>
-                            <group string="Dirección" col="2">
-                                <group>
-                                    <field name="generador_nombre" string="Razón Social"
-                                           readonly="not is_current_version"/>
-                                    <field name="generador_calle"
-                                           readonly="not is_current_version"/>
-                                    <field name="generador_num_ext" string="Núm. Exterior"
-                                           readonly="not is_current_version"/>
-                                    <field name="generador_num_int" string="Núm. Interior"
-                                           readonly="not is_current_version"/>
-                                    <field name="generador_colonia"
-                                           readonly="not is_current_version"/>
-                                </group>
-                                <group>
-                                    <field name="generador_municipio"
-                                           readonly="not is_current_version"/>
-                                    <field name="generador_estado"
-                                           readonly="not is_current_version"/>
-                                    <field name="generador_codigo_postal" string="C.P."
-                                           readonly="not is_current_version"/>
-                                    <field name="generador_telefono"
-                                           readonly="not is_current_version"/>
-                                    <field name="generador_email"
-                                           readonly="not is_current_version"/>
-                                </group>
-                            </group>
-                            <group string="Firma y Responsable" col="2">
-                                <group>
+                                <group string="Firma">
                                     <field name="generador_responsable_id"
                                            string="Responsable"
                                            options="{'no_create': True, 'no_create_edit': True}"
@@ -233,23 +303,52 @@
                                            string="Nombre en documento"
                                            readonly="not is_current_version"/>
                                 </group>
+                            </group>
+
+                            <group string="Dirección" col="2">
                                 <group>
-                                    <field name="generador_fecha" string="Fecha de firma"
+                                    <field name="generador_nombre" string="Razón Social"
                                            readonly="not is_current_version"/>
-                                    <field name="generador_sello"
+                                    <field name="generador_calle" readonly="not is_current_version"/>
+                                    <field name="generador_num_ext" string="Núm. Exterior"
                                            readonly="not is_current_version"/>
+                                    <field name="generador_num_int" string="Núm. Interior"
+                                           readonly="not is_current_version"/>
+                                    <field name="generador_colonia" readonly="not is_current_version"/>
+                                </group>
+                                <group>
+                                    <field name="generador_municipio" readonly="not is_current_version"/>
+                                    <field name="generador_estado" readonly="not is_current_version"/>
+                                    <field name="generador_codigo_postal" string="C.P."
+                                           readonly="not is_current_version"/>
+                                    <field name="generador_telefono" readonly="not is_current_version"/>
+                                    <field name="generador_email" readonly="not is_current_version"/>
                                 </group>
                             </group>
+
+                            <group string="Validación" col="2">
+                                <group>
+                                    <field name="generador_fecha" string="Fecha del documento"
+                                           readonly="not is_current_version"/>
+                                </group>
+                                <group>
+                                    <field name="generador_sello" readonly="not is_current_version"/>
+                                </group>
+                            </group>
+
                             <group string="Declaración del Generador (Sección 7)" col="1">
                                 <field name="declaracion_generador" nolabel="1" readonly="1"/>
                             </group>
                         </page>
 
+                        <!-- ====================================================== -->
+                        <!-- RESIDUOS -->
+                        <!-- ====================================================== -->
                         <page string="Residuos" name="residuos">
-                            <div class="alert alert-info mb-3" invisible="not is_current_version">
-                                Seleccione productos del catálogo. Las clasificaciones CRETIB
-                                se completan automáticamente desde la ficha del producto.
+                            <div class="alert alert-info ma_inline_info" invisible="not is_current_version">
+                                Seleccione productos del catálogo. Las clasificaciones CRETIB se completan automáticamente desde la ficha del producto.
                             </div>
+
                             <field name="residuo_ids" readonly="not is_current_version">
                                 <list editable="bottom">
                                     <field name="product_id"
@@ -273,6 +372,7 @@
                                     <field name="clasificaciones_display" string="CRETIB" optional="hide"/>
                                     <field name="envase_tipo" string="Envase (Legacy)" optional="hide"/>
                                 </list>
+
                                 <form string="Detalle del Residuo">
                                     <sheet>
                                         <group col="2">
@@ -293,6 +393,7 @@
                                                 <field name="etiqueta_no"/>
                                             </group>
                                         </group>
+
                                         <group string="Clasificación CRETIB" col="6">
                                             <field name="clasificacion_corrosivo"/>
                                             <field name="clasificacion_reactivo"/>
@@ -304,50 +405,58 @@
                                     </sheet>
                                 </form>
                             </field>
-                            <separator string="Instrucciones Especiales de Manejo (Sección 6)"/>
-                            <field name="instrucciones_especiales"
-                                   nolabel="1"
-                                   placeholder="Instrucciones especiales para el manejo seguro de los residuos listados..."
-                                   readonly="not is_current_version"/>
+
+                            <group string="Instrucciones Especiales de Manejo (Sección 6)" col="1">
+                                <field name="instrucciones_especiales"
+                                       nolabel="1"
+                                       placeholder="Instrucciones especiales para el manejo seguro de los residuos listados..."
+                                       readonly="not is_current_version"/>
+                            </group>
                         </page>
 
+                        <!-- ====================================================== -->
+                        <!-- TRANSPORTISTA -->
+                        <!-- ====================================================== -->
                         <page string="Transportista" name="transportista">
-                            <group>
-                                <group>
+                            <group col="2">
+                                <group string="Empresa">
                                     <field name="transportista_id"
                                            string="Empresa Transportista"
                                            placeholder="Seleccione transportista..."
                                            options="{'no_create': True, 'no_create_edit': True}"
                                            readonly="not is_current_version"/>
                                 </group>
-                                <group/>
+                                <group string="Operación">
+                                    <field name="chofer_id" string="Chofer"
+                                           options="{'no_create': True, 'no_create_edit': True}"
+                                           readonly="not is_current_version"/>
+                                    <field name="vehicle_id" string="Vehículo"
+                                           options="{'no_create': True, 'no_create_edit': True}"
+                                           readonly="not is_current_version"/>
+                                </group>
                             </group>
+
                             <group string="Dirección (Sección 8)" col="2">
                                 <group>
                                     <field name="transportista_nombre" string="Razón Social"
                                            readonly="not is_current_version"/>
-                                    <field name="transportista_calle"
-                                           readonly="not is_current_version"/>
+                                    <field name="transportista_calle" readonly="not is_current_version"/>
                                     <field name="transportista_num_ext" string="Núm. Exterior"
                                            readonly="not is_current_version"/>
                                     <field name="transportista_num_int" string="Núm. Interior"
                                            readonly="not is_current_version"/>
-                                    <field name="transportista_colonia"
-                                           readonly="not is_current_version"/>
+                                    <field name="transportista_colonia" readonly="not is_current_version"/>
                                 </group>
                                 <group>
-                                    <field name="transportista_municipio"
-                                           readonly="not is_current_version"/>
-                                    <field name="transportista_estado"
-                                           readonly="not is_current_version"/>
+                                    <field name="transportista_municipio" readonly="not is_current_version"/>
+                                    <field name="transportista_estado" readonly="not is_current_version"/>
                                     <field name="transportista_codigo_postal" string="C.P."
                                            readonly="not is_current_version"/>
-                                    <field name="transportista_telefono"
-                                           readonly="not is_current_version"/>
-                                    <field name="transportista_email"
-                                           readonly="not is_current_version"/>
+                                    <field name="transportista_telefono" readonly="not is_current_version"/>
+                                    <field name="transportista_email" readonly="not is_current_version"/>
                                 </group>
                             </group>
+
                             <group string="Autorizaciones y Vehículo (Secciones 9-12)" col="2">
                                 <group>
                                     <field name="numero_autorizacion_semarnat"
@@ -358,22 +467,19 @@
                                            readonly="not is_current_version"/>
                                 </group>
                                 <group>
-                                    <field name="vehicle_id" string="Vehículo"
-                                           options="{'no_create': True, 'no_create_edit': True}"
-                                           readonly="not is_current_version"/>
                                     <field name="tipo_vehiculo" string="Tipo de Vehículo"
                                            readonly="not is_current_version"/>
                                     <field name="numero_placa" string="Placas"
                                            readonly="not is_current_version"/>
-                                    <field name="chofer_id" string="Chofer"
-                                           options="{'no_create': True, 'no_create_edit': True}"
-                                           readonly="not is_current_version"/>
                                 </group>
                             </group>
-                            <separator string="Ruta de Transporte (Sección 13)"/>
-                            <field name="ruta_empresa" nolabel="1"
-                                   placeholder="Descripción de la ruta desde la empresa generadora hasta el punto de entrega..."
-                                   readonly="not is_current_version"/>
+
+                            <group string="Ruta de Transporte (Sección 13)" col="1">
+                                <field name="ruta_empresa" nolabel="1"
+                                       placeholder="Descripción de la ruta desde la empresa generadora hasta el punto de entrega..."
+                                       readonly="not is_current_version"/>
+                            </group>
+
                             <group string="Firma y Responsable" col="2">
                                 <group>
                                     <field name="transportista_responsable_id"
@@ -391,84 +497,83 @@
                                            readonly="not is_current_version"/>
                                 </group>
                             </group>
+
                             <group string="Declaración del Transportista (Sección 14)" col="1">
                                 <field name="declaracion_transportista" nolabel="1" readonly="1"/>
                             </group>
                         </page>
 
+                        <!-- ====================================================== -->
+                        <!-- DESTINATARIO -->
+                        <!-- ====================================================== -->
                         <page string="Destinatario" name="destinatario">
-                            <group>
-                                <group>
+                            <group col="2">
+                                <group string="Empresa">
                                     <field name="destinatario_id"
                                            string="Empresa Destinataria"
                                            placeholder="Seleccione destinatario..."
                                            options="{'no_create': True, 'no_create_edit': True}"
                                            readonly="not is_current_version"/>
                                 </group>
-                                <group/>
+                                <group string="Recepción">
+                                    <field name="nombre_persona_recibe"
+                                           string="Persona que Recibe"
+                                           readonly="not is_current_version"/>
+                                    <field name="numero_autorizacion_semarnat_destinatario"
+                                           string="Aut. SEMARNAT"
+                                           readonly="not is_current_version"/>
+                                </group>
                             </group>
+
                             <group string="Dirección (Sección 15)" col="2">
                                 <group>
                                     <field name="destinatario_nombre" string="Razón Social"
                                            readonly="not is_current_version"/>
-                                    <field name="destinatario_calle"
-                                           readonly="not is_current_version"/>
+                                    <field name="destinatario_calle" readonly="not is_current_version"/>
                                     <field name="destinatario_num_ext" string="Núm. Exterior"
                                            readonly="not is_current_version"/>
                                     <field name="destinatario_num_int" string="Núm. Interior"
                                            readonly="not is_current_version"/>
-                                    <field name="destinatario_colonia"
-                                           readonly="not is_current_version"/>
+                                    <field name="destinatario_colonia" readonly="not is_current_version"/>
                                 </group>
                                 <group>
-                                    <field name="destinatario_municipio"
-                                           readonly="not is_current_version"/>
-                                    <field name="destinatario_estado"
-                                           readonly="not is_current_version"/>
+                                    <field name="destinatario_municipio" readonly="not is_current_version"/>
+                                    <field name="destinatario_estado" readonly="not is_current_version"/>
                                     <field name="destinatario_codigo_postal" string="C.P."
                                            readonly="not is_current_version"/>
-                                    <field name="destinatario_telefono"
-                                           readonly="not is_current_version"/>
-                                    <field name="destinatario_email"
-                                           readonly="not is_current_version"/>
+                                    <field name="destinatario_telefono" readonly="not is_current_version"/>
+                                    <field name="destinatario_email" readonly="not is_current_version"/>
                                 </group>
                             </group>
-                            <group string="Recepción (Secciones 16-18)" col="2">
+
+                            <group string="Recepción y Observaciones (Secciones 16-18)" col="2">
                                 <group>
-                                    <field name="numero_autorizacion_semarnat_destinatario"
-                                           string="Aut. SEMARNAT"
+                                    <field name="destinatario_responsable_nombre"
+                                           string="Nombre del Responsable"
                                            readonly="not is_current_version"/>
-                                    <field name="nombre_persona_recibe"
-                                           string="Persona que Recibe"
+                                    <field name="destinatario_fecha" string="Fecha de firma"
                                            readonly="not is_current_version"/>
                                 </group>
                                 <group>
                                     <field name="observaciones_destinatario"
                                            string="Observaciones"
                                            readonly="not is_current_version"/>
-                                </group>
-                            </group>
-                            <group string="Firma y Responsable" col="2">
-                                <group>
-                                    <field name="destinatario_responsable_nombre"
-                                           string="Nombre del Responsable"
-                                           readonly="not is_current_version"/>
-                                </group>
-                                <group>
-                                    <field name="destinatario_fecha" string="Fecha de firma"
-                                           readonly="not is_current_version"/>
                                     <field name="destinatario_sello"
                                            readonly="not is_current_version"/>
                                 </group>
                             </group>
+
                             <group string="Declaración del Destinatario (Sección 19)" col="1">
                                 <field name="declaracion_destinatario" nolabel="1" readonly="1"/>
                             </group>
                         </page>
 
+                        <!-- ====================================================== -->
+                        <!-- DOCUMENTO FÍSICO -->
+                        <!-- ====================================================== -->
                         <page string="Documento Físico" name="documento_fisico">
                             <group col="2">
-                                <group>
+                                <group string="Archivo">
                                     <field name="documento_fisico_filename"
                                            readonly="not is_current_version"/>
                                     <field name="tiene_documento_fisico" readonly="1"
@@ -476,54 +581,62 @@
                                 </group>
                                 <group/>
                             </group>
-                            <div style="width: 100%; height: 600px; border: 1px solid #dee2e6;
-                                        border-radius: 8px; overflow: hidden; background: #f8f9fa;">
-                                <field name="documento_fisico"
-                                       filename="documento_fisico_filename"
-                                       readonly="not is_current_version"
-                                       widget="pdf_viewer"
-                                       style="width: 100%; height: 580px;"
-                                       options="{'accepted_file_extensions': '.pdf,.png,.jpg,.jpeg,.gif,.bmp,.tiff'}"/>
-                            </div>
+
+                            <group string="Vista previa" col="1">
+                                <div class="ma_pdf_viewer_wrap">
+                                    <field name="documento_fisico"
+                                           filename="documento_fisico_filename"
+                                           readonly="not is_current_version"
+                                           widget="pdf_viewer"
+                                           options="{'accepted_file_extensions': '.pdf,.png,.jpg,.jpeg,.gif,.bmp,.tiff'}"/>
+                                </div>
+                            </group>
                         </page>
 
+                        <!-- ====================================================== -->
+                        <!-- VERSIONES -->
+                        <!-- ====================================================== -->
                         <page string="Versiones" name="versiones" invisible="version &lt;= 1">
-                            <group string="Versión Actual" col="2">
-                                <group>
+                            <group col="2">
+                                <group string="Versión actual">
                                     <field name="version" readonly="1" string="Nº de Versión"/>
                                     <field name="is_current_version" readonly="1"/>
                                 </group>
-                                <group>
+                                <group string="Origen">
                                     <field name="original_manifiesto_id" readonly="1"
                                            string="Manifiesto Original"/>
                                     <field name="created_by_remanifest" readonly="1"/>
                                 </group>
                             </group>
-                            <group string="Motivo de la Remanifestación" col="1"
+
+                            <group string="Motivo de la remanifestación" col="1"
                                    invisible="not created_by_remanifest">
                                 <field name="change_reason" nolabel="1"
                                        placeholder="Describa el motivo de esta remanifestación..."
                                        readonly="not is_current_version"/>
                             </group>
-                            <separator string="Historial de Versiones"/>
-                            <field name="version_history_ids" readonly="1">
-                                <list string="Historial de Versiones"
-                                      default_order="version_number desc">
-                                    <field name="version_number" string="Ver."/>
-                                    <field name="creation_date"/>
-                                    <field name="created_by"/>
-                                    <field name="state_at_creation" string="Estado"/>
-                                    <field name="tenia_documento_fisico" string="Doc." widget="boolean_toggle"/>
-                                    <field name="change_reason" string="Motivo"/>
-                                    <button name="action_download_file" type="object"
-                                            string="Descargar" class="btn-link" icon="fa-download"/>
-                                    <button name="action_view_file" type="object"
-                                            string="Ver" class="btn-link" icon="fa-eye"/>
-                                    <button name="action_download_documento_fisico" type="object"
-                                            string="Doc. Físico" class="btn-link" icon="fa-paperclip"
-                                            invisible="not tenia_documento_fisico"/>
-                                </list>
-                            </field>
+
+                            <group string="Historial de versiones" col="1">
+                                <field name="version_history_ids" readonly="1">
+                                    <list string="Historial de Versiones"
+                                          default_order="version_number desc">
+                                        <field name="version_number" string="Ver."/>
+                                        <field name="creation_date"/>
+                                        <field name="created_by"/>
+                                        <field name="state_at_creation" string="Estado"/>
+                                        <field name="tenia_documento_fisico" string="Doc." widget="boolean_toggle"/>
+                                        <field name="change_reason" string="Motivo"/>
+                                        <button name="action_download_file" type="object"
+                                                string="Descargar" class="btn-link" icon="fa-download"/>
+                                        <button name="action_view_file" type="object"
+                                                string="Ver" class="btn-link" icon="fa-eye"/>
+                                        <button name="action_download_documento_fisico" type="object"
+                                                string="Doc. Físico" class="btn-link" icon="fa-paperclip"
+                                                invisible="not tenia_documento_fisico"/>
+                                    </list>
+                                </field>
+                            </group>
+
                             <div class="mt-3">
                                 <button name="action_view_all_versions" type="object"
                                         string="Ver Todas las Versiones en Lista Completa"
@@ -531,8 +644,10 @@
                                         icon="fa-list"/>
                             </div>
                         </page>
+
                     </notebook>
 
+                    <!-- invisibles técnicos -->
                     <field name="is_current_version" invisible="1"/>
                     <field name="original_manifiesto_id" invisible="1"/>
                     <field name="created_by_remanifest" invisible="1"/>
@@ -540,6 +655,7 @@
                     <field name="sequence_number" invisible="1"/>
                     <field name="tipo_manifiesto" invisible="1"/>
                     <field name="service_order_id" invisible="1"/>
+
                 </sheet>
                 <chatter/>
             </form>

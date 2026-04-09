@@ -95,7 +95,7 @@
                             string="⚠️ Discrepancias"
                             type="object"
                             class="btn-warning"
-                            invisible="state not in ['in_transit', 'delivered'] or not is_current_version"/>
+                            invisible="state not in ['in_transit', 'delivered'] or not is_current_version or tipo_manifiesto == 'salida'"/>
 
                     <!-- Remanifestación -->
                     <button name="action_remanifestar"

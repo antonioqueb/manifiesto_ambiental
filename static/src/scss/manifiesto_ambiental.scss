@@ -1,10 +1,7 @@
 // ============================================================================
-// MANIFIESTO AMBIENTAL — Premium SCSS Theme (SCOPED TO FORM ONLY)
+// MANIFIESTO AMBIENTAL — Premium SCSS Theme v2 (SCOPED TO FORM ONLY)
 // Module: manifiesto_ambiental | Odoo 19 Enterprise
 // Author: Alphaqueb Consulting SAS
-//
-// ALL styles scoped under .o_manifiesto_ambiental_form — no list styles.
-// FIX: removed overflow:hidden on .o_form_sheet and position:fixed on ::before
 // ============================================================================
 
 // ---------------------------------------------------------------------------
@@ -12,440 +9,747 @@
 // ---------------------------------------------------------------------------
 $ma-navy:         #0B1426;
 $ma-navy-light:   #132040;
+$ma-navy-mid:     #1A2744;
 $ma-slate:        #334155;
 $ma-slate-light:  #64748B;
+$ma-slate-muted:  #94A3B8;
 $ma-teal:         #00BFA6;
 $ma-teal-dark:    #009E8B;
+$ma-teal-deeper:  #00897B;
 $ma-teal-glow:    rgba(0, 191, 166, 0.15);
-$ma-teal-subtle:  rgba(0, 191, 166, 0.06);
+$ma-teal-subtle:  rgba(0, 191, 166, 0.05);
 $ma-amber:        #F59E0B;
+$ma-amber-soft:   #FEF3C7;
 $ma-red:          #EF4444;
 $ma-green:        #10B981;
-$ma-green-glow:   rgba(16, 185, 129, 0.10);
+$ma-green-soft:   #D1FAE5;
 $ma-blue:         #3B82F6;
-$ma-blue-glow:    rgba(59, 130, 246, 0.10);
+$ma-blue-soft:    #DBEAFE;
 $ma-purple:       #8B5CF6;
 
 $ma-surface:      #FFFFFF;
 $ma-surface-alt:  #F8FAFC;
+$ma-surface-warm: #FAFBFD;
 $ma-border:       #E2E8F0;
 $ma-border-light: #F1F5F9;
+$ma-border-focus: #CBD5E1;
 $ma-text:         #1E293B;
-$ma-text-subtle:  #CBD5E1;
+$ma-text-secondary: #475569;
+$ma-text-muted:   #94A3B8;
 
+$ma-radius-xs:    4px;
 $ma-radius-sm:    6px;
-$ma-radius:       10px;
-$ma-radius-lg:    14px;
+$ma-radius:       8px;
+$ma-radius-lg:    12px;
+$ma-radius-xl:    16px;
 $ma-radius-pill:  50px;
 
 $ma-shadow-xs:    0 1px 2px rgba(0, 0, 0, 0.04);
-$ma-shadow-sm:    0 2px 8px rgba(0, 0, 0, 0.06);
-$ma-shadow-lg:    0 8px 32px rgba(0, 0, 0, 0.10);
-$ma-shadow-glow:  0 4px 24px rgba(0, 191, 166, 0.12);
+$ma-shadow-sm:    0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+$ma-shadow:       0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
+$ma-shadow-lg:    0 10px 25px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04);
+$ma-shadow-glow:  0 0 20px rgba(0, 191, 166, 0.10);
 
-$ma-transition:   all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+$ma-transition:   all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 $ma-transition-fast: all 0.15s ease;
 
+
 // ===========================================================================
-// FORM VIEW — scoped under .o_manifiesto_ambiental_form
+// FORM VIEW
 // ===========================================================================
 .o_manifiesto_ambiental_form {
 
-    // -----------------------------------------------------------------------
-    // Canvas
-    // -----------------------------------------------------------------------
-    &.o_form_view {
-        background: linear-gradient(145deg, $ma-surface-alt 0%, #EEF2F7 50%, $ma-surface-alt 100%);
+  // -------------------------------------------------------------------------
+  // Canvas & Sheet
+  // -------------------------------------------------------------------------
+  &.o_form_view {
+    background: $ma-surface-alt;
 
-        .o_form_sheet_bg {
-            background: transparent !important;
-        }
-
-        .o_form_sheet {
-            position: relative;
-            z-index: 1;
-            background: $ma-surface;
-            border-radius: $ma-radius-lg;
-            box-shadow: $ma-shadow-lg;
-            border: 1px solid $ma-border-light;
-            margin: 16px auto;
-            max-width: 1280px;
-            padding: 0 !important;
-            // SIN overflow:hidden para no romper scroll
-        }
+    .o_form_sheet_bg {
+      background: transparent !important;
     }
 
-    // -----------------------------------------------------------------------
-    // Header / Statusbar
-    // -----------------------------------------------------------------------
-    .o_form_statusbar {
-        background: linear-gradient(135deg, $ma-navy 0%, $ma-navy-light 100%);
-        border-bottom: 2px solid $ma-teal;
-        padding: 10px 20px;
-        min-height: 56px;
-        position: relative;
+    .o_form_sheet {
+      position: relative;
+      z-index: 1;
+      background: $ma-surface;
+      border-radius: $ma-radius-xl;
+      box-shadow: $ma-shadow-lg;
+      border: 1px solid $ma-border;
+      margin: 24px auto;
+      max-width: 1280px;
+      padding: 0 !important;
+    }
+  }
 
-        &::after {
+  // -------------------------------------------------------------------------
+  // Header / Statusbar
+  // -------------------------------------------------------------------------
+  .o_form_statusbar {
+    background: $ma-navy;
+    border-bottom: none;
+    padding: 0;
+    min-height: auto;
+    display: flex;
+    align-items: center;
+    border-radius: $ma-radius-xl $ma-radius-xl 0 0;
+    overflow: hidden;
+
+    .o_statusbar_buttons {
+      padding: 10px 16px;
+      gap: 6px;
+      display: flex;
+      flex-wrap: wrap;
+
+      .btn {
+        border-radius: $ma-radius;
+        font-weight: 600;
+        font-size: 12px;
+        letter-spacing: 0.01em;
+        padding: 6px 14px;
+        border: none;
+        transition: $ma-transition;
+        white-space: nowrap;
+      }
+
+      .btn-primary {
+        background: $ma-teal;
+        color: white;
+        &:hover {
+          background: $ma-teal-dark;
+          box-shadow: 0 2px 8px rgba($ma-teal, 0.35);
+        }
+      }
+      .btn-secondary {
+        background: rgba(255, 255, 255, 0.07);
+        color: rgba(255, 255, 255, 0.75);
+        border: 1px solid rgba(255, 255, 255, 0.10);
+        &:hover {
+          background: rgba(255, 255, 255, 0.14);
+          color: white;
+        }
+      }
+      .btn-success {
+        background: $ma-green;
+        color: white;
+        &:hover { background: darken($ma-green, 6%); }
+      }
+      .btn-warning {
+        background: $ma-amber;
+        color: $ma-navy;
+        font-weight: 700;
+        &:hover { background: darken($ma-amber, 6%); }
+      }
+      .btn-danger {
+        background: rgba($ma-red, 0.12);
+        color: lighten($ma-red, 12%);
+        border: 1px solid rgba($ma-red, 0.25);
+        &:hover { background: $ma-red; color: white; }
+      }
+    }
+
+    // Statusbar steps
+    .o_statusbar_status {
+      margin-left: auto;
+
+      .o_arrow_button {
+        background: rgba(255, 255, 255, 0.04) !important;
+        color: rgba(255, 255, 255, 0.4) !important;
+        border-color: rgba(255, 255, 255, 0.06) !important;
+        font-size: 11.5px;
+        font-weight: 500;
+        transition: $ma-transition;
+
+        &.o_arrow_button_current {
+          background: $ma-teal !important;
+          color: white !important;
+          border-color: $ma-teal !important;
+          font-weight: 700;
+          box-shadow: 0 0 12px rgba($ma-teal, 0.35);
+        }
+        &.btn-primary:not(.o_arrow_button_current) {
+          background: rgba($ma-teal, 0.12) !important;
+          color: $ma-teal !important;
+          border-color: rgba($ma-teal, 0.25) !important;
+        }
+      }
+    }
+  }
+
+  // -------------------------------------------------------------------------
+  // Smart Buttons
+  // -------------------------------------------------------------------------
+  .oe_button_box {
+    border-bottom: 1px solid $ma-border;
+    background: $ma-surface;
+    padding: 10px 24px;
+    gap: 8px;
+    display: flex;
+    flex-wrap: wrap;
+
+    .oe_stat_button {
+      background: $ma-surface;
+      border: 1px solid $ma-border;
+      border-radius: $ma-radius;
+      padding: 8px 14px;
+      min-width: 110px;
+      transition: $ma-transition;
+
+      &:hover {
+        border-color: $ma-teal;
+        background: $ma-teal-subtle;
+        box-shadow: $ma-shadow-sm;
+      }
+
+      .o_button_icon {
+        font-size: 16px;
+        opacity: 0.8;
+      }
+      .o_stat_info {
+        .o_stat_value {
+          color: $ma-navy;
+          font-weight: 800;
+          font-size: 16px;
+          line-height: 1.2;
+        }
+        .o_stat_text {
+          color: $ma-slate-muted;
+          font-size: 10px;
+          font-weight: 600;
+          text-transform: uppercase;
+          letter-spacing: 0.06em;
+        }
+      }
+
+      &:nth-child(1) .o_button_icon { color: $ma-purple; }
+      &:nth-child(2) .o_button_icon { color: $ma-amber; }
+      &:nth-child(3) .o_button_icon { color: $ma-blue; }
+      &:nth-child(4) .o_button_icon { color: $ma-green; }
+    }
+  }
+
+  // -------------------------------------------------------------------------
+  // Historical version alert
+  // -------------------------------------------------------------------------
+  .alert {
+    border-radius: $ma-radius;
+    border: none;
+    padding: 12px 20px;
+    font-size: 13px;
+    font-weight: 500;
+    margin: 0;
+
+    strong { font-weight: 700; }
+
+    &.alert-warning {
+      background: $ma-amber-soft;
+      color: #92400E;
+      border-left: 3px solid $ma-amber;
+      border-radius: 0;
+    }
+    &.alert-info {
+      background: linear-gradient(135deg, #F0FDFA, #CCFBF1);
+      color: #115E59;
+      border-left: 3px solid $ma-teal;
+      border-radius: 0;
+    }
+    &.alert-success {
+      background: $ma-green-soft;
+      color: #065F46;
+      border-left: 3px solid $ma-green;
+      border-radius: 0;
+    }
+  }
+
+  // -------------------------------------------------------------------------
+  // Title Area
+  // -------------------------------------------------------------------------
+  .oe_title {
+    padding: 28px 32px 20px;
+
+    label {
+      color: $ma-slate-muted;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      margin-bottom: 4px;
+    }
+
+    h1 .o_field_widget {
+      font-size: 26px !important;
+      font-weight: 800 !important;
+      color: $ma-navy !important;
+      letter-spacing: -0.025em;
+
+      input {
+        font-size: 26px !important;
+        font-weight: 800 !important;
+        color: $ma-navy !important;
+        border: none !important;
+        padding: 0 !important;
+        background: transparent !important;
+
+        &:focus {
+          box-shadow: none !important;
+          border-bottom: 2px solid $ma-teal !important;
+          border-radius: 0 !important;
+        }
+      }
+    }
+  }
+
+  // -------------------------------------------------------------------------
+  // Top metadata group (Tipo, Registro, Página, Fecha)
+  // -------------------------------------------------------------------------
+  > .o_form_sheet > .o_group:first-of-type,
+  .o_form_sheet > .o_group[col="4"] {
+    padding: 0 32px 20px;
+    margin: 0;
+
+    > tbody > tr > td {
+      padding: 0 8px;
+
+      .o_field_widget {
+        .o_input {
+          background: $ma-surface-alt;
+          border: 1px solid $ma-border-light;
+          border-radius: $ma-radius-sm;
+          font-size: 13px;
+          padding: 7px 12px;
+          color: $ma-text;
+
+          &:focus {
+            background: $ma-surface;
+            border-color: $ma-teal;
+            box-shadow: 0 0 0 2px $ma-teal-glow;
+          }
+        }
+      }
+    }
+  }
+
+  // -------------------------------------------------------------------------
+  // Section Headers (group string="...")
+  // -------------------------------------------------------------------------
+  .o_group {
+    > tbody > tr > td.o_group_col > div > .o_group_header,
+    .o_horizontal_separator {
+      color: $ma-navy;
+      font-weight: 700;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      padding-bottom: 10px;
+      margin-bottom: 16px;
+      margin-top: 8px;
+      border-bottom: 1px solid $ma-border;
+      position: relative;
+
+      &::after {
+        content: '';
+        position: absolute;
+        bottom: -1px;
+        left: 0;
+        width: 32px;
+        height: 2px;
+        background: $ma-teal;
+        border-radius: 1px;
+      }
+    }
+  }
+
+  // -------------------------------------------------------------------------
+  // Inner Groups (the card-like containers)
+  // -------------------------------------------------------------------------
+  .o_inner_group {
+    background: $ma-surface;
+    border: 1px solid $ma-border-light;
+    border-radius: $ma-radius;
+    padding: 16px 20px;
+    margin-bottom: 8px;
+    transition: $ma-transition;
+
+    &:hover {
+      border-color: $ma-border;
+    }
+
+    // Two-column layout inside tabs — make them equal height
+    & + .o_inner_group {
+      // sibling groups should align
+    }
+  }
+
+  // -------------------------------------------------------------------------
+  // Form Labels
+  // -------------------------------------------------------------------------
+  .o_form_label, label.o_form_label {
+    color: $ma-text-secondary;
+    font-weight: 600;
+    font-size: 12px;
+  }
+
+  // -------------------------------------------------------------------------
+  // Input Fields
+  // -------------------------------------------------------------------------
+  .o_field_widget .o_input {
+    border: 1px solid $ma-border;
+    border-radius: $ma-radius-sm;
+    padding: 7px 12px;
+    font-size: 13px;
+    color: $ma-text;
+    background: $ma-surface;
+    transition: $ma-transition-fast;
+
+    &:focus {
+      border-color: $ma-teal;
+      box-shadow: 0 0 0 3px $ma-teal-glow;
+      outline: none;
+    }
+    &:hover:not(:focus):not([readonly]) {
+      border-color: $ma-border-focus;
+    }
+    &[readonly], &.o_readonly {
+      background: $ma-surface-alt;
+      border-color: transparent;
+      color: $ma-slate;
+    }
+  }
+
+  .o_field_widget textarea.o_input {
+    border-radius: $ma-radius;
+    min-height: 72px;
+    line-height: 1.6;
+  }
+
+  // Badges (Tipo Manifiesto, Estado)
+  .o_field_badge .badge {
+    border-radius: $ma-radius-xs;
+    padding: 4px 10px;
+    font-weight: 700;
+    font-size: 10.5px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .o_field_badge .badge.text-bg-info,
+  .badge[class*="decoration-info"] {
+    background: $ma-blue-soft !important;
+    color: #1E40AF !important;
+    border: 1px solid rgba($ma-blue, 0.15);
+  }
+  .o_field_badge .badge.text-bg-success,
+  .badge[class*="decoration-success"] {
+    background: $ma-green-soft !important;
+    color: #065F46 !important;
+    border: 1px solid rgba($ma-green, 0.15);
+  }
+
+  // -------------------------------------------------------------------------
+  // Notebook / Tabs
+  // -------------------------------------------------------------------------
+  .o_notebook {
+    margin: 0;
+    border: none;
+
+    > .o_notebook_headers {
+      background: $ma-surface;
+      border-bottom: 1px solid $ma-border;
+      padding: 0 32px;
+
+      .nav-tabs {
+        border: none;
+        gap: 0;
+
+        .nav-item .nav-link {
+          border: none;
+          border-radius: 0;
+          padding: 14px 20px;
+          color: $ma-slate-muted;
+          font-weight: 600;
+          font-size: 13px;
+          transition: $ma-transition;
+          position: relative;
+          background: transparent;
+
+          &::after {
             content: '';
             position: absolute;
-            bottom: -2px; left: 0; right: 0; height: 2px;
-            background: linear-gradient(90deg,
-                transparent 0%, $ma-teal 20%, $ma-teal 80%, transparent 100%);
-            filter: blur(1px);
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: $ma-teal;
+            transform: scaleX(0);
+            transition: transform 0.25s ease;
+          }
+
+          &:hover {
+            color: $ma-text;
+            background: transparent;
+          }
+
+          &.active {
+            color: $ma-teal;
+            background: transparent;
+            font-weight: 700;
+
+            &::after {
+              transform: scaleX(1);
+            }
+          }
         }
-
-        .o_statusbar_buttons {
-            gap: 6px;
-
-            .btn {
-                border-radius: $ma-radius;
-                font-weight: 600; font-size: 12.5px;
-                letter-spacing: 0.02em; padding: 7px 16px;
-                border: none; transition: $ma-transition;
-                position: relative; overflow: hidden;
-
-                &::before {
-                    content: ''; position: absolute; inset: 0;
-                    background: linear-gradient(180deg, rgba(255,255,255,0.12) 0%, transparent 100%);
-                    opacity: 0; transition: $ma-transition-fast;
-                }
-                &:hover::before { opacity: 1; }
-            }
-
-            .btn-primary {
-                background: linear-gradient(135deg, $ma-teal-dark, $ma-teal);
-                color: white; box-shadow: 0 2px 8px rgba($ma-teal, 0.3);
-                &:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba($ma-teal, 0.4); }
-            }
-            .btn-secondary {
-                background: rgba(255, 255, 255, 0.08);
-                color: rgba(255, 255, 255, 0.85);
-                border: 1px solid rgba(255, 255, 255, 0.12);
-                &:hover { background: rgba(255, 255, 255, 0.15); color: white; }
-            }
-            .btn-success {
-                background: linear-gradient(135deg, darken($ma-green, 5%), $ma-green);
-                color: white; box-shadow: 0 2px 8px rgba($ma-green, 0.3);
-            }
-            .btn-warning {
-                background: linear-gradient(135deg, darken($ma-amber, 8%), $ma-amber);
-                color: $ma-navy; box-shadow: 0 2px 8px rgba($ma-amber, 0.3);
-            }
-            .btn-danger {
-                background: rgba($ma-red, 0.15); color: lighten($ma-red, 15%);
-                border: 1px solid rgba($ma-red, 0.3);
-                &:hover { background: $ma-red; color: white; }
-            }
-            .btn-info {
-                background: rgba($ma-blue, 0.15); color: lighten($ma-blue, 20%);
-                border: 1px solid rgba($ma-blue, 0.2);
-                &:hover { background: $ma-blue; color: white; }
-            }
-        }
-
-        .o_statusbar_status .o_arrow_button {
-            background: rgba(255, 255, 255, 0.05) !important;
-            color: rgba(255, 255, 255, 0.5) !important;
-            border-color: rgba(255, 255, 255, 0.08) !important;
-            font-size: 12px; font-weight: 500; transition: $ma-transition;
-
-            &.o_arrow_button_current {
-                background: $ma-teal !important; color: white !important;
-                border-color: $ma-teal !important;
-                box-shadow: 0 0 16px rgba($ma-teal, 0.4); font-weight: 700;
-            }
-            &.btn-primary:not(.o_arrow_button_current) {
-                background: rgba($ma-teal, 0.15) !important;
-                color: $ma-teal !important; border-color: rgba($ma-teal, 0.3) !important;
-            }
-        }
+      }
     }
 
-    // -----------------------------------------------------------------------
-    // Smart Buttons
-    // -----------------------------------------------------------------------
-    .oe_button_box {
-        border-bottom: 1px solid $ma-border; background: $ma-surface-alt;
-        padding: 12px 20px; gap: 8px; display: flex; flex-wrap: wrap;
+    .tab-content {
+      padding: 24px 32px;
+      background: $ma-surface;
 
-        .oe_stat_button {
-            background: $ma-surface; border: 1px solid $ma-border;
-            border-radius: $ma-radius; padding: 10px 16px;
-            min-width: 120px; transition: $ma-transition;
-            position: relative; overflow: hidden;
-
-            &::before {
-                content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
-                background: $ma-teal; transform: scaleX(0); transition: transform 0.3s ease;
-            }
-            &:hover {
-                border-color: $ma-teal; box-shadow: $ma-shadow-glow; transform: translateY(-2px);
-                &::before { transform: scaleX(1); }
-            }
-
-            .o_button_icon { color: $ma-teal; font-size: 18px; }
-            .o_stat_info {
-                .o_stat_value { color: $ma-navy; font-weight: 800; font-size: 18px; line-height: 1.2; }
-                .o_stat_text { color: $ma-slate-light; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
-            }
-            &:nth-child(1) .o_button_icon { color: $ma-amber; }
-            &:nth-child(2) .o_button_icon { color: $ma-green; }
-            &:nth-child(3) .o_button_icon { color: $ma-blue; }
-            &:nth-child(4) .o_button_icon { color: $ma-purple; }
-        }
+      .tab-pane {
+        animation: ma-fadeIn 0.2s ease;
+      }
     }
+  }
 
-    // -----------------------------------------------------------------------
-    // Alerts
-    // -----------------------------------------------------------------------
-    .alert {
-        border-radius: $ma-radius; border: none; padding: 14px 20px;
-        font-size: 13px; font-weight: 500; position: relative;
-        overflow: hidden; margin: 16px 24px;
+  // -------------------------------------------------------------------------
+  // One2Many / Many2Many Lists (Residuos, Versiones)
+  // -------------------------------------------------------------------------
+  .o_field_one2many, .o_field_many2many {
+    .o_list_view {
+      border: 1px solid $ma-border;
+      border-radius: $ma-radius;
+      overflow: hidden;
 
-        &::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; }
-        strong { font-weight: 700; }
+      thead th {
+        background: $ma-navy !important;
+        color: rgba(255, 255, 255, 0.85) !important;
+        font-weight: 600;
+        font-size: 10.5px;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        padding: 10px 12px;
+        border: none !important;
+        white-space: nowrap;
+      }
 
-        &.alert-warning {
-            background: linear-gradient(135deg, #FFFBEB, #FEF3C7); color: #92400E;
-            box-shadow: inset 0 0 0 1px rgba($ma-amber, 0.2);
-            &::before { background: $ma-amber; }
+      tbody tr {
+        transition: background 0.1s ease;
+
+        &:nth-child(even) {
+          background: $ma-surface-alt;
         }
-        &.alert-success {
-            background: linear-gradient(135deg, #ECFDF5, #D1FAE5); color: #065F46;
-            box-shadow: inset 0 0 0 1px rgba($ma-green, 0.2);
-            &::before { background: $ma-green; }
+        &:hover {
+          background: $ma-teal-subtle !important;
         }
-        &.alert-info {
-            background: linear-gradient(135deg, #F0FDFA, #CCFBF1); color: #115E59;
-            box-shadow: inset 0 0 0 1px rgba($ma-teal, 0.15);
-            &::before { background: $ma-teal; }
+
+        td {
+          padding: 8px 12px;
+          font-size: 12.5px;
+          color: $ma-text;
+          border-bottom: 1px solid $ma-border-light;
+          vertical-align: middle;
+
+          .o_field_boolean .form-check-input {
+            width: 16px;
+            height: 16px;
+            border-radius: 3px;
+            border: 1.5px solid $ma-border;
+
+            &:checked {
+              background-color: $ma-teal;
+              border-color: $ma-teal;
+            }
+          }
+
+          .o_field_float, .o_field_integer {
+            font-weight: 600;
+            font-variant-numeric: tabular-nums;
+          }
         }
+
+        &.o_selected_row {
+          background: $ma-teal-glow !important;
+          td { border-color: transparent; }
+        }
+      }
+
+      tfoot {
+        td { padding: 8px 12px; }
+        .o_field_x2many_list_row_add a {
+          color: $ma-teal;
+          font-weight: 600;
+          font-size: 12px;
+          transition: $ma-transition-fast;
+          text-decoration: none;
+
+          &:hover {
+            color: $ma-teal-dark;
+          }
+        }
+      }
     }
+  }
 
-    // -----------------------------------------------------------------------
-    // Title Area
-    // -----------------------------------------------------------------------
+  // -------------------------------------------------------------------------
+  // Separators (before instrucciones especiales, etc.)
+  // -------------------------------------------------------------------------
+  .o_horizontal_separator {
+    color: $ma-navy !important;
+    font-weight: 700 !important;
+    font-size: 12px !important;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 12px 0 10px;
+    margin: 8px 0 12px;
+    border-bottom: 1px solid $ma-border;
+    position: relative;
+
+    &::after {
+      content: '';
+      position: absolute;
+      bottom: -1px;
+      left: 0;
+      width: 32px;
+      height: 2px;
+      background: $ma-teal;
+      border-radius: 1px;
+    }
+  }
+
+  // -------------------------------------------------------------------------
+  // Many2one
+  // -------------------------------------------------------------------------
+  .o_field_many2one {
+    .o_external_button {
+      border-radius: 0 $ma-radius-sm $ma-radius-sm 0;
+      border-left: 1px solid $ma-border;
+      color: $ma-slate-muted;
+      transition: $ma-transition-fast;
+
+      &:hover {
+        color: $ma-teal;
+        background: $ma-teal-subtle;
+      }
+    }
+  }
+
+  // -------------------------------------------------------------------------
+  // Declaraciones (readonly text blocks)
+  // -------------------------------------------------------------------------
+  .o_field_text.o_readonly_modifier,
+  .o_readonly_modifier .o_field_text {
+    background: $ma-surface-alt;
+    border: 1px solid $ma-border-light;
+    border-left: 3px solid $ma-slate-muted;
+    border-radius: 0 $ma-radius-sm $ma-radius-sm 0;
+    padding: 12px 16px;
+    font-size: 12.5px;
+    line-height: 1.7;
+    color: $ma-slate;
+    font-style: italic;
+  }
+
+  // -------------------------------------------------------------------------
+  // Documento Físico tab
+  // -------------------------------------------------------------------------
+  div[name="documento_fisico"] {
+    .o_field_pdf_viewer, .o_field_binary_file {
+      border: 1px dashed $ma-border;
+      border-radius: $ma-radius-lg;
+      background: $ma-surface-alt;
+      overflow: hidden;
+      transition: $ma-transition;
+
+      &:hover {
+        border-color: $ma-teal;
+        border-style: solid;
+      }
+    }
+  }
+
+  // -------------------------------------------------------------------------
+  // Chatter
+  // -------------------------------------------------------------------------
+  .o_FormRenderer_chatterContainer .o_ChatterContainer {
+    border-top: 1px solid $ma-border;
+    background: $ma-surface-alt;
+    padding: 20px 24px;
+
+    .o_Chatter_topbar {
+      border-bottom: 1px solid $ma-border;
+      padding-bottom: 12px;
+      margin-bottom: 16px;
+
+      .btn {
+        border-radius: $ma-radius;
+        font-weight: 600;
+        font-size: 12px;
+      }
+    }
+    .o_Message {
+      border-radius: $ma-radius;
+      padding: 10px 14px;
+      margin-bottom: 6px;
+      transition: $ma-transition-fast;
+
+      &:hover {
+        background: $ma-surface;
+        box-shadow: $ma-shadow-xs;
+      }
+    }
+  }
+
+  // -------------------------------------------------------------------------
+  // Responsive
+  // -------------------------------------------------------------------------
+  @media (max-width: 768px) {
+    &.o_form_view .o_form_sheet {
+      margin: 8px;
+      border-radius: $ma-radius;
+    }
     .oe_title {
-        padding: 24px 28px 16px; position: relative;
-
-        &::after {
-            content: ''; position: absolute; bottom: 0; left: 28px;
-            width: 60px; height: 3px;
-            background: linear-gradient(90deg, $ma-teal, transparent); border-radius: 2px;
-        }
-
-        label { color: $ma-slate-light; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; }
-        h1 .o_field_widget {
-            font-size: 28px !important; font-weight: 800 !important; color: $ma-navy !important; letter-spacing: -0.02em;
-            input { font-size: 28px !important; font-weight: 800 !important; color: $ma-navy !important; }
-        }
+      padding: 16px 16px 12px;
+      h1 .o_field_widget { font-size: 20px !important; }
     }
-
-    // -----------------------------------------------------------------------
-    // Groups / Fields
-    // -----------------------------------------------------------------------
-    .o_group {
-        > tbody > tr > td.o_group_col > div > .o_group_header,
-        .o_horizontal_separator {
-            color: $ma-navy; font-weight: 700; font-size: 14px;
-            padding-bottom: 8px; margin-bottom: 12px; border-bottom: 2px solid $ma-border;
-            position: relative;
-            &::after { content: ''; position: absolute; bottom: -2px; left: 0; width: 40px; height: 2px; background: $ma-teal; }
-        }
-    }
-
-    .o_inner_group {
-        background: $ma-surface; border: 1px solid $ma-border;
-        border-radius: $ma-radius; padding: 16px 20px; margin-bottom: 12px;
-        transition: $ma-transition;
-        &:hover { border-color: rgba($ma-teal, 0.25); box-shadow: $ma-shadow-sm; }
-    }
-
-    .o_form_label, label.o_form_label { color: $ma-slate; font-weight: 600; font-size: 12.5px; }
-
-    .o_field_widget .o_input {
-        border: 1.5px solid $ma-border; border-radius: $ma-radius-sm;
-        padding: 6px 12px; font-size: 13px; color: $ma-text; background: $ma-surface; transition: $ma-transition;
-        &:focus { border-color: $ma-teal; box-shadow: 0 0 0 3px $ma-teal-glow; outline: none; }
-        &:hover:not(:focus) { border-color: $ma-slate-light; }
-        &[readonly], &.o_readonly { background: $ma-surface-alt; border-color: transparent; color: $ma-slate; }
-    }
-
-    .o_field_widget textarea.o_input { border-radius: $ma-radius; min-height: 80px; line-height: 1.6; }
-
-    .o_field_badge .badge {
-        border-radius: $ma-radius-pill; padding: 5px 14px; font-weight: 700;
-        font-size: 11.5px; letter-spacing: 0.04em; text-transform: uppercase;
-    }
-
-    // -----------------------------------------------------------------------
-    // Notebook / Tabs
-    // -----------------------------------------------------------------------
     .o_notebook {
-        margin: 0; border: none;
-
-        > .o_notebook_headers {
-            background: linear-gradient(180deg, $ma-surface-alt, $ma-surface);
-            border-bottom: 2px solid $ma-border; padding: 0 20px;
-
-            .nav-tabs {
-                border: none; gap: 2px;
-                .nav-item .nav-link {
-                    border: none; border-radius: $ma-radius $ma-radius 0 0;
-                    padding: 12px 20px; color: $ma-slate-light;
-                    font-weight: 600; font-size: 13px; transition: $ma-transition;
-                    position: relative; background: transparent;
-
-                    &::after {
-                        content: ''; position: absolute; bottom: -2px; left: 50%; transform: translateX(-50%);
-                        width: 0; height: 3px; background: $ma-teal; border-radius: 3px 3px 0 0; transition: width 0.3s ease;
-                    }
-                    &:hover { color: $ma-navy; background: rgba($ma-teal, 0.04); }
-                    &.active { color: $ma-teal; background: $ma-surface; font-weight: 700; &::after { width: 100%; } }
-                }
-            }
-        }
-
-        .tab-content { padding: 20px 24px; background: $ma-surface; .tab-pane { animation: ma-fadeIn 0.3s ease; } }
+      > .o_notebook_headers { padding: 0 12px; }
+      > .o_notebook_headers .nav-tabs .nav-item .nav-link {
+        padding: 10px 12px;
+        font-size: 12px;
+      }
+      .tab-content { padding: 16px; }
     }
-
-    // -----------------------------------------------------------------------
-    // One2Many Lists (Residuos, Versiones)
-    // -----------------------------------------------------------------------
-    .o_field_one2many, .o_field_many2many {
-        .o_list_view {
-            border: 1px solid $ma-border; border-radius: $ma-radius; overflow: hidden;
-
-            thead th {
-                background: $ma-navy !important; color: rgba(255, 255, 255, 0.9) !important;
-                font-weight: 700; font-size: 11px; text-transform: uppercase;
-                letter-spacing: 0.06em; padding: 10px 12px; border: none !important; white-space: nowrap;
-                &:first-child { border-radius: $ma-radius 0 0 0; }
-                &:last-child { border-radius: 0 $ma-radius 0 0; }
-            }
-
-            tbody tr {
-                transition: $ma-transition-fast;
-                &:nth-child(even) { background: $ma-surface-alt; }
-                &:hover { background: $ma-teal-subtle !important; }
-                td {
-                    padding: 8px 12px; font-size: 12.5px; color: $ma-text;
-                    border-bottom: 1px solid $ma-border-light; vertical-align: middle;
-                    .o_field_boolean .form-check-input {
-                        width: 18px; height: 18px; border-radius: 4px;
-                        border: 2px solid $ma-border; transition: $ma-transition-fast;
-                        &:checked { background-color: $ma-red; border-color: $ma-red; box-shadow: 0 0 6px rgba($ma-red, 0.3); }
-                    }
-                    .o_field_float, .o_field_integer { font-weight: 700; font-variant-numeric: tabular-nums; }
-                }
-                &.o_selected_row {
-                    background: $ma-teal-glow !important;
-                    box-shadow: inset 0 0 0 1px rgba($ma-teal, 0.3);
-                    td { border-color: transparent; }
-                }
-            }
-
-            tfoot {
-                td { padding: 8px 12px; }
-                .o_field_x2many_list_row_add a {
-                    color: $ma-teal; font-weight: 600; font-size: 12.5px; transition: $ma-transition;
-                    &:hover { color: $ma-teal-dark; text-decoration: none; }
-                    &::before { content: '+ '; font-weight: 800; }
-                }
-            }
-        }
+    .oe_button_box {
+      padding: 8px 12px;
+      .oe_stat_button { min-width: 90px; padding: 6px 10px; }
     }
+    .o_form_statusbar .o_statusbar_buttons .btn {
+      padding: 5px 10px;
+      font-size: 11px;
+    }
+  }
 
-    // -----------------------------------------------------------------------
-    // Chatter
-    // -----------------------------------------------------------------------
-    .o_FormRenderer_chatterContainer .o_ChatterContainer {
-        border-top: 2px solid $ma-border; background: $ma-surface-alt; padding: 20px;
-        .o_Chatter_topbar {
-            border-bottom: 1px solid $ma-border; padding-bottom: 12px; margin-bottom: 16px;
-            .btn { border-radius: $ma-radius; font-weight: 600; font-size: 12px; }
-        }
-        .o_Message {
-            border-radius: $ma-radius; padding: 12px 16px; margin-bottom: 8px; transition: $ma-transition-fast;
-            &:hover { background: $ma-surface; box-shadow: $ma-shadow-xs; }
-        }
+  // -------------------------------------------------------------------------
+  // Print
+  // -------------------------------------------------------------------------
+  @media print {
+    .o_form_statusbar, .oe_button_box,
+    .o_FormRenderer_chatterContainer { display: none !important; }
+    &.o_form_view .o_form_sheet {
+      box-shadow: none;
+      border: none;
+      margin: 0;
     }
-
-    // -----------------------------------------------------------------------
-    // Documento Físico
-    // -----------------------------------------------------------------------
-    .o_notebook .tab-pane[name="documento_fisico"],
-    div[name="documento_fisico"] {
-        .o_field_pdf_viewer, .o_field_binary_file {
-            border: 2px dashed $ma-border; border-radius: $ma-radius-lg;
-            background: $ma-surface-alt; overflow: hidden; transition: $ma-transition;
-            &:hover { border-color: $ma-teal; box-shadow: $ma-shadow-glow; }
-        }
-    }
-
-    // -----------------------------------------------------------------------
-    // Many2one
-    // -----------------------------------------------------------------------
-    .o_field_many2one {
-        .o_input { padding-right: 60px; }
-        .o_external_button {
-            border-radius: 0 $ma-radius-sm $ma-radius-sm 0;
-            border-left: 1px solid $ma-border; color: $ma-slate-light; transition: $ma-transition-fast;
-            &:hover { color: $ma-teal; background: $ma-teal-subtle; }
-        }
-    }
-
-    // -----------------------------------------------------------------------
-    // Declaraciones (readonly)
-    // -----------------------------------------------------------------------
-    .o_field_text[readonly], .o_readonly_modifier .o_field_text {
-        &[name*="declaracion"] {
-            background: linear-gradient(135deg, $ma-surface-alt, #F1F5F9);
-            border: 1px solid $ma-border; border-left: 4px solid $ma-slate-light;
-            border-radius: 0 $ma-radius $ma-radius 0;
-            padding: 14px 18px; font-size: 12.5px; line-height: 1.7; color: $ma-slate; font-style: italic;
-        }
-    }
-
-    // -----------------------------------------------------------------------
-    // Badge colors
-    // -----------------------------------------------------------------------
-    .o_field_badge .badge.text-bg-info, .badge[class*="decoration-info"] {
-        background: linear-gradient(135deg, #DBEAFE, #BFDBFE) !important;
-        color: #1E40AF !important; border: 1px solid rgba($ma-blue, 0.2);
-    }
-    .o_field_badge .badge.text-bg-success, .badge[class*="decoration-success"] {
-        background: linear-gradient(135deg, #D1FAE5, #A7F3D0) !important;
-        color: #065F46 !important; border: 1px solid rgba($ma-green, 0.2);
-    }
-
-    // -----------------------------------------------------------------------
-    // Responsive
-    // -----------------------------------------------------------------------
-    @media (max-width: 768px) {
-        &.o_form_view .o_form_sheet { margin: 8px; border-radius: $ma-radius; }
-        .oe_title { padding: 16px 16px 12px; h1 .o_field_widget { font-size: 22px !important; } }
-        .o_notebook > .o_notebook_headers .nav-tabs .nav-item .nav-link { padding: 10px 12px; font-size: 12px; }
-        .oe_button_box { padding: 8px 12px; .oe_stat_button { min-width: 100px; padding: 8px 12px; } }
-        .o_form_statusbar .o_statusbar_buttons .btn { padding: 6px 10px; font-size: 11px; }
-    }
-
-    // -----------------------------------------------------------------------
-    // Print
-    // -----------------------------------------------------------------------
-    @media print {
-        .o_form_statusbar, .oe_button_box, .o_FormRenderer_chatterContainer { display: none !important; }
-        &.o_form_view .o_form_sheet { box-shadow: none; border: none; margin: 0; }
-        .alert { border: 1px solid #ccc; page-break-inside: avoid; }
-    }
+  }
 
 } // END .o_manifiesto_ambiental_form
+
 
 // ===========================================================================
 // ANIMATIONS
 // ===========================================================================
 @keyframes ma-fadeIn {
-    from { opacity: 0; transform: translateY(4px); }
-    to   { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; transform: translateY(3px); }
+  to   { opacity: 1; transform: translateY(0); }
 }

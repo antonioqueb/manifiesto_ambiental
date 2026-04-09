@@ -1,453 +1,321 @@
 // ============================================================================
-// MANIFIESTO AMBIENTAL — Premium SCSS Theme v2 (SCOPED TO FORM ONLY)
+// MANIFIESTO AMBIENTAL — Clean Theme v3 (SCOPED TO FORM ONLY)
 // Module: manifiesto_ambiental | Odoo 19 Enterprise
 // Author: Alphaqueb Consulting SAS
+//
+// STRATEGY: Leave header/statusbar NATIVE. Style only sheet content.
+// Fix: inner_group overflow, two-column desborde, clean professional look.
 // ============================================================================
 
 // ---------------------------------------------------------------------------
-// 1. DESIGN TOKENS
+// DESIGN TOKENS
 // ---------------------------------------------------------------------------
-$ma-navy:         #0B1426;
-$ma-navy-light:   #132040;
-$ma-navy-mid:     #1A2744;
+$ma-navy:         #0F172A;
 $ma-slate:        #334155;
 $ma-slate-light:  #64748B;
 $ma-slate-muted:  #94A3B8;
-$ma-teal:         #00BFA6;
-$ma-teal-dark:    #009E8B;
-$ma-teal-deeper:  #00897B;
-$ma-teal-glow:    rgba(0, 191, 166, 0.15);
-$ma-teal-subtle:  rgba(0, 191, 166, 0.05);
-$ma-amber:        #F59E0B;
-$ma-amber-soft:   #FEF3C7;
-$ma-red:          #EF4444;
-$ma-green:        #10B981;
-$ma-green-soft:   #D1FAE5;
-$ma-blue:         #3B82F6;
-$ma-blue-soft:    #DBEAFE;
-$ma-purple:       #8B5CF6;
+$ma-teal:         #0D9488;
+$ma-teal-light:   #14B8A6;
+$ma-teal-glow:    rgba(13, 148, 136, 0.10);
+$ma-teal-subtle:  rgba(13, 148, 136, 0.04);
+$ma-amber:        #D97706;
+$ma-red:          #DC2626;
+$ma-green:        #059669;
+$ma-blue:         #2563EB;
+$ma-purple:       #7C3AED;
 
 $ma-surface:      #FFFFFF;
 $ma-surface-alt:  #F8FAFC;
-$ma-surface-warm: #FAFBFD;
+$ma-bg:           #F1F5F9;
 $ma-border:       #E2E8F0;
 $ma-border-light: #F1F5F9;
-$ma-border-focus: #CBD5E1;
 $ma-text:         #1E293B;
 $ma-text-secondary: #475569;
 $ma-text-muted:   #94A3B8;
 
-$ma-radius-xs:    4px;
-$ma-radius-sm:    6px;
 $ma-radius:       8px;
+$ma-radius-sm:    5px;
 $ma-radius-lg:    12px;
-$ma-radius-xl:    16px;
-$ma-radius-pill:  50px;
 
-$ma-shadow-xs:    0 1px 2px rgba(0, 0, 0, 0.04);
-$ma-shadow-sm:    0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
-$ma-shadow:       0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
-$ma-shadow-lg:    0 10px 25px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04);
-$ma-shadow-glow:  0 0 20px rgba(0, 191, 166, 0.10);
+$ma-shadow-sm:    0 1px 3px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.03);
+$ma-shadow:       0 4px 12px rgba(0,0,0,0.06);
+$ma-shadow-lg:    0 8px 24px rgba(0,0,0,0.08);
 
-$ma-transition:   all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-$ma-transition-fast: all 0.15s ease;
+$ma-transition:   all 0.2s ease;
 
 
 // ===========================================================================
-// FORM VIEW
+// FORM — scoped under .o_manifiesto_ambiental_form
 // ===========================================================================
 .o_manifiesto_ambiental_form {
 
-  // -------------------------------------------------------------------------
-  // Canvas & Sheet
-  // -------------------------------------------------------------------------
+  // -----------------------------------------------------------------------
+  // Sheet container
+  // -----------------------------------------------------------------------
   &.o_form_view {
-    background: $ma-surface-alt;
+    background: $ma-bg;
 
     .o_form_sheet_bg {
       background: transparent !important;
     }
 
     .o_form_sheet {
-      position: relative;
-      z-index: 1;
       background: $ma-surface;
-      border-radius: $ma-radius-xl;
-      box-shadow: $ma-shadow-lg;
+      border-radius: $ma-radius-lg;
+      box-shadow: $ma-shadow;
       border: 1px solid $ma-border;
-      margin: 24px auto;
+      margin: 20px auto;
       max-width: 1280px;
       padding: 0 !important;
     }
   }
 
-  // -------------------------------------------------------------------------
-  // Header / Statusbar
-  // -------------------------------------------------------------------------
+  // -----------------------------------------------------------------------
+  // HEADER / STATUSBAR — NATIVE, only border-radius to match sheet
+  // -----------------------------------------------------------------------
   .o_form_statusbar {
-    background: $ma-navy;
-    border-bottom: none;
-    padding: 0;
-    min-height: auto;
-    display: flex;
-    align-items: center;
-    border-radius: $ma-radius-xl $ma-radius-xl 0 0;
-    overflow: hidden;
-
-    .o_statusbar_buttons {
-      padding: 10px 16px;
-      gap: 6px;
-      display: flex;
-      flex-wrap: wrap;
-
-      .btn {
-        border-radius: $ma-radius;
-        font-weight: 600;
-        font-size: 12px;
-        letter-spacing: 0.01em;
-        padding: 6px 14px;
-        border: none;
-        transition: $ma-transition;
-        white-space: nowrap;
-      }
-
-      .btn-primary {
-        background: $ma-teal;
-        color: white;
-        &:hover {
-          background: $ma-teal-dark;
-          box-shadow: 0 2px 8px rgba($ma-teal, 0.35);
-        }
-      }
-      .btn-secondary {
-        background: rgba(255, 255, 255, 0.07);
-        color: rgba(255, 255, 255, 0.75);
-        border: 1px solid rgba(255, 255, 255, 0.10);
-        &:hover {
-          background: rgba(255, 255, 255, 0.14);
-          color: white;
-        }
-      }
-      .btn-success {
-        background: $ma-green;
-        color: white;
-        &:hover { background: darken($ma-green, 6%); }
-      }
-      .btn-warning {
-        background: $ma-amber;
-        color: $ma-navy;
-        font-weight: 700;
-        &:hover { background: darken($ma-amber, 6%); }
-      }
-      .btn-danger {
-        background: rgba($ma-red, 0.12);
-        color: lighten($ma-red, 12%);
-        border: 1px solid rgba($ma-red, 0.25);
-        &:hover { background: $ma-red; color: white; }
-      }
-    }
-
-    // Statusbar steps
-    .o_statusbar_status {
-      margin-left: auto;
-
-      .o_arrow_button {
-        background: rgba(255, 255, 255, 0.04) !important;
-        color: rgba(255, 255, 255, 0.4) !important;
-        border-color: rgba(255, 255, 255, 0.06) !important;
-        font-size: 11.5px;
-        font-weight: 500;
-        transition: $ma-transition;
-
-        &.o_arrow_button_current {
-          background: $ma-teal !important;
-          color: white !important;
-          border-color: $ma-teal !important;
-          font-weight: 700;
-          box-shadow: 0 0 12px rgba($ma-teal, 0.35);
-        }
-        &.btn-primary:not(.o_arrow_button_current) {
-          background: rgba($ma-teal, 0.12) !important;
-          color: $ma-teal !important;
-          border-color: rgba($ma-teal, 0.25) !important;
-        }
-      }
-    }
+    border-radius: $ma-radius-lg $ma-radius-lg 0 0;
   }
 
-  // -------------------------------------------------------------------------
+  // -----------------------------------------------------------------------
   // Smart Buttons
-  // -------------------------------------------------------------------------
+  // -----------------------------------------------------------------------
   .oe_button_box {
     border-bottom: 1px solid $ma-border;
-    background: $ma-surface;
-    padding: 10px 24px;
-    gap: 8px;
-    display: flex;
-    flex-wrap: wrap;
+    padding: 8px 20px;
+    gap: 6px;
 
     .oe_stat_button {
-      background: $ma-surface;
       border: 1px solid $ma-border;
       border-radius: $ma-radius;
       padding: 8px 14px;
-      min-width: 110px;
+      min-width: 100px;
       transition: $ma-transition;
 
       &:hover {
         border-color: $ma-teal;
         background: $ma-teal-subtle;
-        box-shadow: $ma-shadow-sm;
       }
 
-      .o_button_icon {
-        font-size: 16px;
-        opacity: 0.8;
-      }
       .o_stat_info {
         .o_stat_value {
           color: $ma-navy;
-          font-weight: 800;
-          font-size: 16px;
-          line-height: 1.2;
+          font-weight: 700;
+          font-size: 15px;
         }
         .o_stat_text {
-          color: $ma-slate-muted;
+          color: $ma-text-muted;
           font-size: 10px;
           font-weight: 600;
           text-transform: uppercase;
-          letter-spacing: 0.06em;
+          letter-spacing: 0.04em;
         }
       }
-
-      &:nth-child(1) .o_button_icon { color: $ma-purple; }
-      &:nth-child(2) .o_button_icon { color: $ma-amber; }
-      &:nth-child(3) .o_button_icon { color: $ma-blue; }
-      &:nth-child(4) .o_button_icon { color: $ma-green; }
     }
   }
 
-  // -------------------------------------------------------------------------
-  // Historical version alert
-  // -------------------------------------------------------------------------
+  // -----------------------------------------------------------------------
+  // Alerts
+  // -----------------------------------------------------------------------
   .alert {
-    border-radius: $ma-radius;
+    border-radius: 0;
     border: none;
-    padding: 12px 20px;
+    padding: 10px 24px;
     font-size: 13px;
-    font-weight: 500;
     margin: 0;
 
-    strong { font-weight: 700; }
-
     &.alert-warning {
-      background: $ma-amber-soft;
+      background: #FFFBEB;
       color: #92400E;
-      border-left: 3px solid $ma-amber;
-      border-radius: 0;
+      border-bottom: 1px solid #FDE68A;
     }
     &.alert-info {
-      background: linear-gradient(135deg, #F0FDFA, #CCFBF1);
+      background: #F0FDFA;
       color: #115E59;
-      border-left: 3px solid $ma-teal;
-      border-radius: 0;
-    }
-    &.alert-success {
-      background: $ma-green-soft;
-      color: #065F46;
-      border-left: 3px solid $ma-green;
-      border-radius: 0;
+      border-bottom: 1px solid #99F6E4;
     }
   }
 
-  // -------------------------------------------------------------------------
-  // Title Area
-  // -------------------------------------------------------------------------
+  // -----------------------------------------------------------------------
+  // Title
+  // -----------------------------------------------------------------------
   .oe_title {
-    padding: 28px 32px 20px;
+    padding: 24px 28px 16px;
 
     label {
-      color: $ma-slate-muted;
+      color: $ma-text-muted;
       font-size: 10px;
       font-weight: 700;
       text-transform: uppercase;
-      letter-spacing: 0.12em;
-      margin-bottom: 4px;
+      letter-spacing: 0.1em;
     }
 
     h1 .o_field_widget {
-      font-size: 26px !important;
+      font-size: 24px !important;
       font-weight: 800 !important;
       color: $ma-navy !important;
-      letter-spacing: -0.025em;
+      letter-spacing: -0.02em;
 
       input {
-        font-size: 26px !important;
+        font-size: 24px !important;
         font-weight: 800 !important;
         color: $ma-navy !important;
-        border: none !important;
-        padding: 0 !important;
-        background: transparent !important;
-
-        &:focus {
-          box-shadow: none !important;
-          border-bottom: 2px solid $ma-teal !important;
-          border-radius: 0 !important;
-        }
       }
     }
   }
 
-  // -------------------------------------------------------------------------
-  // Top metadata group (Tipo, Registro, Página, Fecha)
-  // -------------------------------------------------------------------------
-  > .o_form_sheet > .o_group:first-of-type,
-  .o_form_sheet > .o_group[col="4"] {
-    padding: 0 32px 20px;
-    margin: 0;
+  // -----------------------------------------------------------------------
+  // Top metadata row (col=4)
+  // -----------------------------------------------------------------------
+  .o_form_sheet > .o_group:not(.o_inner_group) {
+    padding: 0 28px 16px;
+  }
 
-    > tbody > tr > td {
-      padding: 0 8px;
+  // -----------------------------------------------------------------------
+  // Section Headers
+  // -----------------------------------------------------------------------
+  .o_horizontal_separator,
+  .o_group > tbody > tr > td.o_group_col > div > .o_group_header {
+    color: $ma-navy !important;
+    font-weight: 700 !important;
+    font-size: 11.5px !important;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding-bottom: 8px;
+    margin-bottom: 14px;
+    margin-top: 4px;
+    border-bottom: 1px solid $ma-border;
+    position: relative;
 
-      .o_field_widget {
-        .o_input {
+    &::after {
+      content: '';
+      position: absolute;
+      bottom: -1px;
+      left: 0;
+      width: 28px;
+      height: 2px;
+      background: $ma-teal;
+      border-radius: 1px;
+    }
+  }
+
+  // -----------------------------------------------------------------------
+  // Inner Groups — CRITICAL: fix overflow
+  // Remove card styling. Let Odoo handle the layout.
+  // Only add subtle card on two-column groups inside tabs.
+  // -----------------------------------------------------------------------
+  .o_inner_group {
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    padding: 0;
+    margin-bottom: 4px;
+    min-width: 0;
+
+    > table, table.o_group, > tbody {
+      width: 100% !important;
+      table-layout: fixed;
+
+      td {
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        min-width: 0;
+      }
+
+      // Label column
+      .o_cell.o_wrap_label {
+        width: 35%;
+        max-width: 140px;
+      }
+    }
+  }
+
+  // Two-column groups inside notebook tabs — subtle card
+  .o_notebook .tab-pane {
+    > .o_group[col="2"],
+    > .o_group:not(:first-child) {
+      > tbody > tr > td.o_group_col {
+        vertical-align: top;
+        padding: 0 6px;
+
+        > div > .o_inner_group {
           background: $ma-surface-alt;
           border: 1px solid $ma-border-light;
-          border-radius: $ma-radius-sm;
-          font-size: 13px;
-          padding: 7px 12px;
-          color: $ma-text;
-
-          &:focus {
-            background: $ma-surface;
-            border-color: $ma-teal;
-            box-shadow: 0 0 0 2px $ma-teal-glow;
-          }
+          border-radius: $ma-radius;
+          padding: 12px 14px;
+          margin-bottom: 8px;
         }
       }
     }
-  }
 
-  // -------------------------------------------------------------------------
-  // Section Headers (group string="...")
-  // -------------------------------------------------------------------------
-  .o_group {
-    > tbody > tr > td.o_group_col > div > .o_group_header,
-    .o_horizontal_separator {
-      color: $ma-navy;
-      font-weight: 700;
-      font-size: 12px;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      padding-bottom: 10px;
-      margin-bottom: 16px;
-      margin-top: 8px;
-      border-bottom: 1px solid $ma-border;
-      position: relative;
-
-      &::after {
-        content: '';
-        position: absolute;
-        bottom: -1px;
-        left: 0;
-        width: 32px;
-        height: 2px;
-        background: $ma-teal;
-        border-radius: 1px;
+    // First group (Empresa selector) — no card
+    > .o_group:first-child {
+      > tbody > tr > td.o_group_col > div > .o_inner_group {
+        background: transparent;
+        border: none;
+        padding: 0;
       }
     }
   }
 
-  // -------------------------------------------------------------------------
-  // Inner Groups (the card-like containers)
-  // -------------------------------------------------------------------------
-  .o_inner_group {
-    background: $ma-surface;
-    border: 1px solid $ma-border-light;
-    border-radius: $ma-radius;
-    padding: 16px 20px;
-    margin-bottom: 8px;
-    transition: $ma-transition;
-
-    &:hover {
-      border-color: $ma-border;
-    }
-
-    // Two-column layout inside tabs — make them equal height
-    & + .o_inner_group {
-      // sibling groups should align
-    }
-  }
-
-  // -------------------------------------------------------------------------
-  // Form Labels
-  // -------------------------------------------------------------------------
+  // -----------------------------------------------------------------------
+  // Labels
+  // -----------------------------------------------------------------------
   .o_form_label, label.o_form_label {
     color: $ma-text-secondary;
     font-weight: 600;
     font-size: 12px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
-  // -------------------------------------------------------------------------
+  // -----------------------------------------------------------------------
   // Input Fields
-  // -------------------------------------------------------------------------
+  // -----------------------------------------------------------------------
   .o_field_widget .o_input {
     border: 1px solid $ma-border;
     border-radius: $ma-radius-sm;
-    padding: 7px 12px;
+    padding: 6px 10px;
     font-size: 13px;
     color: $ma-text;
     background: $ma-surface;
-    transition: $ma-transition-fast;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    width: 100%;
+    min-width: 0;
 
     &:focus {
       border-color: $ma-teal;
-      box-shadow: 0 0 0 3px $ma-teal-glow;
+      box-shadow: 0 0 0 2px $ma-teal-glow;
       outline: none;
     }
-    &:hover:not(:focus):not([readonly]) {
-      border-color: $ma-border-focus;
-    }
+
     &[readonly], &.o_readonly {
       background: $ma-surface-alt;
-      border-color: transparent;
+      border-color: $ma-border-light;
       color: $ma-slate;
     }
   }
 
-  .o_field_widget textarea.o_input {
+  textarea.o_input {
     border-radius: $ma-radius;
-    min-height: 72px;
+    min-height: 60px;
     line-height: 1.6;
   }
 
-  // Badges (Tipo Manifiesto, Estado)
+  // Badges
   .o_field_badge .badge {
-    border-radius: $ma-radius-xs;
-    padding: 4px 10px;
+    border-radius: $ma-radius-sm;
+    padding: 3px 10px;
     font-weight: 700;
     font-size: 10.5px;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.04em;
     text-transform: uppercase;
   }
 
-  .o_field_badge .badge.text-bg-info,
-  .badge[class*="decoration-info"] {
-    background: $ma-blue-soft !important;
-    color: #1E40AF !important;
-    border: 1px solid rgba($ma-blue, 0.15);
-  }
-  .o_field_badge .badge.text-bg-success,
-  .badge[class*="decoration-success"] {
-    background: $ma-green-soft !important;
-    color: #065F46 !important;
-    border: 1px solid rgba($ma-green, 0.15);
-  }
-
-  // -------------------------------------------------------------------------
+  // -----------------------------------------------------------------------
   // Notebook / Tabs
-  // -------------------------------------------------------------------------
+  // -----------------------------------------------------------------------
   .o_notebook {
     margin: 0;
     border: none;
@@ -455,16 +323,15 @@ $ma-transition-fast: all 0.15s ease;
     > .o_notebook_headers {
       background: $ma-surface;
       border-bottom: 1px solid $ma-border;
-      padding: 0 32px;
+      padding: 0 28px;
 
       .nav-tabs {
         border: none;
-        gap: 0;
 
         .nav-item .nav-link {
           border: none;
           border-radius: 0;
-          padding: 14px 20px;
+          padding: 12px 18px;
           color: $ma-slate-muted;
           font-weight: 600;
           font-size: 13px;
@@ -481,40 +348,29 @@ $ma-transition-fast: all 0.15s ease;
             height: 2px;
             background: $ma-teal;
             transform: scaleX(0);
-            transition: transform 0.25s ease;
+            transition: transform 0.2s ease;
           }
 
-          &:hover {
-            color: $ma-text;
-            background: transparent;
-          }
+          &:hover { color: $ma-text; }
 
           &.active {
             color: $ma-teal;
-            background: transparent;
             font-weight: 700;
-
-            &::after {
-              transform: scaleX(1);
-            }
+            &::after { transform: scaleX(1); }
           }
         }
       }
     }
 
     .tab-content {
-      padding: 24px 32px;
+      padding: 20px 28px;
       background: $ma-surface;
-
-      .tab-pane {
-        animation: ma-fadeIn 0.2s ease;
-      }
     }
   }
 
-  // -------------------------------------------------------------------------
-  // One2Many / Many2Many Lists (Residuos, Versiones)
-  // -------------------------------------------------------------------------
+  // -----------------------------------------------------------------------
+  // One2Many Lists
+  // -----------------------------------------------------------------------
   .o_field_one2many, .o_field_many2many {
     .o_list_view {
       border: 1px solid $ma-border;
@@ -523,45 +379,31 @@ $ma-transition-fast: all 0.15s ease;
 
       thead th {
         background: $ma-navy !important;
-        color: rgba(255, 255, 255, 0.85) !important;
+        color: rgba(255,255,255,0.85) !important;
         font-weight: 600;
         font-size: 10.5px;
         text-transform: uppercase;
-        letter-spacing: 0.05em;
-        padding: 10px 12px;
+        letter-spacing: 0.04em;
+        padding: 9px 10px;
         border: none !important;
         white-space: nowrap;
       }
 
       tbody tr {
-        transition: background 0.1s ease;
-
-        &:nth-child(even) {
-          background: $ma-surface-alt;
-        }
-        &:hover {
-          background: $ma-teal-subtle !important;
-        }
+        &:nth-child(even) { background: $ma-surface-alt; }
+        &:hover { background: $ma-teal-subtle !important; }
 
         td {
-          padding: 8px 12px;
+          padding: 7px 10px;
           font-size: 12.5px;
           color: $ma-text;
           border-bottom: 1px solid $ma-border-light;
           vertical-align: middle;
 
-          .o_field_boolean .form-check-input {
-            width: 16px;
-            height: 16px;
-            border-radius: 3px;
-            border: 1.5px solid $ma-border;
-
-            &:checked {
-              background-color: $ma-teal;
-              border-color: $ma-teal;
-            }
+          .o_field_boolean .form-check-input:checked {
+            background-color: $ma-teal;
+            border-color: $ma-teal;
           }
-
           .o_field_float, .o_field_integer {
             font-weight: 600;
             font-variant-numeric: tabular-nums;
@@ -570,186 +412,113 @@ $ma-transition-fast: all 0.15s ease;
 
         &.o_selected_row {
           background: $ma-teal-glow !important;
-          td { border-color: transparent; }
         }
       }
 
-      tfoot {
-        td { padding: 8px 12px; }
-        .o_field_x2many_list_row_add a {
-          color: $ma-teal;
-          font-weight: 600;
-          font-size: 12px;
-          transition: $ma-transition-fast;
-          text-decoration: none;
-
-          &:hover {
-            color: $ma-teal-dark;
-          }
-        }
-      }
-    }
-  }
-
-  // -------------------------------------------------------------------------
-  // Separators (before instrucciones especiales, etc.)
-  // -------------------------------------------------------------------------
-  .o_horizontal_separator {
-    color: $ma-navy !important;
-    font-weight: 700 !important;
-    font-size: 12px !important;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    padding: 12px 0 10px;
-    margin: 8px 0 12px;
-    border-bottom: 1px solid $ma-border;
-    position: relative;
-
-    &::after {
-      content: '';
-      position: absolute;
-      bottom: -1px;
-      left: 0;
-      width: 32px;
-      height: 2px;
-      background: $ma-teal;
-      border-radius: 1px;
-    }
-  }
-
-  // -------------------------------------------------------------------------
-  // Many2one
-  // -------------------------------------------------------------------------
-  .o_field_many2one {
-    .o_external_button {
-      border-radius: 0 $ma-radius-sm $ma-radius-sm 0;
-      border-left: 1px solid $ma-border;
-      color: $ma-slate-muted;
-      transition: $ma-transition-fast;
-
-      &:hover {
+      tfoot .o_field_x2many_list_row_add a {
         color: $ma-teal;
-        background: $ma-teal-subtle;
+        font-weight: 600;
+        font-size: 12px;
+        text-decoration: none;
+        &:hover { color: darken($ma-teal, 8%); }
       }
     }
   }
 
-  // -------------------------------------------------------------------------
-  // Declaraciones (readonly text blocks)
-  // -------------------------------------------------------------------------
-  .o_field_text.o_readonly_modifier,
-  .o_readonly_modifier .o_field_text {
-    background: $ma-surface-alt;
-    border: 1px solid $ma-border-light;
-    border-left: 3px solid $ma-slate-muted;
-    border-radius: 0 $ma-radius-sm $ma-radius-sm 0;
-    padding: 12px 16px;
-    font-size: 12.5px;
-    line-height: 1.7;
-    color: $ma-slate;
-    font-style: italic;
+  // -----------------------------------------------------------------------
+  // Many2one overflow fix
+  // -----------------------------------------------------------------------
+  .o_field_many2one {
+    min-width: 0;
+    max-width: 100%;
+
+    .o_input {
+      text-overflow: ellipsis;
+      overflow: hidden;
+    }
+    .o_external_button {
+      color: $ma-slate-muted;
+      &:hover { color: $ma-teal; }
+    }
   }
 
-  // -------------------------------------------------------------------------
-  // Documento Físico tab
-  // -------------------------------------------------------------------------
+  // -----------------------------------------------------------------------
+  // Declaraciones (readonly text)
+  // -----------------------------------------------------------------------
+  .o_field_widget[name="declaracion_generador"],
+  .o_field_widget[name="declaracion_transportista"],
+  .o_field_widget[name="declaracion_destinatario"] {
+    span, textarea[readonly], .o_field_text_value {
+      background: $ma-surface-alt;
+      border: 1px solid $ma-border-light;
+      border-left: 3px solid $ma-slate-muted;
+      border-radius: 0 $ma-radius-sm $ma-radius-sm 0;
+      padding: 10px 14px;
+      font-size: 12.5px;
+      line-height: 1.65;
+      color: $ma-slate;
+      font-style: italic;
+      display: block;
+    }
+  }
+
+  // -----------------------------------------------------------------------
+  // PDF viewer
+  // -----------------------------------------------------------------------
   div[name="documento_fisico"] {
     .o_field_pdf_viewer, .o_field_binary_file {
       border: 1px dashed $ma-border;
-      border-radius: $ma-radius-lg;
+      border-radius: $ma-radius;
       background: $ma-surface-alt;
-      overflow: hidden;
-      transition: $ma-transition;
-
-      &:hover {
-        border-color: $ma-teal;
-        border-style: solid;
-      }
+      &:hover { border-color: $ma-teal; border-style: solid; }
     }
   }
 
-  // -------------------------------------------------------------------------
+  // -----------------------------------------------------------------------
   // Chatter
-  // -------------------------------------------------------------------------
+  // -----------------------------------------------------------------------
   .o_FormRenderer_chatterContainer .o_ChatterContainer {
     border-top: 1px solid $ma-border;
     background: $ma-surface-alt;
-    padding: 20px 24px;
-
-    .o_Chatter_topbar {
-      border-bottom: 1px solid $ma-border;
-      padding-bottom: 12px;
-      margin-bottom: 16px;
-
-      .btn {
-        border-radius: $ma-radius;
-        font-weight: 600;
-        font-size: 12px;
-      }
-    }
-    .o_Message {
-      border-radius: $ma-radius;
-      padding: 10px 14px;
-      margin-bottom: 6px;
-      transition: $ma-transition-fast;
-
-      &:hover {
-        background: $ma-surface;
-        box-shadow: $ma-shadow-xs;
-      }
-    }
   }
 
-  // -------------------------------------------------------------------------
+  // -----------------------------------------------------------------------
+  // Global overflow safety
+  // -----------------------------------------------------------------------
+  .o_group, .o_inner_group, .o_wrap_field, .o_cell,
+  .o_field_widget {
+    min-width: 0;
+  }
+
+  .o_field_widget {
+    max-width: 100%;
+  }
+
+  // -----------------------------------------------------------------------
   // Responsive
-  // -------------------------------------------------------------------------
+  // -----------------------------------------------------------------------
   @media (max-width: 768px) {
     &.o_form_view .o_form_sheet {
       margin: 8px;
       border-radius: $ma-radius;
     }
     .oe_title {
-      padding: 16px 16px 12px;
+      padding: 16px 16px 10px;
       h1 .o_field_widget { font-size: 20px !important; }
     }
     .o_notebook {
       > .o_notebook_headers { padding: 0 12px; }
-      > .o_notebook_headers .nav-tabs .nav-item .nav-link {
-        padding: 10px 12px;
-        font-size: 12px;
-      }
-      .tab-content { padding: 16px; }
-    }
-    .oe_button_box {
-      padding: 8px 12px;
-      .oe_stat_button { min-width: 90px; padding: 6px 10px; }
-    }
-    .o_form_statusbar .o_statusbar_buttons .btn {
-      padding: 5px 10px;
-      font-size: 11px;
+      .tab-content { padding: 14px 12px; }
     }
   }
 
-  // -------------------------------------------------------------------------
+  // -----------------------------------------------------------------------
   // Print
-  // -------------------------------------------------------------------------
+  // -----------------------------------------------------------------------
   @media print {
     .o_form_statusbar, .oe_button_box,
     .o_FormRenderer_chatterContainer { display: none !important; }
-    &.o_form_view .o_form_sheet {
-      box-shadow: none;
-      border: none;
-      margin: 0;
-    }
+    &.o_form_view .o_form_sheet { box-shadow: none; border: none; margin: 0; }
   }
 
 } // END .o_manifiesto_ambiental_form
-
-
-// ===========================================================================
-// ANIMATIONS
-// ===========================================================================
-@keyframes ma-fadeIn {
-  from { opacity: 0; transform: translateY(3px); }
-  to   { opacity: 1; transform: translateY(0); }
-}

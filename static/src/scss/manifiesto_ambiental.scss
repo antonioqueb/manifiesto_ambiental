@@ -624,6 +624,7 @@ $ma-transition:   all 0.18s ease;
 
       .tab-pane {
         width: 100% !important;
+        overflow: visible !important;
       }
     }
   }
@@ -633,13 +634,23 @@ $ma-transition:   all 0.18s ease;
   // -------------------------------------------------------------------------
   .o_field_one2many,
   .o_field_many2many {
+    overflow: visible !important;
+
     .o_list_view {
       overflow: visible !important;
       min-height: 120px;
+      margin-top: 12px;
     }
 
     .o_list_table {
-      th, td {
+      th {
+        padding-top: 12px !important;
+        padding-bottom: 10px !important;
+        line-height: 1.5 !important;
+        vertical-align: middle !important;
+      }
+
+      td {
         padding-top: 8px !important;
         padding-bottom: 8px !important;
         line-height: 1.5 !important;
@@ -656,7 +667,6 @@ $ma-transition:   all 0.18s ease;
   .o_field_widget[name="clasificacion_inflamable"],
   .o_field_widget[name="clasificacion_biologico"] {
     .o_boolean_toggle {
-      // Hide the toggle track
       .form-check {
         padding-left: 0;
         min-height: auto;
@@ -685,7 +695,6 @@ $ma-transition:   all 0.18s ease;
         }
       }
 
-      // Hide the toggle slider pseudo-elements
       .form-check-input::before,
       .form-check-input::after {
         display: none !important;
@@ -749,7 +758,6 @@ $ma-transition:   all 0.18s ease;
         width: 100%;
 
         & + .ma_chip_block::before {
-          // Switch divider to horizontal
           top: 0;
           bottom: auto;
           left: 10%;

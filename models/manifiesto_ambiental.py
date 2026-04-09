@@ -973,6 +973,23 @@ class ManifiestoAmbientalResiduo(models.Model):
     _name = 'manifiesto.ambiental.residuo'
     _description = 'Residuo del Manifiesto Ambiental'
 
+    TRACKED_FIELDS = {
+        'nombre_residuo': 'Nombre del residuo',
+        'cantidad': 'Cantidad (kg)',
+        'clasificacion_corrosivo': 'Corrosivo (C)',
+        'clasificacion_reactivo': 'Reactivo (R)',
+        'clasificacion_explosivo': 'Explosivo (E)',
+        'clasificacion_toxico': 'Tóxico (T)',
+        'clasificacion_inflamable': 'Inflamable (I)',
+        'clasificacion_biologico': 'Biológico (B)',
+        'envase_tipo': 'Tipo de Envase',
+        'envase_capacidad': 'Capacidad',
+        'etiqueta_si': 'Etiqueta Sí',
+        'etiqueta_no': 'Etiqueta No',
+        'residue_type': 'Tipo de Residuo',
+        'product_id': 'Producto/Residuo',
+    }
+
     manifiesto_id = fields.Many2one('manifiesto.ambiental', string='Manifiesto', required=True, ondelete='cascade')
     product_id = fields.Many2one('product.product', string='Producto/Residuo')
     nombre_residuo = fields.Char(string='Nombre del residuo', required=True)
@@ -1046,11 +1063,121 @@ class ManifiestoAmbientalResiduo(models.Model):
         if self.etiqueta_no:
             self.etiqueta_si = False
 
+    def _get_field_display_value(self, field_name, value):
+        """Retorna el valor legible de un campo para mostrar en el chatter."""
+        if value is False or value is None:
+            return 'Vacío'
+        field = self._fields.get(field_name)
+        if not field:
+            return str(value)
+        if field.type == 'boolean':
+            return 'Sí' if value else 'No'
+        if field.type == 'selection' and value:
+            sel_dict = dict(field.selection)
+            return sel_dict.get(value, value)
+        if field.type == 'many2one':
+            if hasattr(value, 'display_name'):
+                return value.display_name or 'Vacío'
+            return str(value) if value else 'Vacío'
+        if value == '':
+            return 'Vacío'
+        return str(value)
+
+    def write(self, vals):
+        # Capturar valores anteriores para tracking
+        changes_by_manifiesto = {}
+        tracked_keys = [k for k in vals if k in self.TRACKED_FIELDS]
+
+        if tracked_keys:
+            for rec in self:
+                if not rec.manifiesto_id:
+                    continue
+                mid = rec.manifiesto_id.id
+                if mid not in changes_by_manifiesto:
+                    changes_by_manifiesto[mid] = {'manifiesto': rec.manifiesto_id, 'lines': []}
+
+                line_changes = []
+                residuo_label = rec.nombre_residuo or f'Residuo #{rec.id}'
+                for field_key in tracked_keys:
+                    old_val = getattr(rec, field_key)
+                    new_val = vals[field_key]
+
+                    # Comparar correctamente many2one
+                    if self._fields[field_key].type == 'many2one':
+                        old_comparable = old_val.id if old_val else False
+                        new_comparable = new_val
+                    else:
+                        old_comparable = old_val
+                        new_comparable = new_val
+
+                    if old_comparable != new_comparable:
+                        label = self.TRACKED_FIELDS[field_key]
+                        old_display = self._get_field_display_value(field_key, old_val)
+                        # Para many2one, resolver el nuevo valor
+                        if self._fields[field_key].type == 'many2one' and new_val:
+                            new_record = self.env[self._fields[field_key].comodel_name].browse(new_val)
+                            new_display = new_record.display_name or 'Vacío'
+                        else:
+                            new_display = self._get_field_display_value(field_key, new_val)
+                        line_changes.append(f"<li><b>{label}</b>: {old_display} → {new_display}</li>")
+
+                if line_changes:
+                    changes_by_manifiesto[mid]['lines'].append(
+                        f"<b>📦 {residuo_label}</b><ul>{''.join(line_changes)}</ul>"
+                    )
+
+        res = super().write(vals)
+
+        # Postear en el chatter del manifiesto padre
+        for _mid, data in changes_by_manifiesto.items():
+            if data['lines']:
+                body = "<p><b>Cambios en Residuos:</b></p>" + "".join(data['lines'])
+                data['manifiesto'].message_post(
+                    body=body,
+                    message_type='notification',
+                    subtype_xmlid='mail.mt_note',
+                )
+
+        return res
+
     @api.model_create_multi
     def create(self, vals_list):
         records = super().create(vals_list)
         records._create_lot_for_residuo()
+
+        # Notificar creación en el chatter del manifiesto padre
+        for rec in records:
+            if rec.manifiesto_id:
+                nombre = rec.nombre_residuo or (rec.product_id.name if rec.product_id else 'Sin nombre')
+                cretib = rec.clasificaciones_display or 'Ninguna'
+                body = (
+                    f"<p>📦 <b>Residuo agregado:</b> {nombre}"
+                    f" — {rec.cantidad} kg"
+                    f" — CRETIB: {cretib}</p>"
+                )
+                rec.manifiesto_id.message_post(
+                    body=body,
+                    message_type='notification',
+                    subtype_xmlid='mail.mt_note',
+                )
+
         return records
+
+    def unlink(self):
+        # Notificar eliminación en el chatter del manifiesto padre
+        for rec in self:
+            if rec.manifiesto_id:
+                nombre = rec.nombre_residuo or f'Residuo #{rec.id}'
+                body = (
+                    f"<p>🗑️ <b>Residuo eliminado:</b> {nombre}"
+                    f" — {rec.cantidad} kg</p>"
+                )
+                rec.manifiesto_id.message_post(
+                    body=body,
+                    message_type='notification',
+                    subtype_xmlid='mail.mt_note',
+                )
+        return super().unlink()
 
     def _create_lot_for_residuo(self):
         for record in self:

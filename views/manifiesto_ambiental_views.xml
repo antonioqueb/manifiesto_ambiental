@@ -40,7 +40,7 @@
         <field name="type">list</field>
         <field name="arch" type="xml">
             <list string="Manifiestos Ambientales"
-                  class="o_manifiesto_ambiental_list"
+                  
                   default_order="sequence_number desc, version desc"
                   decoration-muted="not is_current_version"
                   decoration-bf="is_current_version">

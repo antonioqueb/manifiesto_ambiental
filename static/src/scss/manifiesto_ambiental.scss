@@ -1,10 +1,10 @@
 // ============================================================================
-// MANIFIESTO AMBIENTAL — Premium SCSS Theme (SCOPED)
+// MANIFIESTO AMBIENTAL — Premium SCSS Theme (SCOPED TO FORM ONLY)
 // Module: manifiesto_ambiental | Odoo 19 Enterprise
 // Author: Alphaqueb Consulting SAS
 //
-// ALL styles scoped to .o_manifiesto_ambiental_form (form) and
-// .o_manifiesto_ambiental_list (list) to avoid polluting other views.
+// ALL styles scoped under .o_manifiesto_ambiental_form — no list styles.
+// FIX: removed overflow:hidden on .o_form_sheet and position:fixed on ::before
 // ============================================================================
 
 // ---------------------------------------------------------------------------
@@ -12,7 +12,6 @@
 // ---------------------------------------------------------------------------
 $ma-navy:         #0B1426;
 $ma-navy-light:   #132040;
-$ma-navy-soft:    #1A2A4A;
 $ma-slate:        #334155;
 $ma-slate-light:  #64748B;
 $ma-teal:         #00BFA6;
@@ -20,9 +19,7 @@ $ma-teal-dark:    #009E8B;
 $ma-teal-glow:    rgba(0, 191, 166, 0.15);
 $ma-teal-subtle:  rgba(0, 191, 166, 0.06);
 $ma-amber:        #F59E0B;
-$ma-amber-glow:   rgba(245, 158, 11, 0.12);
 $ma-red:          #EF4444;
-$ma-red-glow:     rgba(239, 68, 68, 0.10);
 $ma-green:        #10B981;
 $ma-green-glow:   rgba(16, 185, 129, 0.10);
 $ma-blue:         #3B82F6;
@@ -31,22 +28,18 @@ $ma-purple:       #8B5CF6;
 
 $ma-surface:      #FFFFFF;
 $ma-surface-alt:  #F8FAFC;
-$ma-surface-hover:#F1F5F9;
 $ma-border:       #E2E8F0;
 $ma-border-light: #F1F5F9;
 $ma-text:         #1E293B;
-$ma-text-muted:   #94A3B8;
 $ma-text-subtle:  #CBD5E1;
 
 $ma-radius-sm:    6px;
 $ma-radius:       10px;
 $ma-radius-lg:    14px;
-$ma-radius-xl:    20px;
 $ma-radius-pill:  50px;
 
 $ma-shadow-xs:    0 1px 2px rgba(0, 0, 0, 0.04);
 $ma-shadow-sm:    0 2px 8px rgba(0, 0, 0, 0.06);
-$ma-shadow:       0 4px 16px rgba(0, 0, 0, 0.08);
 $ma-shadow-lg:    0 8px 32px rgba(0, 0, 0, 0.10);
 $ma-shadow-glow:  0 4px 24px rgba(0, 191, 166, 0.12);
 
@@ -54,29 +47,15 @@ $ma-transition:   all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 $ma-transition-fast: all 0.15s ease;
 
 // ===========================================================================
-// 2. FORM VIEW — Everything scoped under .o_manifiesto_ambiental_form
+// FORM VIEW — scoped under .o_manifiesto_ambiental_form
 // ===========================================================================
 .o_manifiesto_ambiental_form {
 
     // -----------------------------------------------------------------------
-    // 2a. Canvas background
+    // Canvas
     // -----------------------------------------------------------------------
     &.o_form_view {
         background: linear-gradient(145deg, $ma-surface-alt 0%, #EEF2F7 50%, $ma-surface-alt 100%);
-
-        &::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-image:
-                radial-gradient(circle at 1px 1px, rgba($ma-teal, 0.03) 1px, transparent 0);
-            background-size: 40px 40px;
-            pointer-events: none;
-            z-index: 0;
-        }
 
         .o_form_sheet_bg {
             background: transparent !important;
@@ -92,12 +71,12 @@ $ma-transition-fast: all 0.15s ease;
             margin: 16px auto;
             max-width: 1280px;
             padding: 0 !important;
-            overflow: hidden;
+            // SIN overflow:hidden para no romper scroll
         }
     }
 
     // -----------------------------------------------------------------------
-    // 2b. Header / Statusbar
+    // Header / Statusbar
     // -----------------------------------------------------------------------
     .o_form_statusbar {
         background: linear-gradient(135deg, $ma-navy 0%, $ma-navy-light 100%);
@@ -109,10 +88,7 @@ $ma-transition-fast: all 0.15s ease;
         &::after {
             content: '';
             position: absolute;
-            bottom: -2px;
-            left: 0;
-            right: 0;
-            height: 2px;
+            bottom: -2px; left: 0; right: 0; height: 2px;
             background: linear-gradient(90deg,
                 transparent 0%, $ma-teal 20%, $ma-teal 80%, transparent 100%);
             filter: blur(1px);
@@ -123,163 +99,95 @@ $ma-transition-fast: all 0.15s ease;
 
             .btn {
                 border-radius: $ma-radius;
-                font-weight: 600;
-                font-size: 12.5px;
-                letter-spacing: 0.02em;
-                padding: 7px 16px;
-                border: none;
-                transition: $ma-transition;
-                text-transform: none;
-                position: relative;
-                overflow: hidden;
+                font-weight: 600; font-size: 12.5px;
+                letter-spacing: 0.02em; padding: 7px 16px;
+                border: none; transition: $ma-transition;
+                position: relative; overflow: hidden;
 
                 &::before {
-                    content: '';
-                    position: absolute;
-                    inset: 0;
+                    content: ''; position: absolute; inset: 0;
                     background: linear-gradient(180deg, rgba(255,255,255,0.12) 0%, transparent 100%);
-                    opacity: 0;
-                    transition: $ma-transition-fast;
+                    opacity: 0; transition: $ma-transition-fast;
                 }
-
                 &:hover::before { opacity: 1; }
             }
 
             .btn-primary {
                 background: linear-gradient(135deg, $ma-teal-dark, $ma-teal);
-                color: white;
-                box-shadow: 0 2px 8px rgba($ma-teal, 0.3);
-
-                &:hover {
-                    transform: translateY(-1px);
-                    box-shadow: 0 4px 16px rgba($ma-teal, 0.4);
-                }
+                color: white; box-shadow: 0 2px 8px rgba($ma-teal, 0.3);
+                &:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba($ma-teal, 0.4); }
             }
-
             .btn-secondary {
                 background: rgba(255, 255, 255, 0.08);
                 color: rgba(255, 255, 255, 0.85);
                 border: 1px solid rgba(255, 255, 255, 0.12);
-                backdrop-filter: blur(4px);
-
-                &:hover {
-                    background: rgba(255, 255, 255, 0.15);
-                    color: white;
-                    border-color: rgba(255, 255, 255, 0.25);
-                }
+                &:hover { background: rgba(255, 255, 255, 0.15); color: white; }
             }
-
             .btn-success {
                 background: linear-gradient(135deg, darken($ma-green, 5%), $ma-green);
-                color: white;
-                box-shadow: 0 2px 8px rgba($ma-green, 0.3);
+                color: white; box-shadow: 0 2px 8px rgba($ma-green, 0.3);
             }
-
             .btn-warning {
                 background: linear-gradient(135deg, darken($ma-amber, 8%), $ma-amber);
-                color: $ma-navy;
-                box-shadow: 0 2px 8px rgba($ma-amber, 0.3);
+                color: $ma-navy; box-shadow: 0 2px 8px rgba($ma-amber, 0.3);
             }
-
             .btn-danger {
-                background: rgba($ma-red, 0.15);
-                color: lighten($ma-red, 15%);
+                background: rgba($ma-red, 0.15); color: lighten($ma-red, 15%);
                 border: 1px solid rgba($ma-red, 0.3);
-
-                &:hover {
-                    background: $ma-red;
-                    color: white;
-                }
+                &:hover { background: $ma-red; color: white; }
             }
-
             .btn-info {
-                background: rgba($ma-blue, 0.15);
-                color: lighten($ma-blue, 20%);
+                background: rgba($ma-blue, 0.15); color: lighten($ma-blue, 20%);
                 border: 1px solid rgba($ma-blue, 0.2);
-
-                &:hover {
-                    background: $ma-blue;
-                    color: white;
-                }
+                &:hover { background: $ma-blue; color: white; }
             }
         }
 
-        .o_statusbar_status {
-            .o_arrow_button {
-                background: rgba(255, 255, 255, 0.05) !important;
-                color: rgba(255, 255, 255, 0.5) !important;
-                border-color: rgba(255, 255, 255, 0.08) !important;
-                font-size: 12px;
-                font-weight: 500;
-                transition: $ma-transition;
+        .o_statusbar_status .o_arrow_button {
+            background: rgba(255, 255, 255, 0.05) !important;
+            color: rgba(255, 255, 255, 0.5) !important;
+            border-color: rgba(255, 255, 255, 0.08) !important;
+            font-size: 12px; font-weight: 500; transition: $ma-transition;
 
-                &.o_arrow_button_current {
-                    background: $ma-teal !important;
-                    color: white !important;
-                    border-color: $ma-teal !important;
-                    box-shadow: 0 0 16px rgba($ma-teal, 0.4);
-                    font-weight: 700;
-                }
-
-                &.btn-primary:not(.o_arrow_button_current) {
-                    background: rgba($ma-teal, 0.15) !important;
-                    color: $ma-teal !important;
-                    border-color: rgba($ma-teal, 0.3) !important;
-                }
+            &.o_arrow_button_current {
+                background: $ma-teal !important; color: white !important;
+                border-color: $ma-teal !important;
+                box-shadow: 0 0 16px rgba($ma-teal, 0.4); font-weight: 700;
+            }
+            &.btn-primary:not(.o_arrow_button_current) {
+                background: rgba($ma-teal, 0.15) !important;
+                color: $ma-teal !important; border-color: rgba($ma-teal, 0.3) !important;
             }
         }
     }
 
     // -----------------------------------------------------------------------
-    // 2c. Smart Buttons
+    // Smart Buttons
     // -----------------------------------------------------------------------
     .oe_button_box {
-        border-bottom: 1px solid $ma-border;
-        background: $ma-surface-alt;
-        padding: 12px 20px;
-        gap: 8px;
-        display: flex;
-        flex-wrap: wrap;
+        border-bottom: 1px solid $ma-border; background: $ma-surface-alt;
+        padding: 12px 20px; gap: 8px; display: flex; flex-wrap: wrap;
 
         .oe_stat_button {
-            background: $ma-surface;
-            border: 1px solid $ma-border;
-            border-radius: $ma-radius;
-            padding: 10px 16px;
-            min-width: 120px;
-            transition: $ma-transition;
-            position: relative;
-            overflow: hidden;
+            background: $ma-surface; border: 1px solid $ma-border;
+            border-radius: $ma-radius; padding: 10px 16px;
+            min-width: 120px; transition: $ma-transition;
+            position: relative; overflow: hidden;
 
             &::before {
-                content: '';
-                position: absolute;
-                top: 0; left: 0; right: 0;
-                height: 3px;
-                background: $ma-teal;
-                transform: scaleX(0);
-                transition: transform 0.3s ease;
+                content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+                background: $ma-teal; transform: scaleX(0); transition: transform 0.3s ease;
             }
-
             &:hover {
-                border-color: $ma-teal;
-                box-shadow: $ma-shadow-glow;
-                transform: translateY(-2px);
+                border-color: $ma-teal; box-shadow: $ma-shadow-glow; transform: translateY(-2px);
                 &::before { transform: scaleX(1); }
             }
 
             .o_button_icon { color: $ma-teal; font-size: 18px; }
-
             .o_stat_info {
-                .o_stat_value {
-                    color: $ma-navy; font-weight: 800; font-size: 18px; line-height: 1.2;
-                }
-                .o_stat_text {
-                    color: $ma-slate-light; font-size: 11px; font-weight: 600;
-                    text-transform: uppercase; letter-spacing: 0.05em;
-                }
+                .o_stat_value { color: $ma-navy; font-weight: 800; font-size: 18px; line-height: 1.2; }
+                .o_stat_text { color: $ma-slate-light; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
             }
-
             &:nth-child(1) .o_button_icon { color: $ma-amber; }
             &:nth-child(2) .o_button_icon { color: $ma-green; }
             &:nth-child(3) .o_button_icon { color: $ma-blue; }
@@ -288,101 +196,62 @@ $ma-transition-fast: all 0.15s ease;
     }
 
     // -----------------------------------------------------------------------
-    // 2d. Alerts
+    // Alerts
     // -----------------------------------------------------------------------
     .alert {
-        border-radius: $ma-radius;
-        border: none;
-        padding: 14px 20px;
-        font-size: 13px;
-        font-weight: 500;
-        position: relative;
-        overflow: hidden;
-        margin: 16px 24px;
+        border-radius: $ma-radius; border: none; padding: 14px 20px;
+        font-size: 13px; font-weight: 500; position: relative;
+        overflow: hidden; margin: 16px 24px;
 
-        &::before {
-            content: '';
-            position: absolute;
-            left: 0; top: 0; bottom: 0;
-            width: 4px;
-        }
-
+        &::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; }
         strong { font-weight: 700; }
 
         &.alert-warning {
-            background: linear-gradient(135deg, #FFFBEB, #FEF3C7);
-            color: #92400E;
+            background: linear-gradient(135deg, #FFFBEB, #FEF3C7); color: #92400E;
             box-shadow: inset 0 0 0 1px rgba($ma-amber, 0.2);
             &::before { background: $ma-amber; }
-            .btn-link { color: darken($ma-amber, 15%); font-weight: 700; }
         }
-
         &.alert-success {
-            background: linear-gradient(135deg, #ECFDF5, #D1FAE5);
-            color: #065F46;
+            background: linear-gradient(135deg, #ECFDF5, #D1FAE5); color: #065F46;
             box-shadow: inset 0 0 0 1px rgba($ma-green, 0.2);
             &::before { background: $ma-green; }
         }
-
         &.alert-info {
-            background: linear-gradient(135deg, #F0FDFA, #CCFBF1);
-            color: #115E59;
+            background: linear-gradient(135deg, #F0FDFA, #CCFBF1); color: #115E59;
             box-shadow: inset 0 0 0 1px rgba($ma-teal, 0.15);
             &::before { background: $ma-teal; }
         }
     }
 
     // -----------------------------------------------------------------------
-    // 2e. Title Area
+    // Title Area
     // -----------------------------------------------------------------------
     .oe_title {
-        padding: 24px 28px 16px;
-        position: relative;
+        padding: 24px 28px 16px; position: relative;
 
         &::after {
-            content: '';
-            position: absolute;
-            bottom: 0; left: 28px;
+            content: ''; position: absolute; bottom: 0; left: 28px;
             width: 60px; height: 3px;
-            background: linear-gradient(90deg, $ma-teal, transparent);
-            border-radius: 2px;
+            background: linear-gradient(90deg, $ma-teal, transparent); border-radius: 2px;
         }
 
-        label {
-            color: $ma-slate-light; font-size: 11px; font-weight: 700;
-            text-transform: uppercase; letter-spacing: 0.1em;
-        }
-
+        label { color: $ma-slate-light; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; }
         h1 .o_field_widget {
-            font-size: 28px !important; font-weight: 800 !important;
-            color: $ma-navy !important; letter-spacing: -0.02em;
-            input {
-                font-size: 28px !important; font-weight: 800 !important;
-                color: $ma-navy !important;
-            }
-        }
-
-        h3 {
-            color: $ma-slate-light !important; font-size: 14px !important;
-            font-weight: 500 !important; margin-top: 4px;
-            .o_field_widget { display: inline; font-weight: 700; color: $ma-teal; }
+            font-size: 28px !important; font-weight: 800 !important; color: $ma-navy !important; letter-spacing: -0.02em;
+            input { font-size: 28px !important; font-weight: 800 !important; color: $ma-navy !important; }
         }
     }
 
     // -----------------------------------------------------------------------
-    // 2f. Groups / Field Sections
+    // Groups / Fields
     // -----------------------------------------------------------------------
     .o_group {
         > tbody > tr > td.o_group_col > div > .o_group_header,
         .o_horizontal_separator {
             color: $ma-navy; font-weight: 700; font-size: 14px;
-            letter-spacing: 0.01em; padding-bottom: 8px;
-            margin-bottom: 12px; border-bottom: 2px solid $ma-border;
+            padding-bottom: 8px; margin-bottom: 12px; border-bottom: 2px solid $ma-border;
             position: relative;
-            &::after {
-                content: ''; position: absolute; bottom: -2px; left: 0;
-                width: 40px; height: 2px; background: $ma-teal;
-            }
+            &::after { content: ''; position: absolute; bottom: -2px; left: 0; width: 40px; height: 2px; background: $ma-teal; }
         }
     }
 
@@ -393,37 +262,17 @@ $ma-transition-fast: all 0.15s ease;
         &:hover { border-color: rgba($ma-teal, 0.25); box-shadow: $ma-shadow-sm; }
     }
 
-    .o_form_label, label.o_form_label {
-        color: $ma-slate; font-weight: 600; font-size: 12.5px; letter-spacing: 0.01em;
-    }
+    .o_form_label, label.o_form_label { color: $ma-slate; font-weight: 600; font-size: 12.5px; }
 
     .o_field_widget .o_input {
         border: 1.5px solid $ma-border; border-radius: $ma-radius-sm;
-        padding: 6px 12px; font-size: 13px; color: $ma-text;
-        background: $ma-surface; transition: $ma-transition;
-
-        &:focus {
-            border-color: $ma-teal;
-            box-shadow: 0 0 0 3px $ma-teal-glow;
-            outline: none;
-        }
+        padding: 6px 12px; font-size: 13px; color: $ma-text; background: $ma-surface; transition: $ma-transition;
+        &:focus { border-color: $ma-teal; box-shadow: 0 0 0 3px $ma-teal-glow; outline: none; }
         &:hover:not(:focus) { border-color: $ma-slate-light; }
-        &[readonly], &.o_readonly {
-            background: $ma-surface-alt; border-color: transparent; color: $ma-slate;
-        }
+        &[readonly], &.o_readonly { background: $ma-surface-alt; border-color: transparent; color: $ma-slate; }
     }
 
-    .o_field_widget textarea.o_input {
-        border-radius: $ma-radius; min-height: 80px; line-height: 1.6;
-    }
-
-    .o_field_widget select.o_input {
-        appearance: none;
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2364748B' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");
-        background-repeat: no-repeat;
-        background-position: right 12px center;
-        padding-right: 32px;
-    }
+    .o_field_widget textarea.o_input { border-radius: $ma-radius; min-height: 80px; line-height: 1.6; }
 
     .o_field_badge .badge {
         border-radius: $ma-radius-pill; padding: 5px 14px; font-weight: 700;
@@ -431,93 +280,65 @@ $ma-transition-fast: all 0.15s ease;
     }
 
     // -----------------------------------------------------------------------
-    // 2g. Notebook / Tabs
+    // Notebook / Tabs
     // -----------------------------------------------------------------------
     .o_notebook {
         margin: 0; border: none;
 
         > .o_notebook_headers {
             background: linear-gradient(180deg, $ma-surface-alt, $ma-surface);
-            border-bottom: 2px solid $ma-border;
-            padding: 0 20px;
-            position: sticky; top: 0; z-index: 10;
+            border-bottom: 2px solid $ma-border; padding: 0 20px;
 
             .nav-tabs {
                 border: none; gap: 2px;
-
                 .nav-item .nav-link {
-                    border: none;
-                    border-radius: $ma-radius $ma-radius 0 0;
-                    padding: 12px 20px;
-                    color: $ma-slate-light; font-weight: 600; font-size: 13px;
-                    transition: $ma-transition;
+                    border: none; border-radius: $ma-radius $ma-radius 0 0;
+                    padding: 12px 20px; color: $ma-slate-light;
+                    font-weight: 600; font-size: 13px; transition: $ma-transition;
                     position: relative; background: transparent;
 
                     &::after {
-                        content: ''; position: absolute;
-                        bottom: -2px; left: 50%; transform: translateX(-50%);
-                        width: 0; height: 3px; background: $ma-teal;
-                        border-radius: 3px 3px 0 0; transition: width 0.3s ease;
+                        content: ''; position: absolute; bottom: -2px; left: 50%; transform: translateX(-50%);
+                        width: 0; height: 3px; background: $ma-teal; border-radius: 3px 3px 0 0; transition: width 0.3s ease;
                     }
-
                     &:hover { color: $ma-navy; background: rgba($ma-teal, 0.04); }
-
-                    &.active {
-                        color: $ma-teal; background: $ma-surface; font-weight: 700;
-                        &::after { width: 100%; }
-                    }
+                    &.active { color: $ma-teal; background: $ma-surface; font-weight: 700; &::after { width: 100%; } }
                 }
             }
         }
 
-        .tab-content {
-            padding: 20px 24px; background: $ma-surface;
-            .tab-pane { animation: ma-fadeIn 0.3s ease; }
-        }
+        .tab-content { padding: 20px 24px; background: $ma-surface; .tab-pane { animation: ma-fadeIn 0.3s ease; } }
     }
 
     // -----------------------------------------------------------------------
-    // 2h. One2Many / Many2Many Lists (Residuos, Versiones)
+    // One2Many Lists (Residuos, Versiones)
     // -----------------------------------------------------------------------
-    .o_field_one2many,
-    .o_field_many2many {
+    .o_field_one2many, .o_field_many2many {
         .o_list_view {
             border: 1px solid $ma-border; border-radius: $ma-radius; overflow: hidden;
 
             thead th {
-                background: $ma-navy !important;
-                color: rgba(255, 255, 255, 0.9) !important;
+                background: $ma-navy !important; color: rgba(255, 255, 255, 0.9) !important;
                 font-weight: 700; font-size: 11px; text-transform: uppercase;
-                letter-spacing: 0.06em; padding: 10px 12px;
-                border: none !important; white-space: nowrap;
+                letter-spacing: 0.06em; padding: 10px 12px; border: none !important; white-space: nowrap;
                 &:first-child { border-radius: $ma-radius 0 0 0; }
                 &:last-child { border-radius: 0 $ma-radius 0 0; }
-                .o_column_sortable:hover { color: $ma-teal !important; }
             }
 
             tbody tr {
                 transition: $ma-transition-fast;
                 &:nth-child(even) { background: $ma-surface-alt; }
                 &:hover { background: $ma-teal-subtle !important; }
-
                 td {
                     padding: 8px 12px; font-size: 12.5px; color: $ma-text;
                     border-bottom: 1px solid $ma-border-light; vertical-align: middle;
-
                     .o_field_boolean .form-check-input {
                         width: 18px; height: 18px; border-radius: 4px;
                         border: 2px solid $ma-border; transition: $ma-transition-fast;
-                        &:checked {
-                            background-color: $ma-red; border-color: $ma-red;
-                            box-shadow: 0 0 6px rgba($ma-red, 0.3);
-                        }
+                        &:checked { background-color: $ma-red; border-color: $ma-red; box-shadow: 0 0 6px rgba($ma-red, 0.3); }
                     }
-
-                    .o_field_float, .o_field_integer {
-                        font-weight: 700; font-variant-numeric: tabular-nums;
-                    }
+                    .o_field_float, .o_field_integer { font-weight: 700; font-variant-numeric: tabular-nums; }
                 }
-
                 &.o_selected_row {
                     background: $ma-teal-glow !important;
                     box-shadow: inset 0 0 0 1px rgba($ma-teal, 0.3);
@@ -528,49 +349,35 @@ $ma-transition-fast: all 0.15s ease;
             tfoot {
                 td { padding: 8px 12px; }
                 .o_field_x2many_list_row_add a {
-                    color: $ma-teal; font-weight: 600; font-size: 12.5px;
-                    transition: $ma-transition;
+                    color: $ma-teal; font-weight: 600; font-size: 12.5px; transition: $ma-transition;
                     &:hover { color: $ma-teal-dark; text-decoration: none; }
                     &::before { content: '+ '; font-weight: 800; }
                 }
             }
         }
-
-        // Version history buttons
-        .o_list_view .o_list_button .btn-link {
-            font-size: 12px; font-weight: 600; padding: 4px 8px;
-            border-radius: $ma-radius-sm; transition: $ma-transition-fast;
-            &:hover {
-                background: $ma-teal-glow; color: $ma-teal-dark; text-decoration: none;
-            }
-        }
     }
 
     // -----------------------------------------------------------------------
-    // 2i. Chatter
+    // Chatter
     // -----------------------------------------------------------------------
     .o_FormRenderer_chatterContainer .o_ChatterContainer {
         border-top: 2px solid $ma-border; background: $ma-surface-alt; padding: 20px;
-
         .o_Chatter_topbar {
             border-bottom: 1px solid $ma-border; padding-bottom: 12px; margin-bottom: 16px;
             .btn { border-radius: $ma-radius; font-weight: 600; font-size: 12px; }
         }
-
         .o_Message {
-            border-radius: $ma-radius; padding: 12px 16px; margin-bottom: 8px;
-            transition: $ma-transition-fast;
+            border-radius: $ma-radius; padding: 12px 16px; margin-bottom: 8px; transition: $ma-transition-fast;
             &:hover { background: $ma-surface; box-shadow: $ma-shadow-xs; }
         }
     }
 
     // -----------------------------------------------------------------------
-    // 2j. Documento Físico tab
+    // Documento Físico
     // -----------------------------------------------------------------------
     .o_notebook .tab-pane[name="documento_fisico"],
     div[name="documento_fisico"] {
-        .o_field_pdf_viewer,
-        .o_field_binary_file {
+        .o_field_pdf_viewer, .o_field_binary_file {
             border: 2px dashed $ma-border; border-radius: $ma-radius-lg;
             background: $ma-surface-alt; overflow: hidden; transition: $ma-transition;
             &:hover { border-color: $ma-teal; box-shadow: $ma-shadow-glow; }
@@ -578,181 +385,67 @@ $ma-transition-fast: all 0.15s ease;
     }
 
     // -----------------------------------------------------------------------
-    // 2k. Many2one external button
+    // Many2one
     // -----------------------------------------------------------------------
     .o_field_many2one {
         .o_input { padding-right: 60px; }
         .o_external_button {
             border-radius: 0 $ma-radius-sm $ma-radius-sm 0;
-            border-left: 1px solid $ma-border; color: $ma-slate-light;
-            transition: $ma-transition-fast;
+            border-left: 1px solid $ma-border; color: $ma-slate-light; transition: $ma-transition-fast;
             &:hover { color: $ma-teal; background: $ma-teal-subtle; }
         }
     }
 
     // -----------------------------------------------------------------------
-    // 2l. Declaraciones (readonly text)
+    // Declaraciones (readonly)
     // -----------------------------------------------------------------------
-    .o_field_text[readonly],
-    .o_readonly_modifier .o_field_text {
+    .o_field_text[readonly], .o_readonly_modifier .o_field_text {
         &[name*="declaracion"] {
             background: linear-gradient(135deg, $ma-surface-alt, #F1F5F9);
-            border: 1px solid $ma-border;
-            border-left: 4px solid $ma-slate-light;
+            border: 1px solid $ma-border; border-left: 4px solid $ma-slate-light;
             border-radius: 0 $ma-radius $ma-radius 0;
-            padding: 14px 18px; font-size: 12.5px; line-height: 1.7;
-            color: $ma-slate; font-style: italic;
+            padding: 14px 18px; font-size: 12.5px; line-height: 1.7; color: $ma-slate; font-style: italic;
         }
     }
 
     // -----------------------------------------------------------------------
-    // 2m. Badge colors for tipo_manifiesto
+    // Badge colors
     // -----------------------------------------------------------------------
-    .o_field_badge .badge.text-bg-info,
-    .badge[class*="decoration-info"] {
+    .o_field_badge .badge.text-bg-info, .badge[class*="decoration-info"] {
         background: linear-gradient(135deg, #DBEAFE, #BFDBFE) !important;
-        color: #1E40AF !important;
-        border: 1px solid rgba($ma-blue, 0.2);
+        color: #1E40AF !important; border: 1px solid rgba($ma-blue, 0.2);
     }
-
-    .o_field_badge .badge.text-bg-success,
-    .badge[class*="decoration-success"] {
+    .o_field_badge .badge.text-bg-success, .badge[class*="decoration-success"] {
         background: linear-gradient(135deg, #D1FAE5, #A7F3D0) !important;
-        color: #065F46 !important;
-        border: 1px solid rgba($ma-green, 0.2);
+        color: #065F46 !important; border: 1px solid rgba($ma-green, 0.2);
     }
 
     // -----------------------------------------------------------------------
-    // 2n. Loading shimmer
-    // -----------------------------------------------------------------------
-    .o_field_widget.o_field_loading {
-        position: relative;
-        &::after {
-            content: ''; position: absolute; inset: 0;
-            background: linear-gradient(90deg,
-                transparent 0%, rgba($ma-teal, 0.05) 50%, transparent 100%);
-            animation: ma-shimmer 1.5s infinite; border-radius: inherit;
-        }
-    }
-
-    // -----------------------------------------------------------------------
-    // 2o. Custom Scrollbar
-    // -----------------------------------------------------------------------
-    .o_notebook .tab-content,
-    .o_field_one2many .o_list_view {
-        &::-webkit-scrollbar { width: 6px; height: 6px; }
-        &::-webkit-scrollbar-track { background: $ma-surface-alt; border-radius: 3px; }
-        &::-webkit-scrollbar-thumb {
-            background: $ma-text-subtle; border-radius: 3px; transition: background 0.2s;
-            &:hover { background: $ma-slate-light; }
-        }
-    }
-
-    // -----------------------------------------------------------------------
-    // 2p. Responsive
+    // Responsive
     // -----------------------------------------------------------------------
     @media (max-width: 768px) {
         &.o_form_view .o_form_sheet { margin: 8px; border-radius: $ma-radius; }
-
-        .oe_title {
-            padding: 16px 16px 12px;
-            h1 .o_field_widget { font-size: 22px !important; }
-        }
-
-        .o_notebook > .o_notebook_headers .nav-tabs .nav-item .nav-link {
-            padding: 10px 12px; font-size: 12px;
-        }
-
-        .oe_button_box {
-            padding: 8px 12px;
-            .oe_stat_button { min-width: 100px; padding: 8px 12px; }
-        }
-
-        .o_form_statusbar .o_statusbar_buttons .btn {
-            padding: 6px 10px; font-size: 11px;
-        }
+        .oe_title { padding: 16px 16px 12px; h1 .o_field_widget { font-size: 22px !important; } }
+        .o_notebook > .o_notebook_headers .nav-tabs .nav-item .nav-link { padding: 10px 12px; font-size: 12px; }
+        .oe_button_box { padding: 8px 12px; .oe_stat_button { min-width: 100px; padding: 8px 12px; } }
+        .o_form_statusbar .o_statusbar_buttons .btn { padding: 6px 10px; font-size: 11px; }
     }
 
     // -----------------------------------------------------------------------
-    // 2q. Print
+    // Print
     // -----------------------------------------------------------------------
     @media print {
-        .o_form_statusbar,
-        .oe_button_box,
-        .o_FormRenderer_chatterContainer,
-        .o_form_statusbar .o_statusbar_buttons {
-            display: none !important;
-        }
-
-        &.o_form_view .o_form_sheet {
-            box-shadow: none; border: none; margin: 0;
-        }
-
+        .o_form_statusbar, .oe_button_box, .o_FormRenderer_chatterContainer { display: none !important; }
+        &.o_form_view .o_form_sheet { box-shadow: none; border: none; margin: 0; }
         .alert { border: 1px solid #ccc; page-break-inside: avoid; }
     }
 
 } // END .o_manifiesto_ambiental_form
 
-
 // ===========================================================================
-// 3. LIST VIEW — Scoped under .o_manifiesto_ambiental_list
-// ===========================================================================
-.o_manifiesto_ambiental_list {
-    thead th {
-        background: linear-gradient(180deg, $ma-navy, $ma-navy-light) !important;
-        color: rgba(255, 255, 255, 0.9) !important;
-        font-weight: 700; font-size: 11px; text-transform: uppercase;
-        letter-spacing: 0.06em; padding: 12px 14px; border: none !important;
-    }
-
-    tbody tr {
-        transition: background 0.15s ease;
-        &:hover { background: $ma-teal-subtle !important; }
-
-        td {
-            padding: 10px 14px; font-size: 13px;
-            border-bottom: 1px solid $ma-border-light;
-
-            .badge {
-                border-radius: $ma-radius-pill; padding: 4px 12px; font-weight: 700;
-                font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.04em;
-            }
-
-            .o_field_badge .badge {
-                &[class*="success"] { background: $ma-green-glow; color: darken($ma-green, 10%); }
-                &[class*="info"] { background: $ma-blue-glow; color: darken($ma-blue, 5%); }
-                &[class*="warning"] { background: $ma-amber-glow; color: darken($ma-amber, 15%); }
-            }
-        }
-    }
-}
-
-
-// ===========================================================================
-// 4. SEARCH VIEW — Scoped (kept minimal, only facet labels)
-// ===========================================================================
-.o_manifiesto_ambiental_form,
-.o_manifiesto_ambiental_list {
-    & + .o_searchview,
-    ~ .o_searchview {
-        .o_searchview_facet .o_searchview_facet_label {
-            background: $ma-teal; color: white;
-            border-radius: $ma-radius-sm 0 0 $ma-radius-sm;
-            font-weight: 700; font-size: 11px;
-        }
-    }
-}
-
-
-// ===========================================================================
-// 5. ANIMATIONS (global, lightweight — OK to keep unscoped)
+// ANIMATIONS
 // ===========================================================================
 @keyframes ma-fadeIn {
     from { opacity: 0; transform: translateY(4px); }
     to   { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes ma-shimmer {
-    0% { transform: translateX(-100%); }
-    100% { transform: translateX(100%); }
 }

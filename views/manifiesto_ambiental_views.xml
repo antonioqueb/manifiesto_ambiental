@@ -550,6 +550,7 @@
                         <field name="tipo_manifiesto"/>
                     </group>
                 </sheet>
+                <chatter/>
             </form>
         </field>
     </record>

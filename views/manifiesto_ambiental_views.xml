@@ -253,20 +253,6 @@
                                 </group>
                             </group>
 
-                            <group string="Resumen de residuos" col="1">
-                                <field name="residuo_ids" readonly="1">
-                                    <list string="Residuos" create="false" delete="false">
-                                        <field name="product_id" string="Residuo"/>
-                                        <field name="nombre_residuo" string="Descripción"/>
-                                        <field name="cantidad"/>
-                                        <field name="unidad"/>
-                                        <field name="packaging_id" string="Embalaje" optional="show"/>
-                                        <field name="lot_id" optional="show"/>
-                                        <field name="clasificaciones_display" string="CRETIB" optional="show"/>
-                                    </list>
-                                </field>
-                            </group>
-
                             <group col="2">
                                 <group string="Control">
                                     <field name="state" readonly="1"/>

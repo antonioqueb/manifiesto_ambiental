@@ -40,6 +40,7 @@
         <field name="type">list</field>
         <field name="arch" type="xml">
             <list string="Manifiestos Ambientales"
+                  class="o_manifiesto_ambiental_list"
                   default_order="sequence_number desc, version desc"
                   decoration-muted="not is_current_version"
                   decoration-bf="is_current_version">
@@ -83,16 +84,8 @@
         <field name="model">manifiesto.ambiental</field>
         <field name="type">form</field>
         <field name="arch" type="xml">
-            <form string="Manifiesto Ambiental">
+            <form string="Manifiesto Ambiental" class="o_manifiesto_ambiental_form">
                 <header>
-                    <!--
-                        ORGANIZACIÓN DEL HEADER:
-                        1. Acción principal (Imprimir) — siempre visible
-                        2. Flujo de estados — progresión lineal
-                        3. Acciones operativas — contextuales al estado
-                        4. Cancelar — destructiva al final
-                    -->
-
                     <!-- 1. Acción principal -->
                     <button name="action_print_manifiesto"
                             string="Imprimir Manifiesto"
@@ -108,7 +101,7 @@
                     <button name="action_delivered" string="Entregado" type="object"
                             class="btn-primary" invisible="state != 'in_transit'"/>
 
-                    <!-- 3. Acciones operativas (solo entradas, estados avanzados) -->
+                    <!-- 3. Acciones operativas -->
                     <button name="action_recibir_residuos" string="Recibir Residuos" type="object"
                             class="btn-success" icon="fa-download"
                             invisible="state not in ['in_transit', 'delivered'] or not is_current_version or tipo_manifiesto == 'salida'"
@@ -117,7 +110,7 @@
                             class="btn-warning" icon="fa-exclamation-triangle"
                             invisible="state not in ['in_transit', 'delivered'] or not is_current_version or tipo_manifiesto == 'salida'"/>
 
-                    <!-- 4. Remanifestación (solo versión actual, post-borrador) -->
+                    <!-- 4. Remanifestación -->
                     <button name="action_remanifestar" string="Remanifestar (PDF)" type="object"
                             class="btn-secondary" icon="fa-refresh"
                             invisible="not is_current_version or state == 'draft'"
@@ -138,31 +131,21 @@
                 </header>
 
                 <sheet>
-                    <!-- ============================================ -->
-                    <!-- SMART BUTTONS — Solo métricas, no navegación -->
-                    <!-- ============================================ -->
                     <div class="oe_button_box" name="button_box">
-                        <!-- Versión actual -->
                         <button name="action_view_version_history" type="object"
                                 class="oe_stat_button" icon="fa-history">
                             <field name="version" widget="statinfo" string="Versión"/>
                         </button>
-
-                        <!-- Discrepancias (solo si hay) -->
                         <button name="action_view_discrepancias" type="object"
                                 class="oe_stat_button" icon="fa-exclamation-triangle"
                                 invisible="discrepancia_count == 0">
                             <field name="discrepancia_count" widget="statinfo" string="Discrepancias"/>
                         </button>
-
-                        <!-- Recepciones (solo si hay) -->
                         <button name="action_view_recepciones" type="object"
                                 class="oe_stat_button" icon="fa-truck"
                                 invisible="recepcion_count == 0">
                             <field name="recepcion_count" widget="statinfo" string="Recepciones"/>
                         </button>
-
-                        <!-- Documento físico: un solo botón con estado claro -->
                         <button type="object" name="action_view_version_history"
                                 class="oe_stat_button" icon="fa-file-pdf-o">
                             <div class="o_field_widget o_stat_info">
@@ -173,9 +156,6 @@
                         </button>
                     </div>
 
-                    <!-- ============================================ -->
-                    <!-- ALERTA DE VERSIÓN — Una sola, condicional -->
-                    <!-- ============================================ -->
                     <div class="alert alert-warning mb-0 rounded-0" invisible="is_current_version">
                         <strong>Versión histórica</strong> — Esta no es la versión actual.
                         <button name="action_view_current_version" type="object"
@@ -184,9 +164,6 @@
                         </button>
                     </div>
 
-                    <!-- ============================================ -->
-                    <!-- ENCABEZADO: Identificación del Manifiesto -->
-                    <!-- ============================================ -->
                     <div class="oe_title">
                         <label for="numero_manifiesto" string="Número de Manifiesto"/>
                         <h1>
@@ -208,16 +185,8 @@
                         <field name="company_id" groups="base.group_multi_company"/>
                     </group>
 
-                    <!-- ============================================ -->
-                    <!-- NOTEBOOK: Flujo del manifiesto SEMARNAT -->
-                    <!-- ============================================ -->
                     <notebook>
-
-                        <!-- ========================================
-                             TAB 1: GENERADOR (Secciones 4 y 7)
-                             ======================================== -->
                         <page string="Generador" name="generador">
-                            <!-- Selector de contacto -->
                             <group>
                                 <group>
                                     <field name="generador_id"
@@ -228,8 +197,6 @@
                                 </group>
                                 <group/>
                             </group>
-
-                            <!-- Datos del generador -->
                             <group string="Dirección" col="2">
                                 <group>
                                     <field name="generador_nombre" string="Razón Social"
@@ -256,8 +223,6 @@
                                            readonly="not is_current_version"/>
                                 </group>
                             </group>
-
-                            <!-- Firma del generador -->
                             <group string="Firma y Responsable" col="2">
                                 <group>
                                     <field name="generador_responsable_id"
@@ -275,25 +240,16 @@
                                            readonly="not is_current_version"/>
                                 </group>
                             </group>
-
-                            <!-- Declaración legal (colapsable visualmente, siempre readonly) -->
                             <group string="Declaración del Generador (Sección 7)" col="1">
                                 <field name="declaracion_generador" nolabel="1" readonly="1"/>
                             </group>
                         </page>
 
-                        <!-- ========================================
-                             TAB 2: RESIDUOS (Sección 5) + Instrucciones (Sección 6)
-                             Agrupados porque las instrucciones son sobre los residuos
-                             ======================================== -->
                         <page string="Residuos" name="residuos">
-                            <!-- Instrucciones contextuales -->
                             <div class="alert alert-info mb-3" invisible="not is_current_version">
                                 Seleccione productos del catálogo. Las clasificaciones CRETIB
                                 se completan automáticamente desde la ficha del producto.
                             </div>
-
-                            <!-- Grid de residuos -->
                             <field name="residuo_ids" readonly="not is_current_version">
                                 <list editable="bottom">
                                     <field name="product_id"
@@ -301,29 +257,19 @@
                                            options="{'no_create': True, 'no_create_edit': True}"/>
                                     <field name="nombre_residuo" string="Descripción"/>
                                     <field name="residue_type" string="Tipo" optional="show"/>
-
-                                    <!-- CRETIB compacto -->
                                     <field name="clasificacion_corrosivo" string="C" width="35px"/>
                                     <field name="clasificacion_reactivo" string="R" width="35px"/>
                                     <field name="clasificacion_explosivo" string="E" width="35px"/>
                                     <field name="clasificacion_toxico" string="T" width="35px"/>
                                     <field name="clasificacion_inflamable" string="I" width="35px"/>
                                     <field name="clasificacion_biologico" string="B" width="35px"/>
-
-                                    <!-- Envase y cantidad -->
                                     <field name="packaging_id" string="Embalaje" optional="show"/>
                                     <field name="envase_capacidad" string="Capacidad"/>
                                     <field name="cantidad"/>
                                     <field name="unidad" readonly="1"/>
-
-                                    <!-- Etiquetado -->
                                     <field name="etiqueta_si" string="Etiq. Sí" optional="show"/>
                                     <field name="etiqueta_no" string="Etiq. No" optional="show"/>
-
-                                    <!-- Trazabilidad -->
                                     <field name="lot_id" readonly="1" optional="show"/>
-
-                                    <!-- Legacy (oculto por defecto) -->
                                     <field name="clasificaciones_display" string="CRETIB" optional="hide"/>
                                     <field name="envase_tipo" string="Envase (Legacy)" optional="hide"/>
                                 </list>
@@ -358,8 +304,6 @@
                                     </sheet>
                                 </form>
                             </field>
-
-                            <!-- Instrucciones especiales (Sección 6) — Bajo los residuos -->
                             <separator string="Instrucciones Especiales de Manejo (Sección 6)"/>
                             <field name="instrucciones_especiales"
                                    nolabel="1"
@@ -367,11 +311,7 @@
                                    readonly="not is_current_version"/>
                         </page>
 
-                        <!-- ========================================
-                             TAB 3: TRANSPORTISTA (Secciones 8-14)
-                             ======================================== -->
                         <page string="Transportista" name="transportista">
-                            <!-- Selector de contacto -->
                             <group>
                                 <group>
                                     <field name="transportista_id"
@@ -382,8 +322,6 @@
                                 </group>
                                 <group/>
                             </group>
-
-                            <!-- Datos del transportista -->
                             <group string="Dirección (Sección 8)" col="2">
                                 <group>
                                     <field name="transportista_nombre" string="Razón Social"
@@ -410,8 +348,6 @@
                                            readonly="not is_current_version"/>
                                 </group>
                             </group>
-
-                            <!-- Autorizaciones y vehículo -->
                             <group string="Autorizaciones y Vehículo (Secciones 9-12)" col="2">
                                 <group>
                                     <field name="numero_autorizacion_semarnat"
@@ -434,14 +370,10 @@
                                            readonly="not is_current_version"/>
                                 </group>
                             </group>
-
-                            <!-- Ruta (Sección 13) -->
                             <separator string="Ruta de Transporte (Sección 13)"/>
                             <field name="ruta_empresa" nolabel="1"
                                    placeholder="Descripción de la ruta desde la empresa generadora hasta el punto de entrega..."
                                    readonly="not is_current_version"/>
-
-                            <!-- Firma del transportista -->
                             <group string="Firma y Responsable" col="2">
                                 <group>
                                     <field name="transportista_responsable_id"
@@ -459,18 +391,12 @@
                                            readonly="not is_current_version"/>
                                 </group>
                             </group>
-
-                            <!-- Declaración legal -->
                             <group string="Declaración del Transportista (Sección 14)" col="1">
                                 <field name="declaracion_transportista" nolabel="1" readonly="1"/>
                             </group>
                         </page>
 
-                        <!-- ========================================
-                             TAB 4: DESTINATARIO (Secciones 15-19)
-                             ======================================== -->
                         <page string="Destinatario" name="destinatario">
-                            <!-- Selector de contacto -->
                             <group>
                                 <group>
                                     <field name="destinatario_id"
@@ -481,8 +407,6 @@
                                 </group>
                                 <group/>
                             </group>
-
-                            <!-- Datos del destinatario -->
                             <group string="Dirección (Sección 15)" col="2">
                                 <group>
                                     <field name="destinatario_nombre" string="Razón Social"
@@ -509,8 +433,6 @@
                                            readonly="not is_current_version"/>
                                 </group>
                             </group>
-
-                            <!-- Información adicional (Secciones 16-18) -->
                             <group string="Recepción (Secciones 16-18)" col="2">
                                 <group>
                                     <field name="numero_autorizacion_semarnat_destinatario"
@@ -526,8 +448,6 @@
                                            readonly="not is_current_version"/>
                                 </group>
                             </group>
-
-                            <!-- Firma del destinatario -->
                             <group string="Firma y Responsable" col="2">
                                 <group>
                                     <field name="destinatario_responsable_nombre"
@@ -541,16 +461,11 @@
                                            readonly="not is_current_version"/>
                                 </group>
                             </group>
-
-                            <!-- Declaración legal -->
                             <group string="Declaración del Destinatario (Sección 19)" col="1">
                                 <field name="declaracion_destinatario" nolabel="1" readonly="1"/>
                             </group>
                         </page>
 
-                        <!-- ========================================
-                             TAB 5: DOCUMENTO FÍSICO
-                             ======================================== -->
                         <page string="Documento Físico" name="documento_fisico">
                             <group col="2">
                                 <group>
@@ -572,12 +487,7 @@
                             </div>
                         </page>
 
-                        <!-- ========================================
-                             TAB 6: CONTROL DE VERSIONES
-                             Solo visible si hay más de 1 versión
-                             ======================================== -->
                         <page string="Versiones" name="versiones" invisible="version &lt;= 1">
-                            <!-- Info de versión actual -->
                             <group string="Versión Actual" col="2">
                                 <group>
                                     <field name="version" readonly="1" string="Nº de Versión"/>
@@ -589,16 +499,12 @@
                                     <field name="created_by_remanifest" readonly="1"/>
                                 </group>
                             </group>
-
-                            <!-- Motivo (solo editable en versión actual) -->
                             <group string="Motivo de la Remanifestación" col="1"
                                    invisible="not created_by_remanifest">
                                 <field name="change_reason" nolabel="1"
                                        placeholder="Describa el motivo de esta remanifestación..."
                                        readonly="not is_current_version"/>
                             </group>
-
-                            <!-- Historial -->
                             <separator string="Historial de Versiones"/>
                             <field name="version_history_ids" readonly="1">
                                 <list string="Historial de Versiones"
@@ -618,8 +524,6 @@
                                             invisible="not tenia_documento_fisico"/>
                                 </list>
                             </field>
-
-                            <!-- Navegación rápida -->
                             <div class="mt-3">
                                 <button name="action_view_all_versions" type="object"
                                         string="Ver Todas las Versiones en Lista Completa"
@@ -627,10 +531,8 @@
                                         icon="fa-list"/>
                             </div>
                         </page>
-
                     </notebook>
 
-                    <!-- Campos técnicos (invisible, para lógica) -->
                     <field name="is_current_version" invisible="1"/>
                     <field name="original_manifiesto_id" invisible="1"/>
                     <field name="created_by_remanifest" invisible="1"/>
@@ -653,15 +555,12 @@
         <field name="model">manifiesto.ambiental</field>
         <field name="arch" type="xml">
             <search string="Buscar Manifiestos">
-                <!-- Campos de búsqueda principales -->
                 <field name="numero_manifiesto" string="Nº Manifiesto"/>
                 <field name="numero_registro_ambiental"/>
                 <field name="generador_nombre" string="Generador"/>
                 <field name="transportista_nombre" string="Transportista"/>
                 <field name="destinatario_nombre" string="Destinatario"/>
                 <field name="sequence_number" string="Secuencia"/>
-
-                <!-- Filtros por tipo -->
                 <separator/>
                 <filter string="Entradas" name="tipo_entrada"
                         domain="[('tipo_manifiesto','=','entrada')]"
@@ -669,8 +568,6 @@
                 <filter string="Salidas" name="tipo_salida"
                         domain="[('tipo_manifiesto','=','salida')]"
                         icon="fa-sign-out"/>
-
-                <!-- Filtros por versión -->
                 <separator/>
                 <filter string="Versión Actual" name="current_versions"
                         domain="[('is_current_version','=',True)]"/>
@@ -678,22 +575,16 @@
                         domain="[('is_current_version','=',False)]"/>
                 <filter string="Remanifestados" name="remanifested"
                         domain="[('version','>',1)]"/>
-
-                <!-- Filtros por documento -->
                 <separator/>
                 <filter string="Con Doc. Físico" name="with_physical_doc"
                         domain="[('tiene_documento_fisico','=',True)]"/>
                 <filter string="Sin Doc. Físico" name="without_physical_doc"
                         domain="[('tiene_documento_fisico','=',False)]"/>
-
-                <!-- Filtros por estado -->
                 <separator/>
                 <filter string="Borrador" name="draft" domain="[('state','=','draft')]"/>
                 <filter string="Confirmado" name="confirmed" domain="[('state','=','confirmed')]"/>
                 <filter string="En Tránsito" name="in_transit" domain="[('state','=','in_transit')]"/>
                 <filter string="Entregado" name="delivered" domain="[('state','=','delivered')]"/>
-
-                <!-- Agrupaciones -->
                 <separator/>
                 <filter string="Tipo" name="group_tipo" context="{'group_by':'tipo_manifiesto'}"/>
                 <filter string="Estado" name="group_state" context="{'group_by':'state'}"/>
@@ -704,7 +595,7 @@
     </record>
 
     <!-- ================================================================== -->
-    <!-- VISTAS DE VERSIONES (manifiesto.ambiental.version) -->
+    <!-- VISTAS DE VERSIONES -->
     <!-- ================================================================== -->
 
     <record id="view_manifiesto_ambiental_version_list" model="ir.ui.view">

@@ -10,6 +10,7 @@
     'data': [
         'security/ir.model.access.csv',
         'data/sequences.xml',
+        'views/manifiesto_ambiental_assets.xml',
         'views/res_partner_views.xml',
         'views/manifiesto_ambiental_views.xml',
         'views/manifiesto_ambiental_menus.xml',

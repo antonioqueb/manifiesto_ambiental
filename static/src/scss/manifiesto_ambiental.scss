@@ -1,0 +1,1089 @@
+// ============================================================================
+// MANIFIESTO AMBIENTAL — Premium SCSS Theme
+// Module: manifiesto_ambiental | Odoo 19 Enterprise
+// Author: Alphaqueb Consulting SAS
+// ============================================================================
+//
+// Design System:
+//   - Palette: Deep navy (#0B1426), teal accents (#00BFA6), warm amber (#F59E0B)
+//   - Radius: 12px cards, 8px inputs, 20px pills
+//   - Shadows: Layered depth with subtle colored glows
+//   - Typography: System stack optimized for Odoo's framework
+//
+// ============================================================================
+
+// ---------------------------------------------------------------------------
+// 1. DESIGN TOKENS
+// ---------------------------------------------------------------------------
+$ma-navy:         #0B1426;
+$ma-navy-light:   #132040;
+$ma-navy-soft:    #1A2A4A;
+$ma-slate:        #334155;
+$ma-slate-light:  #64748B;
+$ma-teal:         #00BFA6;
+$ma-teal-dark:    #009E8B;
+$ma-teal-glow:    rgba(0, 191, 166, 0.15);
+$ma-teal-subtle:  rgba(0, 191, 166, 0.06);
+$ma-amber:        #F59E0B;
+$ma-amber-glow:   rgba(245, 158, 11, 0.12);
+$ma-red:          #EF4444;
+$ma-red-glow:     rgba(239, 68, 68, 0.10);
+$ma-green:        #10B981;
+$ma-green-glow:   rgba(16, 185, 129, 0.10);
+$ma-blue:         #3B82F6;
+$ma-blue-glow:    rgba(59, 130, 246, 0.10);
+$ma-purple:       #8B5CF6;
+
+$ma-surface:      #FFFFFF;
+$ma-surface-alt:  #F8FAFC;
+$ma-surface-hover:#F1F5F9;
+$ma-border:       #E2E8F0;
+$ma-border-light: #F1F5F9;
+$ma-text:         #1E293B;
+$ma-text-muted:   #94A3B8;
+$ma-text-subtle:  #CBD5E1;
+
+$ma-radius-sm:    6px;
+$ma-radius:       10px;
+$ma-radius-lg:    14px;
+$ma-radius-xl:    20px;
+$ma-radius-pill:  50px;
+
+$ma-shadow-xs:    0 1px 2px rgba(0, 0, 0, 0.04);
+$ma-shadow-sm:    0 2px 8px rgba(0, 0, 0, 0.06);
+$ma-shadow:       0 4px 16px rgba(0, 0, 0, 0.08);
+$ma-shadow-lg:    0 8px 32px rgba(0, 0, 0, 0.10);
+$ma-shadow-glow:  0 4px 24px rgba(0, 191, 166, 0.12);
+
+$ma-transition:   all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+$ma-transition-fast: all 0.15s ease;
+
+// ---------------------------------------------------------------------------
+// 2. GLOBAL FORM WRAPPER — The Canvas
+// ---------------------------------------------------------------------------
+.o_form_view.o_manifiesto_ambiental_form,
+.o_form_view[class*="manifiesto_ambiental"] {
+    background: linear-gradient(145deg, $ma-surface-alt 0%, #EEF2F7 50%, $ma-surface-alt 100%);
+
+    // Subtle grid pattern overlay
+    &::before {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-image:
+            radial-gradient(circle at 1px 1px, rgba($ma-teal, 0.03) 1px, transparent 0);
+        background-size: 40px 40px;
+        pointer-events: none;
+        z-index: 0;
+    }
+
+    .o_form_sheet_bg {
+        background: transparent !important;
+    }
+
+    .o_form_sheet {
+        position: relative;
+        z-index: 1;
+        background: $ma-surface;
+        border-radius: $ma-radius-lg;
+        box-shadow: $ma-shadow-lg;
+        border: 1px solid $ma-border-light;
+        margin: 16px auto;
+        max-width: 1280px;
+        padding: 0 !important;
+        overflow: hidden;
+    }
+}
+
+// ---------------------------------------------------------------------------
+// 3. HEADER / STATUSBAR — Command Bar
+// ---------------------------------------------------------------------------
+.o_form_view .o_form_statusbar {
+    // Target manifiesto specifically via parent or general styling
+    background: linear-gradient(135deg, $ma-navy 0%, $ma-navy-light 100%);
+    border-bottom: 2px solid $ma-teal;
+    padding: 10px 20px;
+    min-height: 56px;
+    position: relative;
+
+    // Glow line at bottom
+    &::after {
+        content: '';
+        position: absolute;
+        bottom: -2px;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: linear-gradient(90deg,
+            transparent 0%,
+            $ma-teal 20%,
+            $ma-teal 80%,
+            transparent 100%
+        );
+        filter: blur(1px);
+    }
+
+    // Action buttons
+    .o_statusbar_buttons {
+        gap: 6px;
+
+        .btn {
+            border-radius: $ma-radius;
+            font-weight: 600;
+            font-size: 12.5px;
+            letter-spacing: 0.02em;
+            padding: 7px 16px;
+            border: none;
+            transition: $ma-transition;
+            text-transform: none;
+            position: relative;
+            overflow: hidden;
+
+            &::before {
+                content: '';
+                position: absolute;
+                inset: 0;
+                background: linear-gradient(180deg, rgba(255,255,255,0.12) 0%, transparent 100%);
+                opacity: 0;
+                transition: $ma-transition-fast;
+            }
+
+            &:hover::before {
+                opacity: 1;
+            }
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, $ma-teal-dark, $ma-teal);
+            color: white;
+            box-shadow: 0 2px 8px rgba($ma-teal, 0.3);
+
+            &:hover {
+                transform: translateY(-1px);
+                box-shadow: 0 4px 16px rgba($ma-teal, 0.4);
+            }
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.08);
+            color: rgba(255, 255, 255, 0.85);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(4px);
+
+            &:hover {
+                background: rgba(255, 255, 255, 0.15);
+                color: white;
+                border-color: rgba(255, 255, 255, 0.25);
+            }
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, darken($ma-green, 5%), $ma-green);
+            color: white;
+            box-shadow: 0 2px 8px rgba($ma-green, 0.3);
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, darken($ma-amber, 8%), $ma-amber);
+            color: $ma-navy;
+            box-shadow: 0 2px 8px rgba($ma-amber, 0.3);
+        }
+
+        .btn-danger {
+            background: rgba($ma-red, 0.15);
+            color: lighten($ma-red, 15%);
+            border: 1px solid rgba($ma-red, 0.3);
+
+            &:hover {
+                background: $ma-red;
+                color: white;
+            }
+        }
+
+        .btn-info {
+            background: rgba($ma-blue, 0.15);
+            color: lighten($ma-blue, 20%);
+            border: 1px solid rgba($ma-blue, 0.2);
+
+            &:hover {
+                background: $ma-blue;
+                color: white;
+            }
+        }
+    }
+
+    // Status bar pills
+    .o_statusbar_status {
+        .o_arrow_button {
+            background: rgba(255, 255, 255, 0.05) !important;
+            color: rgba(255, 255, 255, 0.5) !important;
+            border-color: rgba(255, 255, 255, 0.08) !important;
+            font-size: 12px;
+            font-weight: 500;
+            transition: $ma-transition;
+
+            &.o_arrow_button_current {
+                background: $ma-teal !important;
+                color: white !important;
+                border-color: $ma-teal !important;
+                box-shadow: 0 0 16px rgba($ma-teal, 0.4);
+                font-weight: 700;
+            }
+
+            &.btn-primary:not(.o_arrow_button_current) {
+                // Already completed states
+                background: rgba($ma-teal, 0.15) !important;
+                color: $ma-teal !important;
+                border-color: rgba($ma-teal, 0.3) !important;
+            }
+        }
+    }
+}
+
+// ---------------------------------------------------------------------------
+// 4. SMART BUTTONS — Stat Cards
+// ---------------------------------------------------------------------------
+.o_form_view .oe_button_box {
+    border-bottom: 1px solid $ma-border;
+    background: $ma-surface-alt;
+    padding: 12px 20px;
+    gap: 8px;
+    display: flex;
+    flex-wrap: wrap;
+
+    .oe_stat_button {
+        background: $ma-surface;
+        border: 1px solid $ma-border;
+        border-radius: $ma-radius;
+        padding: 10px 16px;
+        min-width: 120px;
+        transition: $ma-transition;
+        position: relative;
+        overflow: hidden;
+
+        &::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: $ma-teal;
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        &:hover {
+            border-color: $ma-teal;
+            box-shadow: $ma-shadow-glow;
+            transform: translateY(-2px);
+
+            &::before {
+                transform: scaleX(1);
+            }
+        }
+
+        .o_button_icon {
+            color: $ma-teal;
+            font-size: 18px;
+        }
+
+        .o_stat_info {
+            .o_stat_value {
+                color: $ma-navy;
+                font-weight: 800;
+                font-size: 18px;
+                line-height: 1.2;
+            }
+
+            .o_stat_text {
+                color: $ma-slate-light;
+                font-size: 11px;
+                font-weight: 600;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+            }
+        }
+
+        // Icon colors per type
+        &:nth-child(1) .o_button_icon { color: $ma-amber; }
+        &:nth-child(2) .o_button_icon { color: $ma-green; }
+        &:nth-child(3) .o_button_icon { color: $ma-blue; }
+        &:nth-child(4) .o_button_icon { color: $ma-purple; }
+    }
+}
+
+// ---------------------------------------------------------------------------
+// 5. ALERTS — Contextual Banners
+// ---------------------------------------------------------------------------
+.o_form_view .alert {
+    border-radius: $ma-radius;
+    border: none;
+    padding: 14px 20px;
+    font-size: 13px;
+    font-weight: 500;
+    position: relative;
+    overflow: hidden;
+    margin: 16px 24px;
+
+    &::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 4px;
+    }
+
+    strong {
+        font-weight: 700;
+    }
+
+    // Version warning (yellow)
+    &.alert-warning {
+        background: linear-gradient(135deg, #FFFBEB, #FEF3C7);
+        color: #92400E;
+        box-shadow: inset 0 0 0 1px rgba($ma-amber, 0.2);
+
+        &::before { background: $ma-amber; }
+
+        .btn-link {
+            color: darken($ma-amber, 15%);
+            font-weight: 700;
+        }
+    }
+
+    // Current version (green)
+    &.alert-success {
+        background: linear-gradient(135deg, #ECFDF5, #D1FAE5);
+        color: #065F46;
+        box-shadow: inset 0 0 0 1px rgba($ma-green, 0.2);
+
+        &::before { background: $ma-green; }
+    }
+
+    // Info (blue/teal)
+    &.alert-info {
+        background: linear-gradient(135deg, #F0FDFA, #CCFBF1);
+        color: #115E59;
+        box-shadow: inset 0 0 0 1px rgba($ma-teal, 0.15);
+
+        &::before { background: $ma-teal; }
+    }
+}
+
+// ---------------------------------------------------------------------------
+// 6. TITLE AREA — Hero Section
+// ---------------------------------------------------------------------------
+.o_form_view .oe_title {
+    padding: 24px 28px 16px;
+    position: relative;
+
+    // Decorative accent
+    &::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 28px;
+        width: 60px;
+        height: 3px;
+        background: linear-gradient(90deg, $ma-teal, transparent);
+        border-radius: 2px;
+    }
+
+    label {
+        color: $ma-slate-light;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+    }
+
+    h1 {
+        .o_field_widget {
+            font-size: 28px !important;
+            font-weight: 800 !important;
+            color: $ma-navy !important;
+            letter-spacing: -0.02em;
+
+            input {
+                font-size: 28px !important;
+                font-weight: 800 !important;
+                color: $ma-navy !important;
+            }
+        }
+    }
+
+    h3 {
+        color: $ma-slate-light !important;
+        font-size: 14px !important;
+        font-weight: 500 !important;
+        margin-top: 4px;
+
+        .o_field_widget {
+            display: inline;
+            font-weight: 700;
+            color: $ma-teal;
+        }
+    }
+}
+
+// ---------------------------------------------------------------------------
+// 7. GROUPS / FIELD SECTIONS — Content Cards
+// ---------------------------------------------------------------------------
+.o_form_view .o_group {
+    // Section headers (group titles)
+    > tbody > tr > td.o_group_col > div > .o_group_header,
+    .o_horizontal_separator {
+        color: $ma-navy;
+        font-weight: 700;
+        font-size: 14px;
+        letter-spacing: 0.01em;
+        padding-bottom: 8px;
+        margin-bottom: 12px;
+        border-bottom: 2px solid $ma-border;
+        position: relative;
+
+        &::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 40px;
+            height: 2px;
+            background: $ma-teal;
+        }
+    }
+}
+
+// Named group sections → card style
+.o_inner_group {
+    background: $ma-surface;
+    border: 1px solid $ma-border;
+    border-radius: $ma-radius;
+    padding: 16px 20px;
+    margin-bottom: 12px;
+    transition: $ma-transition;
+
+    &:hover {
+        border-color: rgba($ma-teal, 0.25);
+        box-shadow: $ma-shadow-sm;
+    }
+}
+
+// Field labels
+.o_form_view .o_form_label,
+.o_form_view label.o_form_label {
+    color: $ma-slate;
+    font-weight: 600;
+    font-size: 12.5px;
+    letter-spacing: 0.01em;
+}
+
+// Field inputs
+.o_form_view .o_field_widget {
+    .o_input {
+        border: 1.5px solid $ma-border;
+        border-radius: $ma-radius-sm;
+        padding: 6px 12px;
+        font-size: 13px;
+        color: $ma-text;
+        background: $ma-surface;
+        transition: $ma-transition;
+
+        &:focus {
+            border-color: $ma-teal;
+            box-shadow: 0 0 0 3px $ma-teal-glow;
+            outline: none;
+        }
+
+        &:hover:not(:focus) {
+            border-color: $ma-slate-light;
+        }
+
+        &[readonly], &.o_readonly {
+            background: $ma-surface-alt;
+            border-color: transparent;
+            color: $ma-slate;
+        }
+    }
+
+    // Textarea
+    textarea.o_input {
+        border-radius: $ma-radius;
+        min-height: 80px;
+        line-height: 1.6;
+    }
+
+    // Selects / dropdowns
+    select.o_input {
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2364748B' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 12px center;
+        padding-right: 32px;
+    }
+}
+
+// Badge widget (tipo_manifiesto)
+.o_form_view .o_field_badge {
+    .badge {
+        border-radius: $ma-radius-pill;
+        padding: 5px 14px;
+        font-weight: 700;
+        font-size: 11.5px;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+    }
+}
+
+// ---------------------------------------------------------------------------
+// 8. NOTEBOOK / TABS — Navigation Jewels
+// ---------------------------------------------------------------------------
+.o_form_view .o_notebook {
+    margin: 0;
+    border: none;
+
+    > .o_notebook_headers {
+        background: linear-gradient(180deg, $ma-surface-alt, $ma-surface);
+        border-bottom: 2px solid $ma-border;
+        padding: 0 20px;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+
+        .nav-tabs {
+            border: none;
+            gap: 2px;
+
+            .nav-item {
+                .nav-link {
+                    border: none;
+                    border-radius: $ma-radius $ma-radius 0 0;
+                    padding: 12px 20px;
+                    color: $ma-slate-light;
+                    font-weight: 600;
+                    font-size: 13px;
+                    transition: $ma-transition;
+                    position: relative;
+                    background: transparent;
+
+                    &::after {
+                        content: '';
+                        position: absolute;
+                        bottom: -2px;
+                        left: 50%;
+                        transform: translateX(-50%);
+                        width: 0;
+                        height: 3px;
+                        background: $ma-teal;
+                        border-radius: 3px 3px 0 0;
+                        transition: width 0.3s ease;
+                    }
+
+                    &:hover {
+                        color: $ma-navy;
+                        background: rgba($ma-teal, 0.04);
+                    }
+
+                    &.active {
+                        color: $ma-teal;
+                        background: $ma-surface;
+                        font-weight: 700;
+
+                        &::after {
+                            width: 100%;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    .tab-content {
+        padding: 20px 24px;
+        background: $ma-surface;
+
+        .tab-pane {
+            animation: ma-fadeIn 0.3s ease;
+        }
+    }
+}
+
+@keyframes ma-fadeIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+// ---------------------------------------------------------------------------
+// 9. ONE2MANY LIST (Residuos) — Data Grid
+// ---------------------------------------------------------------------------
+.o_form_view .o_field_one2many,
+.o_form_view .o_field_many2many {
+    .o_list_view {
+        border: 1px solid $ma-border;
+        border-radius: $ma-radius;
+        overflow: hidden;
+
+        // Header row
+        thead {
+            th {
+                background: $ma-navy !important;
+                color: rgba(255, 255, 255, 0.9) !important;
+                font-weight: 700;
+                font-size: 11px;
+                text-transform: uppercase;
+                letter-spacing: 0.06em;
+                padding: 10px 12px;
+                border: none !important;
+                white-space: nowrap;
+
+                &:first-child {
+                    border-radius: $ma-radius 0 0 0;
+                }
+
+                &:last-child {
+                    border-radius: 0 $ma-radius 0 0;
+                }
+
+                // Sort indicator
+                .o_column_sortable:hover {
+                    color: $ma-teal !important;
+                }
+            }
+        }
+
+        // Data rows
+        tbody {
+            tr {
+                transition: $ma-transition-fast;
+
+                &:nth-child(even) {
+                    background: $ma-surface-alt;
+                }
+
+                &:hover {
+                    background: $ma-teal-subtle !important;
+                }
+
+                td {
+                    padding: 8px 12px;
+                    font-size: 12.5px;
+                    color: $ma-text;
+                    border-bottom: 1px solid $ma-border-light;
+                    vertical-align: middle;
+
+                    // CRETIB checkboxes — color coded
+                    .o_field_boolean .form-check-input {
+                        width: 18px;
+                        height: 18px;
+                        border-radius: 4px;
+                        border: 2px solid $ma-border;
+                        transition: $ma-transition-fast;
+
+                        &:checked {
+                            background-color: $ma-red;
+                            border-color: $ma-red;
+                            box-shadow: 0 0 6px rgba($ma-red, 0.3);
+                        }
+                    }
+
+                    // Quantity fields
+                    .o_field_float, .o_field_integer {
+                        font-weight: 700;
+                        font-variant-numeric: tabular-nums;
+                    }
+                }
+
+                // Editable row active
+                &.o_selected_row {
+                    background: $ma-teal-glow !important;
+                    box-shadow: inset 0 0 0 1px rgba($ma-teal, 0.3);
+
+                    td {
+                        border-color: transparent;
+                    }
+                }
+            }
+        }
+
+        // Add-a-line button
+        tfoot {
+            td {
+                padding: 8px 12px;
+            }
+
+            .o_field_x2many_list_row_add a {
+                color: $ma-teal;
+                font-weight: 600;
+                font-size: 12.5px;
+                transition: $ma-transition;
+
+                &:hover {
+                    color: $ma-teal-dark;
+                    text-decoration: none;
+                }
+
+                &::before {
+                    content: '+ ';
+                    font-weight: 800;
+                }
+            }
+        }
+    }
+}
+
+// ---------------------------------------------------------------------------
+// 10. LIST VIEW (Tree) — Main Table
+// ---------------------------------------------------------------------------
+.o_list_view.o_manifiesto_ambiental_list,
+.o_list_view[class*="manifiesto_ambiental"] {
+    thead th {
+        background: linear-gradient(180deg, $ma-navy, $ma-navy-light) !important;
+        color: rgba(255, 255, 255, 0.9) !important;
+        font-weight: 700;
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        padding: 12px 14px;
+        border: none !important;
+    }
+
+    tbody tr {
+        transition: background 0.15s ease;
+
+        &:hover {
+            background: $ma-teal-subtle !important;
+        }
+
+        td {
+            padding: 10px 14px;
+            font-size: 13px;
+            border-bottom: 1px solid $ma-border-light;
+
+            // Badge styling for tipo
+            .badge {
+                border-radius: $ma-radius-pill;
+                padding: 4px 12px;
+                font-weight: 700;
+                font-size: 10.5px;
+                text-transform: uppercase;
+                letter-spacing: 0.04em;
+            }
+
+            // State badges
+            .o_field_badge .badge {
+                &[class*="success"] {
+                    background: $ma-green-glow;
+                    color: darken($ma-green, 10%);
+                }
+
+                &[class*="info"] {
+                    background: $ma-blue-glow;
+                    color: darken($ma-blue, 5%);
+                }
+
+                &[class*="warning"] {
+                    background: $ma-amber-glow;
+                    color: darken($ma-amber, 15%);
+                }
+            }
+        }
+    }
+}
+
+// ---------------------------------------------------------------------------
+// 11. CHATTER — Communication Panel
+// ---------------------------------------------------------------------------
+.o_form_view .o_FormRenderer_chatterContainer {
+    .o_ChatterContainer {
+        border-top: 2px solid $ma-border;
+        background: $ma-surface-alt;
+        padding: 20px;
+
+        .o_Chatter_topbar {
+            border-bottom: 1px solid $ma-border;
+            padding-bottom: 12px;
+            margin-bottom: 16px;
+
+            .btn {
+                border-radius: $ma-radius;
+                font-weight: 600;
+                font-size: 12px;
+            }
+        }
+
+        .o_Message {
+            border-radius: $ma-radius;
+            padding: 12px 16px;
+            margin-bottom: 8px;
+            transition: $ma-transition-fast;
+
+            &:hover {
+                background: $ma-surface;
+                box-shadow: $ma-shadow-xs;
+            }
+        }
+    }
+}
+
+// ---------------------------------------------------------------------------
+// 12. VERSION HISTORY TABLE (inside tab)
+// ---------------------------------------------------------------------------
+.o_form_view .o_field_one2many {
+    // Version history specific buttons
+    .o_list_view .o_list_button {
+        .btn-link {
+            font-size: 12px;
+            font-weight: 600;
+            padding: 4px 8px;
+            border-radius: $ma-radius-sm;
+            transition: $ma-transition-fast;
+
+            &:hover {
+                background: $ma-teal-glow;
+                color: $ma-teal-dark;
+                text-decoration: none;
+            }
+        }
+    }
+}
+
+// ---------------------------------------------------------------------------
+// 13. DOCUMENTO FÍSICO — PDF Viewer Area
+// ---------------------------------------------------------------------------
+.o_form_view .o_notebook .tab-pane[name="documento_fisico"],
+.o_form_view div[name="documento_fisico"] {
+    .o_field_pdf_viewer,
+    .o_field_binary_file {
+        border: 2px dashed $ma-border;
+        border-radius: $ma-radius-lg;
+        background: $ma-surface-alt;
+        overflow: hidden;
+        transition: $ma-transition;
+
+        &:hover {
+            border-color: $ma-teal;
+            box-shadow: $ma-shadow-glow;
+        }
+    }
+}
+
+// ---------------------------------------------------------------------------
+// 14. MANY2ONE FIELDS — Selector Dropdowns
+// ---------------------------------------------------------------------------
+.o_form_view .o_field_many2one {
+    .o_input {
+        padding-right: 60px;
+    }
+
+    .o_external_button {
+        border-radius: 0 $ma-radius-sm $ma-radius-sm 0;
+        border-left: 1px solid $ma-border;
+        color: $ma-slate-light;
+        transition: $ma-transition-fast;
+
+        &:hover {
+            color: $ma-teal;
+            background: $ma-teal-subtle;
+        }
+    }
+}
+
+// ---------------------------------------------------------------------------
+// 15. DECLARACIONES — Read-only Text Blocks
+// ---------------------------------------------------------------------------
+.o_form_view .o_field_text[readonly],
+.o_form_view .o_readonly_modifier .o_field_text {
+    &[name*="declaracion"] {
+        background: linear-gradient(135deg, $ma-surface-alt, #F1F5F9);
+        border: 1px solid $ma-border;
+        border-left: 4px solid $ma-slate-light;
+        border-radius: 0 $ma-radius $ma-radius 0;
+        padding: 14px 18px;
+        font-size: 12.5px;
+        line-height: 1.7;
+        color: $ma-slate;
+        font-style: italic;
+    }
+}
+
+// ---------------------------------------------------------------------------
+// 16. TIPO MANIFIESTO — Visual Indicators
+// ---------------------------------------------------------------------------
+
+// Entrada badge
+.o_field_badge .badge.text-bg-info,
+.badge[class*="decoration-info"] {
+    background: linear-gradient(135deg, #DBEAFE, #BFDBFE) !important;
+    color: #1E40AF !important;
+    border: 1px solid rgba($ma-blue, 0.2);
+}
+
+// Salida badge
+.o_field_badge .badge.text-bg-success,
+.badge[class*="decoration-success"] {
+    background: linear-gradient(135deg, #D1FAE5, #A7F3D0) !important;
+    color: #065F46 !important;
+    border: 1px solid rgba($ma-green, 0.2);
+}
+
+// ---------------------------------------------------------------------------
+// 17. RESPONSIVE REFINEMENTS
+// ---------------------------------------------------------------------------
+@media (max-width: 768px) {
+    .o_form_view .o_form_sheet {
+        margin: 8px;
+        border-radius: $ma-radius;
+    }
+
+    .o_form_view .oe_title {
+        padding: 16px 16px 12px;
+
+        h1 .o_field_widget {
+            font-size: 22px !important;
+        }
+    }
+
+    .o_form_view .o_notebook > .o_notebook_headers .nav-tabs .nav-item .nav-link {
+        padding: 10px 12px;
+        font-size: 12px;
+    }
+
+    .o_form_view .oe_button_box {
+        padding: 8px 12px;
+
+        .oe_stat_button {
+            min-width: 100px;
+            padding: 8px 12px;
+        }
+    }
+
+    .o_form_view .o_form_statusbar .o_statusbar_buttons .btn {
+        padding: 6px 10px;
+        font-size: 11px;
+    }
+}
+
+// ---------------------------------------------------------------------------
+// 18. PRINT OPTIMIZATIONS
+// ---------------------------------------------------------------------------
+@media print {
+    .o_form_view .o_form_statusbar,
+    .o_form_view .oe_button_box,
+    .o_form_view .o_FormRenderer_chatterContainer,
+    .o_form_view .o_form_statusbar .o_statusbar_buttons {
+        display: none !important;
+    }
+
+    .o_form_view .o_form_sheet {
+        box-shadow: none;
+        border: none;
+        margin: 0;
+    }
+
+    .o_form_view .alert {
+        border: 1px solid #ccc;
+        page-break-inside: avoid;
+    }
+}
+
+// ---------------------------------------------------------------------------
+// 19. SEARCH VIEW ENHANCEMENTS
+// ---------------------------------------------------------------------------
+.o_searchview {
+    .o_searchview_input_container {
+        .o_searchview_facet {
+            .o_searchview_facet_label {
+                background: $ma-teal;
+                color: white;
+                border-radius: $ma-radius-sm 0 0 $ma-radius-sm;
+                font-weight: 700;
+                font-size: 11px;
+            }
+        }
+    }
+}
+
+// ---------------------------------------------------------------------------
+// 20. LOADING & SKELETON STATES
+// ---------------------------------------------------------------------------
+.o_form_view .o_field_widget.o_field_loading {
+    position: relative;
+
+    &::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(90deg,
+            transparent 0%,
+            rgba($ma-teal, 0.05) 50%,
+            transparent 100%
+        );
+        animation: ma-shimmer 1.5s infinite;
+        border-radius: inherit;
+    }
+}
+
+@keyframes ma-shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+// ---------------------------------------------------------------------------
+// 21. CUSTOM SCROLLBAR
+// ---------------------------------------------------------------------------
+.o_form_view .o_notebook .tab-content,
+.o_form_view .o_field_one2many .o_list_view {
+    &::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+    }
+
+    &::-webkit-scrollbar-track {
+        background: $ma-surface-alt;
+        border-radius: 3px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background: $ma-text-subtle;
+        border-radius: 3px;
+        transition: background 0.2s;
+
+        &:hover {
+            background: $ma-slate-light;
+        }
+    }
+}
+
+// ---------------------------------------------------------------------------
+// 22. TOOLTIP & HELP INDICATORS
+// ---------------------------------------------------------------------------
+.o_form_view .o_field_widget[data-tooltip],
+.o_form_view .o_form_label[data-tooltip] {
+    &::after {
+        content: '?';
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background: $ma-border;
+        color: $ma-slate-light;
+        font-size: 9px;
+        font-weight: 800;
+        margin-left: 4px;
+        vertical-align: super;
+        cursor: help;
+        transition: $ma-transition-fast;
+    }
+
+    &:hover::after {
+        background: $ma-teal;
+        color: white;
+    }
+}

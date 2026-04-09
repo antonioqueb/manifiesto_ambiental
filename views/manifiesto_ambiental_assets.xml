@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Register SCSS asset for web backend -->
+    <record id="manifiesto_ambiental_scss_asset" model="ir.asset">
+        <field name="name">Manifiesto Ambiental SCSS</field>
+        <field name="bundle">web.assets_backend</field>
+        <field name="path">manifiesto_ambiental/static/src/scss/manifiesto_ambiental.scss</field>
+    </record>
+</odoo>

@@ -331,9 +331,7 @@
                         <!-- RESIDUOS -->
                         <!-- ====================================================== -->
                         <page string="Residuos" name="residuos">
-                            <div class="alert alert-info ma_inline_info" invisible="not is_current_version">
-                                Seleccione productos del catálogo. Las clasificaciones CRETIB se completan automáticamente desde la ficha del producto.
-                            </div>
+                            
 
                             <field name="residuo_ids" readonly="not is_current_version">
                                 <list editable="bottom">
@@ -602,26 +600,7 @@
                                        readonly="not is_current_version"/>
                             </group>
 
-                            <group string="Historial de versiones" col="1">
-                                <field name="version_history_ids" readonly="1">
-                                    <list string="Historial de Versiones"
-                                          default_order="version_number desc">
-                                        <field name="version_number" string="Ver."/>
-                                        <field name="creation_date"/>
-                                        <field name="created_by"/>
-                                        <field name="state_at_creation" string="Estado"/>
-                                        <field name="tenia_documento_fisico" string="Doc." widget="boolean_toggle"/>
-                                        <field name="change_reason" string="Motivo"/>
-                                        <button name="action_download_file" type="object"
-                                                string="Descargar" class="btn-link" icon="fa-download"/>
-                                        <button name="action_view_file" type="object"
-                                                string="Ver" class="btn-link" icon="fa-eye"/>
-                                        <button name="action_download_documento_fisico" type="object"
-                                                string="Doc. Físico" class="btn-link" icon="fa-paperclip"
-                                                invisible="not tenia_documento_fisico"/>
-                                    </list>
-                                </field>
-                            </group>
+                          
 
                             <div class="mt-3">
                                 <button name="action_view_all_versions" type="object"

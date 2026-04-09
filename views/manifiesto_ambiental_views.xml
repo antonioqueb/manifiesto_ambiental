@@ -89,7 +89,7 @@
                             string="📥 Recibir Residuos"
                             type="object"
                             class="btn-success"
-                            invisible="state not in ['in_transit', 'delivered'] or not is_current_version"
+                            invisible="state not in ['in_transit', 'delivered'] or not is_current_version or tipo_manifiesto == 'salida'"
                             confirm="¿Desea generar la recepción de inventario para estos residuos?"/>
                     <button name="action_crear_discrepancia"
                             string="⚠️ Discrepancias"

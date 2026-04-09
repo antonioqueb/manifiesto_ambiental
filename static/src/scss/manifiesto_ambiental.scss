@@ -631,6 +631,51 @@ $ma-transition:   all 0.18s ease;
   // ONE2MANY / TABLES — native Odoo, no overrides
   // -------------------------------------------------------------------------
 
+  // CRETIB booleans → traditional round checkboxes instead of toggles
+  .o_field_widget[name="clasificacion_corrosivo"],
+  .o_field_widget[name="clasificacion_reactivo"],
+  .o_field_widget[name="clasificacion_explosivo"],
+  .o_field_widget[name="clasificacion_toxico"],
+  .o_field_widget[name="clasificacion_inflamable"],
+  .o_field_widget[name="clasificacion_biologico"] {
+    .o_boolean_toggle {
+      // Hide the toggle track
+      .form-check {
+        padding-left: 0;
+        min-height: auto;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .form-check-input {
+        appearance: auto !important;
+        -webkit-appearance: checkbox !important;
+        width: 16px !important;
+        height: 16px !important;
+        border-radius: 50% !important;
+        border: 2px solid $ma-border !important;
+        background: $ma-surface !important;
+        background-image: none !important;
+        margin: 0 !important;
+        cursor: pointer;
+        transition: $ma-transition;
+        float: none !important;
+
+        &:checked {
+          background-color: $ma-teal !important;
+          border-color: $ma-teal !important;
+        }
+      }
+
+      // Hide the toggle slider pseudo-elements
+      .form-check-input::before,
+      .form-check-input::after {
+        display: none !important;
+      }
+    }
+  }
+
   // -------------------------------------------------------------------------
   // PDF VIEWER
   // -------------------------------------------------------------------------

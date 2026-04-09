@@ -98,14 +98,23 @@ class ServiceOrder(models.Model):
         # 5. Destinatario
         dest = self.destinatario_id if self.destinatario_id else self.partner_id
 
-        # 6. Vehículo
-        vehicle_id = self.vehicle_id.id if self.vehicle_id else False
-        numero_placa_inicial = self.numero_placa or (self.vehicle_id.license_plate if self.vehicle_id else '')
+        # 6. Vehículo y placa
+        vehicle = self.vehicle_id
+        vehicle_id = vehicle.id if vehicle else False
+        # Placa: prioridad al campo de la OS, luego la del vehículo
+        numero_placa = self.numero_placa or (vehicle.license_plate if vehicle else '') or ''
 
-        # 7. Tipo vehículo fallback si no hay vehicle_id
-        tipo_vehiculo_fallback = ''
-        if not vehicle_id and self.transportista_id:
-            tipo_vehiculo_fallback = self.transportista_id.tipo_vehiculo or ''
+        # 7. Tipo de vehículo: construir desde el fleet.vehicle, fallback al transportista
+        tipo_vehiculo = ''
+        if vehicle:
+            brand = vehicle.model_id.brand_id.name if vehicle.model_id and vehicle.model_id.brand_id else ''
+            model = vehicle.model_id.name if vehicle.model_id else ''
+            tipo_vehiculo = f"{brand} {model}".strip() or vehicle.name or ''
+        if not tipo_vehiculo and self.transportista_id:
+            tipo_vehiculo = self.transportista_id.tipo_vehiculo or ''
+
+        # 8. Chofer
+        chofer_id = self.chofer_id.id if self.chofer_id else False
 
         manifiesto_vals = {
             'service_order_id': self.id,
@@ -113,9 +122,7 @@ class ServiceOrder(models.Model):
             # --- GENERADOR ---
             'generador_id': generador.id,
             'numero_registro_ambiental': generador.numero_registro_ambiental or '',
-            # Campo 4: Nombre/Razón Social = CLIENTE de la OS
             'generador_nombre': nombre_razon_social,
-            # Dirección = del generador seleccionado
             'generador_codigo_postal': generador.zip or '',
             'generador_calle': generador.street or '',
             'generador_num_ext': generador.street_number or '',
@@ -125,7 +132,6 @@ class ServiceOrder(models.Model):
             'generador_estado': generador.state_id.name if generador.state_id else '',
             'generador_telefono': generador.phone or '',
             'generador_email': generador.email or '',
-            # Responsable generador
             'generador_responsable_id': self.generador_responsable_id.id if self.generador_responsable_id else False,
             'generador_responsable_nombre': self.generador_responsable_id.name if self.generador_responsable_id else '',
             'generador_fecha': fecha_servicio,
@@ -144,10 +150,14 @@ class ServiceOrder(models.Model):
             'transportista_email': self.transportista_id.email if self.transportista_id else '',
             'numero_autorizacion_semarnat': self.transportista_id.numero_autorizacion_semarnat if self.transportista_id else '',
             'numero_permiso_sct': self.transportista_id.numero_permiso_sct if self.transportista_id else '',
+
+            # --- VEHÍCULO, PLACA, CHOFER (propagación explícita) ---
             'vehicle_id': vehicle_id,
-            'tipo_vehiculo': tipo_vehiculo_fallback,
-            'numero_placa': numero_placa_inicial,
-            'chofer_id': self.chofer_id.id if self.chofer_id else False,
+            'tipo_vehiculo': tipo_vehiculo,
+            'numero_placa': numero_placa,
+            'chofer_id': chofer_id,
+
+            # --- RESPONSABLE TRANSPORTISTA ---
             'transportista_responsable_id': self.transportista_responsable_id.id if self.transportista_responsable_id else False,
             'transportista_responsable_nombre': self.transportista_responsable_id.name if self.transportista_responsable_id else '',
             'transportista_fecha': fecha_servicio,

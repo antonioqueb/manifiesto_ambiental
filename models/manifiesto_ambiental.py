@@ -20,11 +20,11 @@ class ManifiestoAmbiental(models.Model):
     # =========================================================================
     # VERSIONADO
     # =========================================================================
-    version = fields.Integer(string='Versión', default=1, readonly=True)
-    is_current_version = fields.Boolean(string='Versión Actual', default=True)
+    version = fields.Integer(string='Versión', default=1, readonly=True, tracking=True)
+    is_current_version = fields.Boolean(string='Versión Actual', default=True, tracking=True)
     original_manifiesto_id = fields.Many2one('manifiesto.ambiental', string='Manifiesto Original')
     version_history_ids = fields.One2many('manifiesto.ambiental.version', 'manifiesto_id', string='Historial de Versiones')
-    change_reason = fields.Text(string='Motivo del Cambio')
+    change_reason = fields.Text(string='Motivo del Cambio', tracking=True)
     created_by_remanifest = fields.Boolean(string='Creado por Remanifestación', default=False)
 
     sequence_number = fields.Integer(string='Número de Secuencia', readonly=True, copy=False)
@@ -52,11 +52,11 @@ class ManifiestoAmbiental(models.Model):
     tipo_manifiesto = fields.Selection([
         ('entrada', 'Entrada'),
         ('salida', 'Salida'),
-    ], string='Tipo de Manifiesto', default='entrada', required=True,
+    ], string='Tipo de Manifiesto', default='entrada', required=True, tracking=True,
        help='Entrada: SAI recibe residuos (generador externo). Salida: SAI envía residuos (SAI es generador).')
 
-    numero_registro_ambiental = fields.Char(string='1. Núm. de registro ambiental', required=True)
-    numero_manifiesto = fields.Char(string='2. Núm. de manifiesto', required=True, copy=False)
+    numero_registro_ambiental = fields.Char(string='1. Núm. de registro ambiental', required=True, tracking=True)
+    numero_manifiesto = fields.Char(string='2. Núm. de manifiesto', required=True, copy=False, tracking=True)
     numero_manifiesto_display = fields.Char(
         string='Número de Manifiesto',
         compute='_compute_numero_manifiesto_display',
@@ -71,6 +71,7 @@ class ManifiestoAmbiental(models.Model):
         'res.partner',
         string='Generador',
         domain=[('es_generador', '=', True), ('parent_id', '=', False)],
+        tracking=True,
     )
     generador_nombre = fields.Char(
         string='4. Nombre o razón social del generador',
@@ -78,6 +79,7 @@ class ManifiestoAmbiental(models.Model):
         compute='_compute_generador_nombre',
         store=True,
         readonly=False,
+        tracking=True,
     )
     generador_codigo_postal = fields.Char(string='Código postal')
     generador_calle = fields.Char(string='Calle')
@@ -94,21 +96,23 @@ class ManifiestoAmbiental(models.Model):
         string='Responsable Generador',
         domain="['|', ('parent_id', '=', generador_id), ('id', '=', generador_id)]",
         help='Contacto responsable del generador.',
+        tracking=True,
     )
     generador_responsable_nombre = fields.Char(
         string='Nombre responsable generador',
         compute='_compute_generador_responsable_nombre',
         store=True,
         readonly=False,
+        tracking=True,
     )
-    generador_fecha = fields.Date(string='Fecha generador', default=fields.Date.context_today)
+    generador_fecha = fields.Date(string='Fecha generador', default=fields.Date.context_today, tracking=True)
     generador_sello = fields.Char(string='Sello generador')
 
     # =========================================================================
     # 5. RESIDUOS
     # =========================================================================
     residuo_ids = fields.One2many('manifiesto.ambiental.residuo', 'manifiesto_id', string='5. Identificación de los residuos')
-    instrucciones_especiales = fields.Text(string='6. Instrucciones especiales')
+    instrucciones_especiales = fields.Text(string='6. Instrucciones especiales', tracking=True)
 
     # =========================================================================
     # 7. DECLARACIÓN GENERADOR
@@ -125,8 +129,9 @@ class ManifiestoAmbiental(models.Model):
     transportista_id = fields.Many2one(
         'res.partner', string='Transportista',
         domain=[('es_transportista', '=', True)],
+        tracking=True,
     )
-    transportista_nombre = fields.Char(string='8. Nombre o razón social del transportista', required=True)
+    transportista_nombre = fields.Char(string='8. Nombre o razón social del transportista', required=True, tracking=True)
     transportista_codigo_postal = fields.Char(string='Código postal')
     transportista_calle = fields.Char(string='Calle')
     transportista_num_ext = fields.Char(string='Núm. Ext.')
@@ -137,46 +142,52 @@ class ManifiestoAmbiental(models.Model):
     transportista_telefono = fields.Char(string='Teléfono')
     transportista_email = fields.Char(string='Correo electrónico')
 
-    numero_autorizacion_semarnat = fields.Char(string='9. Núm. de autorización de la SEMARNAT')
-    numero_permiso_sct = fields.Char(string='10. Núm. de permiso S.C.T.')
+    numero_autorizacion_semarnat = fields.Char(string='9. Núm. de autorización de la SEMARNAT', tracking=True)
+    numero_permiso_sct = fields.Char(string='10. Núm. de permiso S.C.T.', tracking=True)
 
     vehicle_id = fields.Many2one(
         'fleet.vehicle',
         string='Vehículo',
         help='Unidad de transporte. Rellena automáticamente tipo y placa.',
+        tracking=True,
     )
     tipo_vehiculo = fields.Char(
         string='11. Tipo de vehículo',
         compute='_compute_vehicle_fields',
         store=True,
         readonly=False,
+        tracking=True,
     )
     numero_placa = fields.Char(
         string='12. Núm. de placa',
         help='Editable manualmente.',
+        tracking=True,
     )
 
     chofer_id = fields.Many2one(
         'res.partner',
         string='Chofer',
         domain="[('is_driver', '=', True)]",
+        tracking=True,
     )
 
     transportista_responsable_id = fields.Many2one(
         'res.partner',
         string='Responsable Transportista',
         domain="['|', ('parent_id', '=', transportista_id), ('id', '=', transportista_id)]",
+        tracking=True,
     )
     transportista_responsable_nombre = fields.Char(
         string='Nombre responsable transportista',
         compute='_compute_transportista_responsable_nombre',
         store=True,
         readonly=False,
+        tracking=True,
     )
-    transportista_fecha = fields.Date(string='Fecha transportista', default=fields.Date.context_today)
+    transportista_fecha = fields.Date(string='Fecha transportista', default=fields.Date.context_today, tracking=True)
     transportista_sello = fields.Char(string='Sello transportista')
 
-    ruta_empresa = fields.Text(string='13. Ruta de la empresa generadora hasta su entrega')
+    ruta_empresa = fields.Text(string='13. Ruta de la empresa generadora hasta su entrega', tracking=True)
     declaracion_transportista = fields.Text(
         string='14. Declaración del transportista',
         default='Declaro bajo protesta de decir verdad que recibí los residuos peligrosos descritos en el manifiesto para su transporte a la empresa destinataria señalada por el generador.',
@@ -189,8 +200,9 @@ class ManifiestoAmbiental(models.Model):
     destinatario_id = fields.Many2one(
         'res.partner', string='Destinatario',
         domain=[('es_destinatario', '=', True)],
+        tracking=True,
     )
-    destinatario_nombre = fields.Char(string='15. Nombre o razón social del destinatario', required=True)
+    destinatario_nombre = fields.Char(string='15. Nombre o razón social del destinatario', required=True, tracking=True)
     destinatario_codigo_postal = fields.Char(string='Código postal')
     destinatario_calle = fields.Char(string='Calle')
     destinatario_num_ext = fields.Char(string='Núm. Ext.')
@@ -200,29 +212,29 @@ class ManifiestoAmbiental(models.Model):
     destinatario_estado = fields.Char(string='Estado')
     destinatario_telefono = fields.Char(string='Teléfono')
     destinatario_email = fields.Char(string='Correo electrónico')
-    numero_autorizacion_semarnat_destinatario = fields.Char(string='16. Núm. autorización de la SEMARNAT')
-    nombre_persona_recibe = fields.Char(string='17. Nombre y cargo de la persona que recibe los residuos')
-    observaciones_destinatario = fields.Text(string='18. Observaciones')
+    numero_autorizacion_semarnat_destinatario = fields.Char(string='16. Núm. autorización de la SEMARNAT', tracking=True)
+    nombre_persona_recibe = fields.Char(string='17. Nombre y cargo de la persona que recibe los residuos', tracking=True)
+    observaciones_destinatario = fields.Text(string='18. Observaciones', tracking=True)
     declaracion_destinatario = fields.Text(
         string='19. Declaración del destinatario',
         default='Declaro bajo protesta de decir verdad que recibí los residuos peligrosos descritos en el manifiesto.',
         readonly=True,
     )
-    destinatario_responsable_nombre = fields.Char(string='Nombre y firma del responsable')
-    destinatario_fecha = fields.Date(string='Fecha', default=fields.Date.context_today)
+    destinatario_responsable_nombre = fields.Char(string='Nombre y firma del responsable', tracking=True)
+    destinatario_fecha = fields.Date(string='Fecha', default=fields.Date.context_today, tracking=True)
     destinatario_sello = fields.Char(string='Sello')
 
     # =========================================================================
     # CONTROL
     # =========================================================================
-    service_order_id = fields.Many2one('service.order', string='Orden de Servicio')
+    service_order_id = fields.Many2one('service.order', string='Orden de Servicio', tracking=True)
     state = fields.Selection([
         ('draft', 'Borrador'),
         ('confirmed', 'Confirmado'),
         ('in_transit', 'En Tránsito'),
         ('delivered', 'Entregado'),
         ('cancel', 'Cancelado'),
-    ], string='Estado', default='draft', required=True)
+    ], string='Estado', default='draft', required=True, tracking=True)
     company_id = fields.Many2one('res.company', string='Compañía', default=lambda self: self.env.company)
 
     # =========================================================================

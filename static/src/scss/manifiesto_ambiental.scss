@@ -1,5 +1,5 @@
 // ============================================================================
-// MANIFIESTO AMBIENTAL — Clean Theme v2
+// MANIFIESTO AMBIENTAL — Clean Theme v2 (Fixed Layout)
 // Module: manifiesto_ambiental | Odoo 19 Enterprise
 // Scope: .o_manifiesto_ambiental_form_v2
 // ============================================================================
@@ -42,22 +42,114 @@ $ma-transition:   all 0.18s ease;
 // ============================================================================
 .o_manifiesto_ambiental_form_v2 {
 
+  // -------------------------------------------------------------------------
+  // CORE LAYOUT FIX — force full width, prevent shrinking
+  // -------------------------------------------------------------------------
   &.o_form_view {
     background: $ma-bg;
+    width: 100% !important;
 
     .o_form_sheet_bg {
       background: transparent !important;
+      width: 100% !important;
+      max-width: 100% !important;
     }
 
     .o_form_sheet {
-      max-width: 1320px;
-      margin: 18px auto;
+      width: 100% !important;
+      max-width: 100% !important;
+      margin: 18px 0;
       background: $ma-surface;
       border: 1px solid $ma-border;
       border-radius: $ma-radius-lg;
       box-shadow: $ma-shadow;
       padding: 0 !important;
       overflow: hidden;
+      box-sizing: border-box;
+    }
+  }
+
+  // -------------------------------------------------------------------------
+  // GLOBAL TABLE/GROUP WIDTH FIX
+  // -------------------------------------------------------------------------
+  .o_group {
+    width: 100% !important;
+    table-layout: fixed !important;
+
+    > tbody,
+    > tbody > tr,
+    > tbody > tr > td {
+      width: auto;
+    }
+
+    // Two-column groups: enforce 50/50
+    &[col="2"] > tbody > tr > td,
+    &.o_group_col_2 > tbody > tr > td {
+      width: 50% !important;
+    }
+
+    // Four-column groups: enforce 25% each
+    &[col="4"] > tbody > tr > td,
+    &.o_group_col_4 > tbody > tr > td {
+      width: 25% !important;
+    }
+
+    > tbody > tr > td {
+      vertical-align: top;
+      padding: 0 8px;
+      box-sizing: border-box;
+    }
+  }
+
+  .o_inner_group {
+    width: 100% !important;
+    background: $ma-surface;
+    border: 1px solid $ma-border-soft;
+    border-radius: $ma-radius;
+    padding: 14px 16px;
+    margin-bottom: 10px;
+    box-sizing: border-box;
+    overflow: hidden;
+
+    > table,
+    table.o_group,
+    > tbody {
+      width: 100% !important;
+      table-layout: fixed !important;
+    }
+
+    td {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      vertical-align: middle;
+      box-sizing: border-box;
+    }
+
+    .o_cell.o_wrap_label {
+      width: 34% !important;
+      max-width: 34% !important;
+    }
+
+    .o_cell:not(.o_wrap_label) {
+      width: 66% !important;
+      max-width: 66% !important;
+    }
+  }
+
+  // Prevent any nested element from overflowing
+  .o_field_widget {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box;
+    overflow: hidden;
+
+    .o_input,
+    input,
+    select,
+    textarea {
+      width: 100% !important;
+      max-width: 100% !important;
+      box-sizing: border-box;
     }
   }
 
@@ -67,6 +159,7 @@ $ma-transition:   all 0.18s ease;
   .o_form_statusbar {
     border-radius: $ma-radius-lg $ma-radius-lg 0 0;
     border-bottom: 1px solid $ma-border;
+    width: 100% !important;
   }
 
   // -------------------------------------------------------------------------
@@ -76,6 +169,8 @@ $ma-transition:   all 0.18s ease;
     padding: 10px 22px;
     border-bottom: 1px solid $ma-border-soft;
     gap: 8px;
+    width: 100% !important;
+    box-sizing: border-box;
 
     .oe_stat_button {
       border: 1px solid $ma-border;
@@ -121,6 +216,8 @@ $ma-transition:   all 0.18s ease;
     color: #9A3412 !important;
     border-bottom: 1px solid #FED7AA !important;
     padding: 10px 22px !important;
+    width: 100% !important;
+    box-sizing: border-box;
   }
 
   .ma_inline_info {
@@ -131,6 +228,8 @@ $ma-transition:   all 0.18s ease;
     padding: 10px 14px;
     margin-bottom: 16px;
     font-size: 12.5px;
+    width: 100% !important;
+    box-sizing: border-box;
   }
 
   // -------------------------------------------------------------------------
@@ -144,11 +243,14 @@ $ma-transition:   all 0.18s ease;
     border-bottom: 1px solid $ma-border-soft;
     background:
       linear-gradient(180deg, rgba(248,250,252,0.95) 0%, rgba(255,255,255,1) 100%);
+    width: 100% !important;
+    box-sizing: border-box;
   }
 
   .ma_hero_main {
-    flex: 1 1 auto;
+    flex: 1 1 0%;
     min-width: 0;
+    overflow: hidden;
   }
 
   .ma_eyebrow {
@@ -243,62 +345,35 @@ $ma-transition:   all 0.18s ease;
   // -------------------------------------------------------------------------
   .ma_top_group {
     padding: 18px 28px 6px;
+    width: 100% !important;
+    box-sizing: border-box;
 
     > table,
     table.o_group {
       width: 100% !important;
+      table-layout: fixed !important;
     }
   }
 
   // -------------------------------------------------------------------------
-  // GROUPS / SECTIONS
+  // SUMMARY GRID — force equal columns
   // -------------------------------------------------------------------------
-  .o_group {
-    min-width: 0;
+  .ma_summary_grid {
+    width: 100% !important;
 
     > tbody > tr > td {
-      min-width: 0;
-      vertical-align: top;
+      width: 50% !important;
     }
   }
 
-  .o_inner_group,
-  .o_group_col > div {
-    min-width: 0;
-  }
-
-  .o_inner_group {
-    background: $ma-surface;
-    border: 1px solid $ma-border-soft;
-    border-radius: $ma-radius;
-    padding: 14px 16px;
-    margin-bottom: 10px;
-
-    > table,
-    table.o_group,
-    > tbody {
-      width: 100% !important;
-      table-layout: fixed;
-    }
-
-    td {
-      min-width: 0;
-      overflow-wrap: anywhere;
-      vertical-align: middle;
-    }
-
-    .o_cell.o_wrap_label {
-      width: 34%;
-      max-width: 180px;
-    }
-  }
-
+  // -------------------------------------------------------------------------
+  // Headers internos
+  // -------------------------------------------------------------------------
   // Primera fila ligera dentro de tabs
   .o_notebook .tab-pane > .o_group:first-child .o_inner_group {
     background: $ma-surface-alt;
   }
 
-  // Headers internos
   .o_horizontal_separator,
   .o_group > tbody > tr > td.o_group_col > div > .o_group_header {
     color: $ma-navy !important;
@@ -340,14 +415,7 @@ $ma-transition:   all 0.18s ease;
   // -------------------------------------------------------------------------
   // FIELDS
   // -------------------------------------------------------------------------
-  .o_field_widget {
-    min-width: 0;
-    max-width: 100%;
-  }
-
   .o_field_widget .o_input {
-    width: 100%;
-    min-width: 0;
     border: 1px solid $ma-border;
     border-radius: $ma-radius-sm;
     background: $ma-surface;
@@ -377,9 +445,6 @@ $ma-transition:   all 0.18s ease;
   }
 
   .o_field_many2one {
-    min-width: 0;
-    max-width: 100%;
-
     .o_input {
       overflow: hidden;
       text-overflow: ellipsis;
@@ -430,11 +495,14 @@ $ma-transition:   all 0.18s ease;
   .o_notebook {
     margin: 0;
     border: none;
+    width: 100% !important;
 
     > .o_notebook_headers {
       background: $ma-surface;
       border-bottom: 1px solid $ma-border;
       padding: 0 24px;
+      width: 100% !important;
+      box-sizing: border-box;
 
       .nav-tabs {
         border: none;
@@ -484,6 +552,12 @@ $ma-transition:   all 0.18s ease;
     .tab-content {
       background: $ma-surface;
       padding: 22px 24px 20px;
+      width: 100% !important;
+      box-sizing: border-box;
+
+      .tab-pane {
+        width: 100% !important;
+      }
     }
   }
 
@@ -492,11 +566,19 @@ $ma-transition:   all 0.18s ease;
   // -------------------------------------------------------------------------
   .o_field_one2many,
   .o_field_many2many {
+    width: 100% !important;
+
     .o_list_view {
+      width: 100% !important;
       border: 1px solid $ma-border;
       border-radius: $ma-radius;
       overflow: hidden;
       box-shadow: $ma-shadow-sm;
+
+      table {
+        width: 100% !important;
+        table-layout: fixed !important;
+      }
 
       thead th {
         background: $ma-navy !important;
@@ -508,6 +590,8 @@ $ma-transition:   all 0.18s ease;
         letter-spacing: .05em;
         padding: 10px 10px;
         white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
 
       tbody tr {
@@ -531,6 +615,8 @@ $ma-transition:   all 0.18s ease;
           font-size: 12.5px;
           color: $ma-text;
           vertical-align: middle;
+          overflow: hidden;
+          text-overflow: ellipsis;
 
           .o_field_float,
           .o_field_integer {
@@ -557,18 +643,20 @@ $ma-transition:   all 0.18s ease;
   // PDF VIEWER
   // -------------------------------------------------------------------------
   .ma_pdf_viewer_wrap {
-    width: 100%;
+    width: 100% !important;
     min-height: 640px;
     border: 1px solid $ma-border;
     border-radius: $ma-radius;
     overflow: hidden;
     background: $ma-surface-alt;
     box-shadow: inset 0 1px 0 rgba(255,255,255,0.75);
+    box-sizing: border-box;
 
     .o_field_pdf_viewer,
     .o_field_binary_file {
       min-height: 640px;
       background: $ma-surface-alt;
+      width: 100% !important;
     }
 
     &:hover {
@@ -602,7 +690,7 @@ $ma-transition:   all 0.18s ease;
 
   @media (max-width: 768px) {
     &.o_form_view .o_form_sheet {
-      margin: 8px;
+      margin: 8px 0;
       border-radius: $ma-radius;
     }
 
@@ -633,7 +721,7 @@ $ma-transition:   all 0.18s ease;
   }
 
   // -------------------------------------------------------------------------
-  // PRINT
+  // PRINT — fixed width, no shrinking
   // -------------------------------------------------------------------------
   @media print {
     .o_form_statusbar,
@@ -642,10 +730,45 @@ $ma-transition:   all 0.18s ease;
       display: none !important;
     }
 
-    &.o_form_view .o_form_sheet {
-      box-shadow: none;
-      border: none;
-      margin: 0;
+    &.o_form_view {
+      width: 100% !important;
+      background: white !important;
+
+      .o_form_sheet_bg {
+        width: 100% !important;
+        max-width: 100% !important;
+      }
+
+      .o_form_sheet {
+        width: 100% !important;
+        max-width: 100% !important;
+        box-shadow: none;
+        border: none;
+        margin: 0;
+        border-radius: 0;
+      }
+    }
+
+    .ma_hero {
+      page-break-inside: avoid;
+    }
+
+    .o_notebook .tab-content {
+      width: 100% !important;
+    }
+
+    .o_group,
+    .o_inner_group,
+    .o_inner_group > table,
+    .o_field_one2many .o_list_view,
+    .o_field_one2many .o_list_view table {
+      width: 100% !important;
+    }
+
+    // Prevent page-break inside groups
+    .o_inner_group,
+    .ma_kpi {
+      page-break-inside: avoid;
     }
   }
 }

@@ -620,6 +620,7 @@ $ma-transition:   all 0.18s ease;
       padding: 22px 24px 20px;
       width: 100% !important;
       box-sizing: border-box;
+      overflow: visible !important;
 
       .tab-pane {
         width: 100% !important;
@@ -628,8 +629,24 @@ $ma-transition:   all 0.18s ease;
   }
 
   // -------------------------------------------------------------------------
-  // ONE2MANY / TABLES — native Odoo, no overrides
+  // ONE2MANY / MANY2MANY TABLES — ensure rows are visible
   // -------------------------------------------------------------------------
+  .o_field_one2many,
+  .o_field_many2many {
+    .o_list_view {
+      overflow: visible !important;
+      min-height: 120px;
+    }
+
+    .o_list_table {
+      th, td {
+        padding-top: 8px !important;
+        padding-bottom: 8px !important;
+        line-height: 1.5 !important;
+        vertical-align: middle !important;
+      }
+    }
+  }
 
   // CRETIB booleans → traditional round checkboxes instead of toggles
   .o_field_widget[name="clasificacion_corrosivo"],

@@ -12,6 +12,7 @@ _logger = logging.getLogger(__name__)
 
 class ManifiestoAmbiental(models.Model):
     _name = 'manifiesto.ambiental'
+    _inherit = ['mail.thread', 'mail.activity.mixin']
     _description = 'Manifiesto Ambiental'
     _rec_name = 'numero_manifiesto'
     _order = 'numero_manifiesto desc, version desc'

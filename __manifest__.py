@@ -6,7 +6,7 @@
     'description': '...',
     'author': 'Alphaqueb Consulting',
     'website': 'https://alphaqueb.com',
-    'depends': ['base', 'contacts', 'service_order', 'stock', 'residuo_recepcion_sai','fleet'],
+    'depends': [ 'mail','base', 'contacts', 'service_order', 'stock', 'residuo_recepcion_sai','fleet'],
     'data': [
         'security/ir.model.access.csv',
         'data/sequences.xml',

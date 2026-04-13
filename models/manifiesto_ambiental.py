@@ -1126,11 +1126,11 @@ class ManifiestoAmbientalResiduo(models.Model):
                             new_display = new_record.display_name or 'Vacío'
                         else:
                             new_display = self._get_field_display_value(field_key, new_val)
-                        line_changes.append(f"<li><b>{label}</b>: {old_display} → {new_display}</li>")
+                        line_changes.append(f"  • {label}: {old_display} → {new_display}")
 
                 if line_changes:
                     changes_by_manifiesto[mid]['lines'].append(
-                        f"<b>📦 {residuo_label}</b><ul>{''.join(line_changes)}</ul>"
+                        f"📦 {residuo_label}\n" + "\n".join(line_changes)
                     )
 
         res = super().write(vals)
@@ -1138,9 +1138,9 @@ class ManifiestoAmbientalResiduo(models.Model):
         # Postear en el chatter del manifiesto padre
         for _mid, data in changes_by_manifiesto.items():
             if data['lines']:
-                body = "<p><b>Cambios en Residuos:</b></p>" + "".join(data['lines'])
+                body_text = "Cambios en Residuos:\n\n" + "\n\n".join(data['lines'])
                 data['manifiesto'].message_post(
-                    body=body,
+                    body=body_text,
                     message_type='notification',
                     subtype_xmlid='mail.mt_note',
                 )
@@ -1157,11 +1157,7 @@ class ManifiestoAmbientalResiduo(models.Model):
             if rec.manifiesto_id:
                 nombre = rec.nombre_residuo or (rec.product_id.name if rec.product_id else 'Sin nombre')
                 cretib = rec.clasificaciones_display or 'Ninguna'
-                body = (
-                    f"<p>📦 <b>Residuo agregado:</b> {nombre}"
-                    f" — {rec.cantidad} kg"
-                    f" — CRETIB: {cretib}</p>"
-                )
+                body = f"📦 Residuo agregado: {nombre} — {rec.cantidad} kg — CRETIB: {cretib}"
                 rec.manifiesto_id.message_post(
                     body=body,
                     message_type='notification',
@@ -1175,10 +1171,7 @@ class ManifiestoAmbientalResiduo(models.Model):
         for rec in self:
             if rec.manifiesto_id:
                 nombre = rec.nombre_residuo or f'Residuo #{rec.id}'
-                body = (
-                    f"<p>🗑️ <b>Residuo eliminado:</b> {nombre}"
-                    f" — {rec.cantidad} kg</p>"
-                )
+                body = f"🗑️ Residuo eliminado: {nombre} — {rec.cantidad} kg"
                 rec.manifiesto_id.message_post(
                     body=body,
                     message_type='notification',

@@ -346,6 +346,7 @@
                                     <field name="clasificacion_toxico" string="T" width="35px"/>
                                     <field name="clasificacion_inflamable" string="I" width="35px"/>
                                     <field name="clasificacion_biologico" string="B" width="35px"/>
+                                    <field name="envase_cantidad" string="Uds." width="55px"/>
                                     <field name="packaging_id" string="Embalaje" optional="show"/>
                                     <field name="envase_capacidad" string="Capacidad"/>
                                     <field name="cantidad"/>
@@ -368,6 +369,7 @@
                                                 <field name="lot_id" readonly="1"/>
                                             </group>
                                             <group string="Cantidad y Envase">
+                                                <field name="envase_cantidad" string="Unidades de Envase"/>
                                                 <field name="packaging_id" string="Embalaje"/>
                                                 <field name="envase_tipo" string="Envase (Legacy)"/>
                                                 <field name="envase_capacidad"/>

@@ -774,7 +774,11 @@ class ManifiestoAmbiental(models.Model):
                 'nombre': r.nombre_residuo or '',
                 'cantidad': r.cantidad,
                 'clasificaciones': r.clasificaciones_display or '',
-                'envase': {'tipo': r.envase_tipo or '', 'capacidad': r.envase_capacidad or ''},
+                'envase': {
+                    'cantidad': r.envase_cantidad,
+                    'tipo': r.envase_tipo or '',
+                    'capacidad': r.envase_capacidad or '',
+                },
                 'etiquetado': 'Sí' if r.etiqueta_si else 'No',
             } for r in self.residuo_ids],
         }
@@ -843,7 +847,7 @@ RESIDUOS
 {'-'*20}
 """
         for i, r in enumerate(data['residuos'], 1):
-            texto += f"\n{i}. {r['nombre']}\n   Cantidad: {r['cantidad']} kg\n   Clasificaciones CRETIB: {r['clasificaciones']}\n   Envase: {r['envase']['tipo']} - {r['envase']['capacidad']}\n   Etiquetado: {r['etiquetado']}\n"
+            texto += f"\n{i}. {r['nombre']}\n   Cantidad: {r['cantidad']} kg\n   Clasificaciones CRETIB: {r['clasificaciones']}\n   Envase: {r['envase']['cantidad']} x {r['envase']['tipo']} - {r['envase']['capacidad']}\n   Etiquetado: {r['etiquetado']}\n"
         return texto
 
     def _save_version_to_history(self, pdf_data):
@@ -919,6 +923,7 @@ RESIDUOS
                 'clasificacion_inflamable': residuo.clasificacion_inflamable,
                 'clasificacion_biologico': residuo.clasificacion_biologico,
                 'envase_tipo': residuo.envase_tipo,
+                'envase_cantidad': residuo.envase_cantidad,
                 'envase_capacidad': residuo.envase_capacidad,
                 'cantidad': residuo.cantidad,
                 'etiqueta_si': residuo.etiqueta_si,
@@ -983,6 +988,7 @@ class ManifiestoAmbientalResiduo(models.Model):
         'clasificacion_inflamable': 'Inflamable (I)',
         'clasificacion_biologico': 'Biológico (B)',
         'envase_tipo': 'Tipo de Envase',
+        'envase_cantidad': 'Unidades de Envase',
         'envase_capacidad': 'Capacidad',
         'etiqueta_si': 'Etiqueta Sí',
         'etiqueta_no': 'Etiqueta No',
@@ -1015,6 +1021,7 @@ class ManifiestoAmbientalResiduo(models.Model):
     ], string='Tipo de Envase')
 
     packaging_id = fields.Many2one('uom.uom', string='Unidad de Embalaje')
+    envase_cantidad = fields.Integer(string='Unidades', default=1, help='Número de envases/contenedores')
     envase_capacidad = fields.Char(string='Capacidad')
     cantidad = fields.Float(string='Cantidad (kg)', required=True)
     unidad = fields.Char(string='Unidad', default='kg', readonly=True)

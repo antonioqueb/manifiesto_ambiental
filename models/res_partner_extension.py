@@ -45,12 +45,6 @@ class ResPartner(models.Model):
         help='Número de placa del vehículo'
     )
     
-    # Nombre alternativo para reportes de manifiesto
-    nombre_acopio = fields.Char(
-        string='Nombre Acopio',
-        help='Nombre alternativo para los reportes de manifiesto ambiental. Si se define, se usa en lugar de la razón social.'
-    )
-
     # Categorización del partner
     es_generador = fields.Boolean(
         string='Es Generador',

@@ -42,7 +42,7 @@ class ServiceOrder(models.Model):
 
         # El nombre/razón social en el campo 4 siempre es el cliente de la OS
         # La dirección y demás datos vienen del generador seleccionado
-        nombre_razon_social = self.partner_id.nombre_acopio or self.partner_id.name or generador.nombre_acopio or generador.name or ''
+        nombre_razon_social = self.partner_id.name or generador.name or ''
 
         # 2. Fecha del servicio
         fecha_servicio = (

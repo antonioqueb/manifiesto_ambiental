@@ -262,12 +262,12 @@ class ManifiestoAmbiental(models.Model):
         for rec in self:
             rec.discrepancia_count = len(rec.discrepancia_ids)
 
-    @api.depends('generador_id', 'generador_id.name', 'generador_id.nombre_acopio')
+    @api.depends('generador_id', 'generador_id.name')
     def _compute_generador_nombre(self):
         for rec in self:
             if rec.generador_id:
                 if not rec.service_order_id:
-                    rec.generador_nombre = rec.generador_id.nombre_acopio or rec.generador_id.name or ''
+                    rec.generador_nombre = rec.generador_id.name or ''
 
     @api.depends('generador_responsable_id', 'generador_responsable_id.name')
     def _compute_generador_responsable_nombre(self):
@@ -298,7 +298,7 @@ class ManifiestoAmbiental(models.Model):
             p = self.generador_id
             self.numero_registro_ambiental = p.numero_registro_ambiental or ''
             if not self.service_order_id:
-                self.generador_nombre = p.nombre_acopio or p.name or ''
+                self.generador_nombre = p.name or ''
             self.generador_codigo_postal = p.zip or ''
             self.generador_calle = p.street or ''
             self.generador_num_ext = p.street_number or ''
@@ -453,7 +453,7 @@ class ManifiestoAmbiental(models.Model):
                 p = self.env['res.partner'].browse(vals['generador_id'])
                 vals.update({
                     'numero_registro_ambiental': vals.get('numero_registro_ambiental') or p.numero_registro_ambiental or '',
-                    'generador_nombre': p.nombre_acopio or p.name or '',
+                    'generador_nombre': p.name or '',
                     'generador_codigo_postal': vals.get('generador_codigo_postal') or p.zip or '',
                     'generador_calle': vals.get('generador_calle') or p.street or '',
                     'generador_num_ext': vals.get('generador_num_ext') or p.street_number or '',

@@ -134,7 +134,7 @@ class ManifiestoAmbiental(models.Model):
     generador_id = fields.Many2one(
         'res.partner',
         string='Generador',
-        domain=[('es_generador', '=', True), ('parent_id', '=', False)],
+        domain=[('es_generador', '=', True)],
         tracking=True,
     )
     generador_nombre = fields.Char(
@@ -327,12 +327,12 @@ class ManifiestoAmbiental(models.Model):
         for rec in self:
             rec.discrepancia_count = len(rec.discrepancia_ids)
 
-    @api.depends('generador_id', 'generador_id.name')
+    @api.depends('generador_id', 'generador_id.name', 'generador_id.nombre_acopio')
     def _compute_generador_nombre(self):
         for rec in self:
             if rec.generador_id:
                 if not rec.service_order_id:
-                    rec.generador_nombre = rec.generador_id.name or ''
+                    rec.generador_nombre = rec.generador_id.nombre_acopio or rec.generador_id.name or ''
 
     @api.depends('generador_responsable_id', 'generador_responsable_id.name')
     def _compute_generador_responsable_nombre(self):
@@ -363,7 +363,7 @@ class ManifiestoAmbiental(models.Model):
             p = self.generador_id
             self.numero_registro_ambiental = p.numero_registro_ambiental or ''
             if not self.service_order_id:
-                self.generador_nombre = p.name or ''
+                self.generador_nombre = p.nombre_acopio or p.name or ''
             self.generador_codigo_postal = p.zip or ''
             self.generador_calle = p.street or ''
             self.generador_num_ext = p.street_number or ''
@@ -518,7 +518,7 @@ class ManifiestoAmbiental(models.Model):
                 p = self.env['res.partner'].browse(vals['generador_id'])
                 vals.update({
                     'numero_registro_ambiental': vals.get('numero_registro_ambiental') or p.numero_registro_ambiental or '',
-                    'generador_nombre': p.name or '',
+                    'generador_nombre': p.nombre_acopio or p.name or '',
                     'generador_codigo_postal': vals.get('generador_codigo_postal') or p.zip or '',
                     'generador_calle': vals.get('generador_calle') or p.street or '',
                     'generador_num_ext': vals.get('generador_num_ext') or p.street_number or '',
@@ -551,6 +551,32 @@ class ManifiestoAmbiental(models.Model):
                 record.original_manifiesto_id = record.id
 
         return records
+
+    # =========================================================================
+    # WRITE — sincronizar lotes cuando cambia numero_manifiesto
+    # =========================================================================
+    def write(self, vals):
+        res = super().write(vals)
+        if 'numero_manifiesto' in vals:
+            new_number = vals['numero_manifiesto']
+            for manifiesto in self:
+                for residuo in manifiesto.residuo_ids:
+                    if not residuo.product_id or not new_number:
+                        continue
+                    existing_lot = self.env['stock.lot'].search([
+                        ('name', '=', new_number),
+                        ('product_id', '=', residuo.product_id.id),
+                        ('company_id', '=', manifiesto.company_id.id),
+                    ], limit=1)
+                    if existing_lot:
+                        residuo.lot_id = existing_lot
+                    else:
+                        residuo.lot_id = self.env['stock.lot'].create({
+                            'name': new_number,
+                            'product_id': residuo.product_id.id,
+                            'company_id': manifiesto.company_id.id,
+                        })
+        return res
 
     # =========================================================================
     # IMPRESIÓN INTELIGENTE
@@ -1736,6 +1762,12 @@ class ResPartner(models.Model):
         help='Número de placa del vehículo'
     )
     
+    # Nombre alternativo para reportes de manifiesto
+    nombre_acopio = fields.Char(
+        string='Nombre Acopio',
+        help='Nombre alternativo para los reportes de manifiesto ambiental. Si se define, se usa en lugar de la razón social.'
+    )
+
     # Categorización del partner
     es_generador = fields.Boolean(
         string='Es Generador',
@@ -1798,7 +1830,7 @@ class ServiceOrder(models.Model):
 
         # El nombre/razón social en el campo 4 siempre es el cliente de la OS
         # La dirección y demás datos vienen del generador seleccionado
-        nombre_razon_social = self.partner_id.name or generador.name or ''
+        nombre_razon_social = self.partner_id.nombre_acopio or self.partner_id.name or generador.nombre_acopio or generador.name or ''
 
         # 2. Fecha del servicio
         fecha_servicio = (
@@ -4540,6 +4572,14 @@ $ma-transition:   all 0.18s ease;
                                 <span invisible="not es_destinatario"> Sitio de disposición final.</span>
                             </div>
                         </group>
+                    </group>
+
+                    <group>
+                        <!-- <group string="Nombre para Reportes">
+                            <field name="nombre_acopio"
+                                   placeholder="Nombre alternativo para manifiestos"
+                                   help="Si se define, se usará en lugar de la razón social en los reportes de manifiesto ambiental."/>
+                        </group> -->
                     </group>
 
                     <separator string="Documentación y Permisos"/>

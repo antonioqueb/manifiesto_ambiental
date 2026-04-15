@@ -167,7 +167,6 @@ class ManifiestoAmbiental(models.Model):
     chofer_id = fields.Many2one(
         'res.partner',
         string='Chofer',
-        domain="[('is_driver', '=', True)]",
         tracking=True,
     )
 

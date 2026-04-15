@@ -51,6 +51,14 @@
                         </group>
                     </group>
 
+                    <group>
+                        <group string="Nombre para Reportes">
+                            <field name="nombre_acopio"
+                                   placeholder="Nombre alternativo para manifiestos"
+                                   help="Si se define, se usará en lugar de la razón social en los reportes de manifiesto ambiental."/>
+                        </group>
+                    </group>
+
                     <separator string="Documentación y Permisos"/>
 
                     <group>

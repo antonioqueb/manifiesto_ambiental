@@ -838,7 +838,11 @@ class ManifiestoAmbiental(models.Model):
                 'nombre': r.nombre_residuo or '',
                 'cantidad': r.cantidad,
                 'clasificaciones': r.clasificaciones_display or '',
-                'envase': {'tipo': r.envase_tipo or '', 'capacidad': r.envase_capacidad or ''},
+                'envase': {
+                    'cantidad': r.envase_cantidad,
+                    'tipo': r.envase_tipo or '',
+                    'capacidad': r.envase_capacidad or '',
+                },
                 'etiquetado': 'Sí' if r.etiqueta_si else 'No',
             } for r in self.residuo_ids],
         }
@@ -907,7 +911,7 @@ RESIDUOS
 {'-'*20}
 """
         for i, r in enumerate(data['residuos'], 1):
-            texto += f"\n{i}. {r['nombre']}\n   Cantidad: {r['cantidad']} kg\n   Clasificaciones CRETIB: {r['clasificaciones']}\n   Envase: {r['envase']['tipo']} - {r['envase']['capacidad']}\n   Etiquetado: {r['etiquetado']}\n"
+            texto += f"\n{i}. {r['nombre']}\n   Cantidad: {r['cantidad']} kg\n   Clasificaciones CRETIB: {r['clasificaciones']}\n   Envase: {r['envase']['cantidad']} x {r['envase']['tipo']} - {r['envase']['capacidad']}\n   Etiquetado: {r['etiquetado']}\n"
         return texto
 
     def _save_version_to_history(self, pdf_data):
@@ -983,6 +987,7 @@ RESIDUOS
                 'clasificacion_inflamable': residuo.clasificacion_inflamable,
                 'clasificacion_biologico': residuo.clasificacion_biologico,
                 'envase_tipo': residuo.envase_tipo,
+                'envase_cantidad': residuo.envase_cantidad,
                 'envase_capacidad': residuo.envase_capacidad,
                 'cantidad': residuo.cantidad,
                 'etiqueta_si': residuo.etiqueta_si,
@@ -1047,6 +1052,7 @@ class ManifiestoAmbientalResiduo(models.Model):
         'clasificacion_inflamable': 'Inflamable (I)',
         'clasificacion_biologico': 'Biológico (B)',
         'envase_tipo': 'Tipo de Envase',
+        'envase_cantidad': 'Unidades de Envase',
         'envase_capacidad': 'Capacidad',
         'etiqueta_si': 'Etiqueta Sí',
         'etiqueta_no': 'Etiqueta No',
@@ -1079,6 +1085,7 @@ class ManifiestoAmbientalResiduo(models.Model):
     ], string='Tipo de Envase')
 
     packaging_id = fields.Many2one('uom.uom', string='Unidad de Embalaje')
+    envase_cantidad = fields.Integer(string='Unidades', default=1, help='Número de envases/contenedores')
     envase_capacidad = fields.Char(string='Capacidad')
     cantidad = fields.Float(string='Cantidad (kg)', required=True)
     unidad = fields.Char(string='Unidad', default='kg', readonly=True)
@@ -1183,11 +1190,11 @@ class ManifiestoAmbientalResiduo(models.Model):
                             new_display = new_record.display_name or 'Vacío'
                         else:
                             new_display = self._get_field_display_value(field_key, new_val)
-                        line_changes.append(f"<li><b>{label}</b>: {old_display} → {new_display}</li>")
+                        line_changes.append(f"  • {label}: {old_display} → {new_display}")
 
                 if line_changes:
                     changes_by_manifiesto[mid]['lines'].append(
-                        f"<b>📦 {residuo_label}</b><ul>{''.join(line_changes)}</ul>"
+                        f"📦 {residuo_label}\n" + "\n".join(line_changes)
                     )
 
         res = super().write(vals)
@@ -1195,9 +1202,9 @@ class ManifiestoAmbientalResiduo(models.Model):
         # Postear en el chatter del manifiesto padre
         for _mid, data in changes_by_manifiesto.items():
             if data['lines']:
-                body = "<p><b>Cambios en Residuos:</b></p>" + "".join(data['lines'])
+                body_text = "Cambios en Residuos:\n\n" + "\n\n".join(data['lines'])
                 data['manifiesto'].message_post(
-                    body=body,
+                    body=body_text,
                     message_type='notification',
                     subtype_xmlid='mail.mt_note',
                 )
@@ -1214,11 +1221,7 @@ class ManifiestoAmbientalResiduo(models.Model):
             if rec.manifiesto_id:
                 nombre = rec.nombre_residuo or (rec.product_id.name if rec.product_id else 'Sin nombre')
                 cretib = rec.clasificaciones_display or 'Ninguna'
-                body = (
-                    f"<p>📦 <b>Residuo agregado:</b> {nombre}"
-                    f" — {rec.cantidad} kg"
-                    f" — CRETIB: {cretib}</p>"
-                )
+                body = f"📦 Residuo agregado: {nombre} — {rec.cantidad} kg — CRETIB: {cretib}"
                 rec.manifiesto_id.message_post(
                     body=body,
                     message_type='notification',
@@ -1232,10 +1235,7 @@ class ManifiestoAmbientalResiduo(models.Model):
         for rec in self:
             if rec.manifiesto_id:
                 nombre = rec.nombre_residuo or f'Residuo #{rec.id}'
-                body = (
-                    f"<p>🗑️ <b>Residuo eliminado:</b> {nombre}"
-                    f" — {rec.cantidad} kg</p>"
-                )
+                body = f"🗑️ Residuo eliminado: {nombre} — {rec.cantidad} kg"
                 rec.manifiesto_id.message_post(
                     body=body,
                     message_type='notification',
@@ -2119,7 +2119,7 @@ class ServiceOrder(models.Model):
                         <!-- 5. IDENTIFICACIÓN DE LOS RESIDUOS -->
                         <table>
                             <colgroup>
-                                <col style="width:25%"/>
+                                <col style="width:22%"/>
                                 <col style="width:3%"/>
                                 <col style="width:3%"/>
                                 <col style="width:3%"/>
@@ -2127,7 +2127,8 @@ class ServiceOrder(models.Model):
                                 <col style="width:3%"/>
                                 <col style="width:3%"/>
                                 <col style="width:3%"/>
-                                <col style="width:12%"/>
+                                <col style="width:5%"/>
+                                <col style="width:10%"/>
                                 <col style="width:10%"/>
                                 <col style="width:10%"/>
                                 <col style="width:3%"/>
@@ -2135,12 +2136,12 @@ class ServiceOrder(models.Model):
                             </colgroup>
 
                             <tr>
-                                <th colspan="13" class="header-table">5. Identificación de los residuos</th>
+                                <th colspan="14" class="header-table">5. Identificación de los residuos</th>
                             </tr>
                             <tr>
                                 <th class="header-table">Nombre del residuo</th>
                                 <th class="header-table" colspan="7">Clasificación</th>
-                                <th class="header-table" colspan="2">Envase</th>
+                                <th class="header-table" colspan="3">Envase</th>
                                 <th class="header-table">Cantidad (kg)</th>
                                 <th class="header-table" colspan="2">Etiqueta</th>
                             </tr>
@@ -2153,6 +2154,7 @@ class ServiceOrder(models.Model):
                                 <th class="header-table">I</th>
                                 <th class="header-table">B</th>
                                 <th class="header-table">M</th>
+                                <th class="header-table">Pzas</th>
                                 <th class="header-table">Embalaje</th>
                                 <th class="header-table">Capacidad</th>
                                 <th class="header-table"></th>
@@ -2170,6 +2172,7 @@ class ServiceOrder(models.Model):
                                     <td class="center-text"><span t-if="residuo.clasificacion_inflamable">X</span></td>
                                     <td class="center-text"><span t-if="residuo.clasificacion_biologico">X</span></td>
                                     <td class="center-text"></td>
+                                    <td class="center-text"><span t-field="residuo.envase_cantidad"/></td>
                                     <td class="center-text">
                                         <span t-if="residuo.packaging_id" t-field="residuo.packaging_id.name"/>
                                         <span t-elif="residuo.envase_tipo" t-field="residuo.envase_tipo"/>
@@ -2188,7 +2191,7 @@ class ServiceOrder(models.Model):
                                 <tr style="height: 22px;">
                                     <td>&#160;</td><td>&#160;</td><td>&#160;</td><td>&#160;</td><td>&#160;</td>
                                     <td>&#160;</td><td>&#160;</td><td>&#160;</td><td>&#160;</td><td>&#160;</td>
-                                    <td>&#160;</td><td>&#160;</td><td>&#160;</td>
+                                    <td>&#160;</td><td>&#160;</td><td>&#160;</td><td>&#160;</td>
                                 </tr>
                             </t>
                         </table>
@@ -3911,6 +3914,7 @@ $ma-transition:   all 0.18s ease;
                                     <field name="clasificacion_toxico" string="T" width="35px"/>
                                     <field name="clasificacion_inflamable" string="I" width="35px"/>
                                     <field name="clasificacion_biologico" string="B" width="35px"/>
+                                    <field name="envase_cantidad" string="Uds." width="55px"/>
                                     <field name="packaging_id" string="Embalaje" optional="show"/>
                                     <field name="envase_capacidad" string="Capacidad"/>
                                     <field name="cantidad"/>
@@ -3933,6 +3937,7 @@ $ma-transition:   all 0.18s ease;
                                                 <field name="lot_id" readonly="1"/>
                                             </group>
                                             <group string="Cantidad y Envase">
+                                                <field name="envase_cantidad" string="Unidades de Envase"/>
                                                 <field name="packaging_id" string="Embalaje"/>
                                                 <field name="envase_tipo" string="Envase (Legacy)"/>
                                                 <field name="envase_capacidad"/>

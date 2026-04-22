@@ -565,9 +565,10 @@ class ManifiestoAmbiental(models.Model):
         lineas_recepcion = []
         for residuo in self.residuo_ids:
             lineas_recepcion.append((0, 0, {
+                'residuo_manifiesto_id': residuo.id,  # ← vínculo directo
                 'descripcion_origen': residuo.nombre_residuo or (
                     residuo.product_id.name if residuo.product_id else 'Sin descripción'),
-                'product_id': False,
+                'product_id': residuo.product_id.id if residuo.product_id else False,
                 'cantidad': residuo.cantidad,
                 'lote_asignado': self.numero_manifiesto,
                 'clasificacion_corrosivo': residuo.clasificacion_corrosivo,
@@ -601,7 +602,7 @@ class ManifiestoAmbiental(models.Model):
             }
         except Exception as e:
             raise UserError(_("Error al crear la recepción: %s") % str(e))
-
+    
     def action_view_recepciones(self):
         self.ensure_one()
         return {

@@ -1938,7 +1938,11 @@ class ServiceOrder(models.Model):
 
         # 1. Generador
         generador = self.generador_id if self.generador_id else self.partner_id
-        nombre_razon_social = self.partner_id.name or generador.name or ''
+
+        nombre_razon_social = (
+            (self.partner_id.name if self.partner_id else '') or
+            (generador.name if generador else '')
+        )
 
         # 2. Fecha del servicio
         fecha_servicio = (
@@ -2028,6 +2032,9 @@ class ServiceOrder(models.Model):
         chofer_id = self.chofer_id.id if self.chofer_id else False
 
         # 9. Responsable destinatario
+        # IMPORTANTE:
+        # manifiesto.ambiental NO tiene campo destinatario_responsable_id.
+        # Por eso solo se guarda el nombre en destinatario_responsable_nombre.
         destinatario_responsable = False
         if 'destinatario_responsable_id' in self._fields:
             destinatario_responsable = self.destinatario_responsable_id
@@ -2054,18 +2061,18 @@ class ServiceOrder(models.Model):
             'service_order_id': self.id,
 
             # --- GENERADOR ---
-            'generador_id': generador.id,
-            'numero_registro_ambiental': generador.numero_registro_ambiental or '',
+            'generador_id': generador.id if generador else False,
+            'numero_registro_ambiental': generador.numero_registro_ambiental if generador else '',
             'generador_nombre': nombre_razon_social,
-            'generador_codigo_postal': generador.zip or '',
-            'generador_calle': generador.street or '',
-            'generador_num_ext': generador.street_number or '',
-            'generador_num_int': generador.street_number2 or '',
-            'generador_colonia': generador.street2 or '',
-            'generador_municipio': generador.city or '',
-            'generador_estado': generador.state_id.name if generador.state_id else '',
-            'generador_telefono': generador.phone or '',
-            'generador_email': generador.email or '',
+            'generador_codigo_postal': generador.zip if generador else '',
+            'generador_calle': generador.street if generador else '',
+            'generador_num_ext': generador.street_number if generador else '',
+            'generador_num_int': generador.street_number2 if generador else '',
+            'generador_colonia': generador.street2 if generador else '',
+            'generador_municipio': generador.city if generador else '',
+            'generador_estado': generador.state_id.name if generador and generador.state_id else '',
+            'generador_telefono': generador.phone if generador else '',
+            'generador_email': generador.email if generador else '',
             'generador_responsable_id': self.generador_responsable_id.id if self.generador_responsable_id else False,
             'generador_responsable_nombre': self.generador_responsable_id.name if self.generador_responsable_id else '',
             'generador_fecha': fecha_servicio,
@@ -2097,25 +2104,23 @@ class ServiceOrder(models.Model):
             'transportista_fecha': fecha_servicio,
 
             # --- DESTINATARIO ---
-            'destinatario_id': dest.id,
-            'destinatario_nombre': dest.name or '',
-            'destinatario_codigo_postal': dest.zip or '',
-            'destinatario_calle': dest.street or '',
-            'destinatario_num_ext': dest.street_number or '',
-            'destinatario_num_int': dest.street_number2 or '',
-            'destinatario_colonia': dest.street2 or '',
-            'destinatario_municipio': dest.city or '',
-            'destinatario_estado': dest.state_id.name if dest.state_id else '',
-            'destinatario_telefono': dest.phone or '',
-            'destinatario_email': dest.email or '',
-            'numero_autorizacion_semarnat_destinatario': dest.numero_autorizacion_semarnat or '',
+            'destinatario_id': dest.id if dest else False,
+            'destinatario_nombre': dest.name if dest else '',
+            'destinatario_codigo_postal': dest.zip if dest else '',
+            'destinatario_calle': dest.street if dest else '',
+            'destinatario_num_ext': dest.street_number if dest else '',
+            'destinatario_num_int': dest.street_number2 if dest else '',
+            'destinatario_colonia': dest.street2 if dest else '',
+            'destinatario_municipio': dest.city if dest else '',
+            'destinatario_estado': dest.state_id.name if dest and dest.state_id else '',
+            'destinatario_telefono': dest.phone if dest else '',
+            'destinatario_email': dest.email if dest else '',
+            'numero_autorizacion_semarnat_destinatario': dest.numero_autorizacion_semarnat if dest else '',
             'destinatario_fecha': fecha_servicio,
-            'destinatario_responsable_id': destinatario_responsable.id if destinatario_responsable else False,
             'destinatario_responsable_nombre': destinatario_responsable_nombre,
 
             # --- OTROS ---
             'nombre_persona_recibe': self.contact_name or '',
-            'ruta_origen_id': ruta_origen.id if ruta_origen else False,
             'ruta_empresa': ruta,
             'instrucciones_especiales': instrucciones_manifiesto,
 

@@ -212,11 +212,11 @@
                                     <td class="center-text"><span t-if="residuo.clasificacion_biologico">X</span></td>
                                     <td class="center-text"></td>
 
+                                    <!-- Pzas: si el valor es cero, no imprime absolutamente nada -->
                                     <td class="center-text">
-                                        <t t-if="residuo.envase_cantidad">
+                                        <t t-if="residuo.envase_cantidad and residuo.envase_cantidad not in [0, 0.0, '0', '0.0', '0.00', '0.000', '0,0', '0,00']">
                                             <span t-field="residuo.envase_cantidad"/>
                                         </t>
-                                        <t t-else="">&#160;</t>
                                     </td>
 
                                     <td class="center-text">
@@ -226,11 +226,11 @@
 
                                     <td class="center-text"><span t-field="residuo.envase_capacidad"/></td>
 
+                                    <!-- Cantidad kg: si el valor es cero, no imprime ni cero ni kg -->
                                     <td class="center-text">
-                                        <t t-if="residuo.cantidad">
+                                        <t t-if="residuo.cantidad and residuo.cantidad not in [0, 0.0, '0', '0.0', '0.00', '0.000', '0,0', '0,00']">
                                             <span t-field="residuo.cantidad"/> kg
                                         </t>
-                                        <t t-else="">&#160;</t>
                                     </td>
 
                                     <td class="center-text"><span t-if="residuo.etiqueta_si">X</span></td>

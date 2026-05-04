@@ -24,16 +24,15 @@
               action="action_manifiesto_ambiental_all_versions"
               sequence="30"/>
 
+    <menuitem id="menu_manifiesto_discrepancia"
+              name="Discrepancias"
+              parent="menu_manifiesto_ambiental_root"
+              action="action_manifiesto_discrepancia"
+              sequence="40"/>
+
     <menuitem id="menu_manifiesto_ambiental_config"
               name="Configuración"
               parent="menu_manifiesto_ambiental_root"
               sequence="90"/>
-
-    <!-- 🔥 CORREGIDO -->
-    <menuitem id="menu_manifiesto_discrepancia"
-              name="Discrepancias"
-              parent="menu_manifiesto_ambiental_root"
-              action="gestion_discrepancias.action_discrepancy_log"
-              sequence="40"/>
 
 </odoo>

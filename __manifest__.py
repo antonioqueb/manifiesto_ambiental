@@ -6,21 +6,35 @@
     'description': '...',
     'author': 'Alphaqueb Consulting',
     'website': 'https://alphaqueb.com',
-    'depends': [ 'mail','base', 'contacts', 'service_order', 'stock', 'residuo_recepcion_sai','fleet'],
+    'depends': [
+        'mail',
+        'base',
+        'contacts',
+        'service_order',
+        'stock',
+        'residuo_recepcion_sai',
+        'fleet',
+    ],
     'data': [
         'security/ir.model.access.csv',
         'data/sequences.xml',
+
         'views/manifiesto_ambiental_assets.xml',
         'views/res_partner_views.xml',
         'views/manifiesto_ambiental_views.xml',
+
+        # IMPORTANTE:
+        # Primero se crea la acción de discrepancias.
+        # Luego el menú puede apuntar a esa acción.
+        'views/views_discrepancia.xml',
         'views/manifiesto_ambiental_menus.xml',
+
         'views/service_order_manifiesto_button.xml',
         'views/recepcion_extension_views.xml',
-        'views/views_discrepancia.xml',
+
         'reports/manifiesto_ambiental_report.xml',
         'reports/report_discrepancia.xml',
     ],
-
     'application': True,
     'installable': True,
     'auto_install': False,

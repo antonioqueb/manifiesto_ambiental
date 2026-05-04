@@ -80,6 +80,7 @@ from . import manifiesto_discrepancia```
 from odoo import models, fields, api, _
 from odoo.exceptions import UserError
 from datetime import date
+from urllib.parse import quote
 import base64
 import logging
 import json
@@ -592,11 +593,62 @@ class ManifiestoAmbiental(models.Model):
         return res
 
     # =========================================================================
-    # IMPRESIÓN INTELIGENTE
+    # DOCUMENTO FÍSICO / IMPRESIÓN INTELIGENTE
     # =========================================================================
-    def action_print_manifiesto(self):
-        """Imprime el reporte correcto según el tipo de manifiesto (entrada o salida)."""
+    def _get_documento_fisico_filename(self):
         self.ensure_one()
+        return (
+            self.documento_fisico_filename
+            or f"Manifiesto_Fisico_{self.numero_manifiesto or self.id}.pdf"
+        )
+
+    def _get_documento_fisico_url(self, download=False):
+        self.ensure_one()
+
+        if not self.documento_fisico:
+            raise UserError(_("Este manifiesto no tiene documento físico cargado."))
+
+        filename = self._get_documento_fisico_filename()
+
+        return (
+            f"/web/content/{self._name}/{self.id}/documento_fisico/"
+            f"{quote(filename)}?download={'true' if download else 'false'}"
+        )
+
+    def action_view_documento_fisico(self):
+        """
+        Regla de negocio:
+        Si el manifiesto tiene documento físico cargado, esta acción abre
+        únicamente ese archivo físico. No abre historial de versiones.
+        """
+        self.ensure_one()
+
+        return {
+            'type': 'ir.actions.act_url',
+            'url': self._get_documento_fisico_url(download=False),
+            'target': 'new',
+        }
+
+    def action_download_documento_fisico(self):
+        self.ensure_one()
+
+        return {
+            'type': 'ir.actions.act_url',
+            'url': self._get_documento_fisico_url(download=True),
+            'target': 'self',
+        }
+
+    def action_print_manifiesto(self):
+        """
+        Regla de negocio obligatoria:
+        - Si existe documento físico cargado, se abre/imprime ese PDF físico.
+        - Solo si no existe documento físico, se genera el PDF normal QWeb.
+        """
+        self.ensure_one()
+
+        if self.documento_fisico:
+            return self.action_view_documento_fisico()
+
         if self.tipo_manifiesto == 'salida':
             report = self.env.ref(
                 'salida_acopio_manifiesto.action_report_manifiesto_salida',
@@ -607,8 +659,10 @@ class ManifiestoAmbiental(models.Model):
                 'manifiesto_ambiental.action_report_manifiesto_ambiental',
                 raise_if_not_found=False,
             )
+
         if not report:
             raise UserError(_("No se encontró el reporte correspondiente."))
+
         return report.report_action(self)
 
     # =========================================================================
@@ -2296,11 +2350,11 @@ class ServiceOrder(models.Model):
                                     <td class="center-text"><span t-if="residuo.clasificacion_biologico">X</span></td>
                                     <td class="center-text"></td>
 
+                                    <!-- Pzas: si el valor es cero, no imprime absolutamente nada -->
                                     <td class="center-text">
-                                        <t t-if="residuo.envase_cantidad">
+                                        <t t-if="residuo.envase_cantidad and residuo.envase_cantidad not in [0, 0.0, '0', '0.0', '0.00', '0.000', '0,0', '0,00']">
                                             <span t-field="residuo.envase_cantidad"/>
                                         </t>
-                                        <t t-else="">&#160;</t>
                                     </td>
 
                                     <td class="center-text">
@@ -2310,11 +2364,11 @@ class ServiceOrder(models.Model):
 
                                     <td class="center-text"><span t-field="residuo.envase_capacidad"/></td>
 
+                                    <!-- Cantidad kg: si el valor es cero, no imprime ni cero ni kg -->
                                     <td class="center-text">
-                                        <t t-if="residuo.cantidad">
+                                        <t t-if="residuo.cantidad and residuo.cantidad not in [0, 0.0, '0', '0.0', '0.00', '0.000', '0,0', '0,00']">
                                             <span t-field="residuo.cantidad"/> kg
                                         </t>
-                                        <t t-else="">&#160;</t>
                                     </td>
 
                                     <td class="center-text"><span t-if="residuo.etiqueta_si">X</span></td>
@@ -3806,7 +3860,7 @@ $ma-transition:   all 0.18s ease;
                             invisible="state not in ['in_transit', 'delivered'] or not is_current_version or tipo_manifiesto == 'salida'"
                             confirm="¿Desea generar la recepción de inventario para estos residuos?"/>
 
-                    <button name="action_print_manifiesto" string="Imprimir PDF" type="object"
+                    <button name="action_print_manifiesto" string="Imprimir Manifiesto" type="object"
                             class="btn-secondary" icon="fa-print"/>
 
                     <!-- Secundarias -->
@@ -3852,11 +3906,12 @@ $ma-transition:   all 0.18s ease;
                             <field name="recepcion_count" widget="statinfo" string="Recepciones"/>
                         </button>
 
-                        <button type="object" name="action_view_version_history"
-                                class="oe_stat_button" icon="fa-file-pdf-o">
+                        <button type="object" name="action_view_documento_fisico"
+                                class="oe_stat_button" icon="fa-file-pdf-o"
+                                invisible="not tiene_documento_fisico"
+                                help="Abrir únicamente el documento físico cargado en este manifiesto.">
                             <div class="o_field_widget o_stat_info">
-                                <span class="o_stat_value" invisible="not tiene_documento_fisico">Sí</span>
-                                <span class="o_stat_value" invisible="tiene_documento_fisico">No</span>
+                                <span class="o_stat_value">Sí</span>
                                 <span class="o_stat_text">Doc. físico</span>
                             </div>
                         </button>
@@ -4267,7 +4322,29 @@ $ma-transition:   all 0.18s ease;
                                     <field name="tiene_documento_fisico" readonly="1"
                                            widget="boolean_toggle"/>
                                 </group>
-                                <group/>
+
+                                <group string="Acciones">
+                                    <button name="action_view_documento_fisico"
+                                            type="object"
+                                            string="Ver Documento Físico"
+                                            class="btn-primary"
+                                            icon="fa-eye"
+                                            invisible="not tiene_documento_fisico"/>
+
+                                    <button name="action_download_documento_fisico"
+                                            type="object"
+                                            string="Descargar Documento Físico"
+                                            class="btn-secondary"
+                                            icon="fa-download"
+                                            invisible="not tiene_documento_fisico"/>
+
+                                    <button name="action_print_manifiesto"
+                                            type="object"
+                                            string="Imprimir Documento Físico"
+                                            class="btn-secondary"
+                                            icon="fa-print"
+                                            invisible="not tiene_documento_fisico"/>
+                                </group>
                             </group>
 
                             <group string="Vista previa" col="1">
@@ -4276,7 +4353,7 @@ $ma-transition:   all 0.18s ease;
                                            filename="documento_fisico_filename"
                                            readonly="not is_current_version"
                                            widget="pdf_viewer"
-                                           options="{'accepted_file_extensions': '.pdf,.png,.jpg,.jpeg,.gif,.bmp,.tiff'}"/>
+                                           options="{'accepted_file_extensions': '.pdf'}"/>
                                 </div>
                             </group>
                         </page>

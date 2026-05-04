@@ -6,7 +6,7 @@ from . import models```
 ```py
 {
     'name': 'Manifiesto Ambiental',
-    'version': '19.0.2.1.0',
+    'version': '19.0.2.2.0',
     'category': 'Environmental',
     'summary': 'Gestión de Manifiestos Ambientales para Residuos Peligrosos con Control de Versiones',
     'description': '...',
@@ -643,7 +643,7 @@ class ManifiestoAmbiental(models.Model):
         lineas_recepcion = []
         for residuo in self.residuo_ids:
             lineas_recepcion.append((0, 0, {
-                'residuo_manifiesto_id': residuo.id,  # ← vínculo directo
+                'residuo_manifiesto_id': residuo.id,
                 'descripcion_origen': residuo.nombre_residuo or (
                     residuo.product_id.name if residuo.product_id else 'Sin descripción'),
                 'product_id': residuo.product_id.id if residuo.product_id else False,
@@ -680,7 +680,7 @@ class ManifiestoAmbiental(models.Model):
             }
         except Exception as e:
             raise UserError(_("Error al crear la recepción: %s") % str(e))
-    
+
     def action_view_recepciones(self):
         self.ensure_one()
         return {
@@ -745,15 +745,34 @@ class ManifiestoAmbiental(models.Model):
     # =========================================================================
     def action_remanifestar(self):
         self.ensure_one()
+
         if not self.is_current_version:
             raise UserError("Solo se puede remanifestar la versión actual del manifiesto.")
+
         if self.state == 'draft':
             raise UserError("No se puede remanifestar un manifiesto en estado borrador.")
+
         try:
-            pdf_data = self._generate_current_pdf_corregido()
-            self._save_version_to_history(pdf_data)
+            # Flujo único de remanifestación:
+            # 1. Intenta guardar respaldo PDF.
+            # 2. Si el PDF falla, guarda respaldo de datos.
+            # 3. Crea nueva versión copiando residuos completos, incluido packaging_id.
+            try:
+                pdf_data = self._generate_current_pdf_corregido()
+                self._save_version_to_history(pdf_data)
+            except Exception as pdf_error:
+                _logger.warning(
+                    "No se pudo generar PDF en remanifestación de %s. "
+                    "Se guardará respaldo estructurado de datos. Error: %s",
+                    self.numero_manifiesto,
+                    str(pdf_error),
+                )
+                data_estructurados = self._generate_structured_data()
+                self._save_version_to_history_with_data(data_estructurados)
+
             new_version = self._create_new_version()
             self._deactivate_current_version()
+
             return {
                 'type': 'ir.actions.act_window',
                 'res_model': 'manifiesto.ambiental',
@@ -761,31 +780,20 @@ class ManifiestoAmbiental(models.Model):
                 'res_id': new_version.id,
                 'target': 'current',
             }
+
         except Exception as e:
-            _logger.error(f"Error en remanifestación: {str(e)}")
+            _logger.error("Error en remanifestación: %s", str(e))
             raise UserError(f"Error durante la remanifestación: {str(e)}")
 
     def action_remanifestar_sin_pdf(self):
-        self.ensure_one()
-        if not self.is_current_version:
-            raise UserError("Solo se puede remanifestar la versión actual del manifiesto.")
-        if self.state == 'draft':
-            raise UserError("No se puede remanifestar un manifiesto en estado borrador.")
-        try:
-            data_estructurados = self._generate_structured_data()
-            self._save_version_to_history_with_data(data_estructurados)
-            new_version = self._create_new_version()
-            self._deactivate_current_version()
-            return {
-                'type': 'ir.actions.act_window',
-                'res_model': 'manifiesto.ambiental',
-                'view_mode': 'form',
-                'res_id': new_version.id,
-                'target': 'current',
-            }
-        except Exception as e:
-            _logger.error(f"Error en remanifestación: {str(e)}")
-            raise UserError(f"Error durante la remanifestación: {str(e)}")
+        """
+        Compatibilidad técnica.
+
+        Ya no debe existir un segundo botón en la vista.
+        Si alguna vista heredada, acción antigua o caché llama este método,
+        se redirige al flujo único de remanifestación.
+        """
+        return self.action_remanifestar()
 
     def _generate_current_pdf_corregido(self):
         try:
@@ -793,7 +801,6 @@ class ManifiestoAmbiental(models.Model):
             self.env.cr.commit()
             current_record = self.sudo().browse(self.id)
 
-            # Usar el reporte correcto según tipo de manifiesto
             report = None
             if current_record.tipo_manifiesto == 'salida':
                 try:
@@ -842,6 +849,28 @@ class ManifiestoAmbiental(models.Model):
             raise UserError(f"Faltan datos requeridos: {', '.join(errors)}")
 
     def _generate_structured_data(self):
+        residuos = []
+
+        for r in self.residuo_ids:
+            if r.packaging_id:
+                envase_tipo = r.packaging_id.name
+            elif r.envase_tipo:
+                envase_tipo = dict(r._fields['envase_tipo'].selection).get(r.envase_tipo, r.envase_tipo)
+            else:
+                envase_tipo = ''
+
+            residuos.append({
+                'nombre': r.nombre_residuo or '',
+                'cantidad': r.cantidad,
+                'clasificaciones': r.clasificaciones_display or '',
+                'envase': {
+                    'cantidad': r.envase_cantidad,
+                    'tipo': envase_tipo,
+                    'capacidad': r.envase_capacidad or '',
+                },
+                'etiquetado': 'Sí' if r.etiqueta_si else 'No',
+            })
+
         return {
             'numero_manifiesto': self.numero_manifiesto or '',
             'version': self.version,
@@ -874,17 +903,7 @@ class ManifiestoAmbiental(models.Model):
                 'responsable': self.destinatario_responsable_nombre or '',
                 'fecha': str(self.destinatario_fecha) if self.destinatario_fecha else '',
             },
-            'residuos': [{
-                'nombre': r.nombre_residuo or '',
-                'cantidad': r.cantidad,
-                'clasificaciones': r.clasificaciones_display or '',
-                'envase': {
-                    'cantidad': r.envase_cantidad,
-                    'tipo': r.envase_tipo or '',
-                    'capacidad': r.envase_capacidad or '',
-                },
-                'etiquetado': 'Sí' if r.etiqueta_si else 'No',
-            } for r in self.residuo_ids],
+            'residuos': residuos,
         }
 
     def _save_version_to_history_with_data(self, data_estructurados):
@@ -951,7 +970,13 @@ RESIDUOS
 {'-'*20}
 """
         for i, r in enumerate(data['residuos'], 1):
-            texto += f"\n{i}. {r['nombre']}\n   Cantidad: {r['cantidad']} kg\n   Clasificaciones CRETIB: {r['clasificaciones']}\n   Envase: {r['envase']['cantidad']} x {r['envase']['tipo']} - {r['envase']['capacidad']}\n   Etiquetado: {r['etiquetado']}\n"
+            texto += (
+                f"\n{i}. {r['nombre']}\n"
+                f"   Cantidad: {r['cantidad']} kg\n"
+                f"   Clasificaciones CRETIB: {r['clasificaciones']}\n"
+                f"   Envase: {r['envase']['cantidad']} x {r['envase']['tipo']} - {r['envase']['capacidad']}\n"
+                f"   Etiquetado: {r['etiquetado']}\n"
+            )
         return texto
 
     def _save_version_to_history(self, pdf_data):
@@ -1018,18 +1043,33 @@ RESIDUOS
         for residuo in self.residuo_ids:
             self.env['manifiesto.ambiental.residuo'].create({
                 'manifiesto_id': new_version.id,
+
+                # Identificación
                 'product_id': residuo.product_id.id if residuo.product_id else False,
                 'nombre_residuo': residuo.nombre_residuo or '',
+                'residue_type': residuo.residue_type,
+
+                # Clasificación CRETIB
                 'clasificacion_corrosivo': residuo.clasificacion_corrosivo,
                 'clasificacion_reactivo': residuo.clasificacion_reactivo,
                 'clasificacion_explosivo': residuo.clasificacion_explosivo,
                 'clasificacion_toxico': residuo.clasificacion_toxico,
                 'clasificacion_inflamable': residuo.clasificacion_inflamable,
                 'clasificacion_biologico': residuo.clasificacion_biologico,
+
+                # Envase / embalaje
+                # packaging_id es el campo real usado por la vista actual.
+                # Si no se copia explícitamente, el embalaje se pierde al remanifestar.
+                'packaging_id': residuo.packaging_id.id if residuo.packaging_id else False,
                 'envase_tipo': residuo.envase_tipo,
                 'envase_cantidad': residuo.envase_cantidad,
                 'envase_capacidad': residuo.envase_capacidad,
+
+                # Cantidad
                 'cantidad': residuo.cantidad,
+                'unidad': residuo.unidad or 'kg',
+
+                # Etiquetado
                 'etiqueta_si': residuo.etiqueta_si,
                 'etiqueta_no': residuo.etiqueta_no,
             })
@@ -1092,6 +1132,7 @@ class ManifiestoAmbientalResiduo(models.Model):
         'clasificacion_inflamable': 'Inflamable (I)',
         'clasificacion_biologico': 'Biológico (B)',
         'envase_tipo': 'Tipo de Envase',
+        'packaging_id': 'Embalaje',
         'envase_cantidad': 'Unidades de Envase',
         'envase_capacidad': 'Capacidad',
         'etiqueta_si': 'Etiqueta Sí',
@@ -1195,7 +1236,6 @@ class ManifiestoAmbientalResiduo(models.Model):
         return str(value)
 
     def write(self, vals):
-        # Capturar valores anteriores para tracking
         changes_by_manifiesto = {}
         tracked_keys = [k for k in vals if k in self.TRACKED_FIELDS]
 
@@ -1213,7 +1253,6 @@ class ManifiestoAmbientalResiduo(models.Model):
                     old_val = getattr(rec, field_key)
                     new_val = vals[field_key]
 
-                    # Comparar correctamente many2one
                     if self._fields[field_key].type == 'many2one':
                         old_comparable = old_val.id if old_val else False
                         new_comparable = new_val
@@ -1224,7 +1263,6 @@ class ManifiestoAmbientalResiduo(models.Model):
                     if old_comparable != new_comparable:
                         label = self.TRACKED_FIELDS[field_key]
                         old_display = self._get_field_display_value(field_key, old_val)
-                        # Para many2one, resolver el nuevo valor
                         if self._fields[field_key].type == 'many2one' and new_val:
                             new_record = self.env[self._fields[field_key].comodel_name].browse(new_val)
                             new_display = new_record.display_name or 'Vacío'
@@ -1239,7 +1277,6 @@ class ManifiestoAmbientalResiduo(models.Model):
 
         res = super().write(vals)
 
-        # Postear en el chatter del manifiesto padre
         for _mid, data in changes_by_manifiesto.items():
             if data['lines']:
                 body_text = "Cambios en Residuos:\n\n" + "\n\n".join(data['lines'])
@@ -1256,7 +1293,6 @@ class ManifiestoAmbientalResiduo(models.Model):
         records = super().create(vals_list)
         records._create_lot_for_residuo()
 
-        # Notificar creación en el chatter del manifiesto padre
         for rec in records:
             if rec.manifiesto_id:
                 nombre = rec.nombre_residuo or (rec.product_id.name if rec.product_id else 'Sin nombre')
@@ -1271,7 +1307,6 @@ class ManifiestoAmbientalResiduo(models.Model):
         return records
 
     def unlink(self):
-        # Notificar eliminación en el chatter del manifiesto padre
         for rec in self:
             if rec.manifiesto_id:
                 nombre = rec.nombre_residuo or f'Residuo #{rec.id}'
@@ -1862,7 +1897,10 @@ class ServiceOrder(models.Model):
 
         # 3. Ruta
         ruta = ''
+        ruta_origen = False
+
         if self.pickup_location_id:
+            ruta_origen = self.pickup_location_id
             ruta = self.pickup_location_id.contact_address_complete or self.pickup_location_id.name or ''
             ruta = ruta.replace('\n', ', ')
         elif self.pickup_location:
@@ -1883,9 +1921,6 @@ class ServiceOrder(models.Model):
                 else ''
             )
 
-            # Regla principal:
-            # - Si hay descripción de manifiesto, se usa esa.
-            # - Si no hay, se respeta el fallback solicitado: descripción actual o nombre del servicio/producto.
             nombre_residuo_final = (
                 manifest_description or
                 line.description or
@@ -1901,12 +1936,7 @@ class ServiceOrder(models.Model):
 
             residuo_lines.append((0, 0, {
                 'product_id': prod.id,
-
-                # Aquí está el cambio funcional:
-                # antes: line.description or prod.name
-                # ahora: manifest_description -> line.description -> prod.name
                 'nombre_residuo': nombre_residuo_final,
-
                 'cantidad': cantidad_final,
                 'residue_type': line.residue_type,
                 'packaging_id': line.packaging_id.id if line.packaging_id else False,
@@ -1942,6 +1972,29 @@ class ServiceOrder(models.Model):
 
         # 8. Chofer
         chofer_id = self.chofer_id.id if self.chofer_id else False
+
+        # 9. Responsable destinatario
+        destinatario_responsable = False
+        if 'destinatario_responsable_id' in self._fields:
+            destinatario_responsable = self.destinatario_responsable_id
+
+        destinatario_responsable_nombre = (
+            destinatario_responsable.name
+            if destinatario_responsable
+            else (self.contact_name or '')
+        )
+
+        # 10. Instrucciones especiales oficiales del manifiesto
+        # No se debe usar self.observaciones porque son notas internas de la OS.
+        instrucciones_manifiesto = ''
+        for field_name in (
+            'manifiesto_instrucciones_especiales',
+            'manifest_instructions',
+            'special_handling_instructions',
+        ):
+            if field_name in self._fields:
+                instrucciones_manifiesto = getattr(self, field_name) or ''
+                break
 
         manifiesto_vals = {
             'service_order_id': self.id,
@@ -2003,11 +2056,14 @@ class ServiceOrder(models.Model):
             'destinatario_email': dest.email or '',
             'numero_autorizacion_semarnat_destinatario': dest.numero_autorizacion_semarnat or '',
             'destinatario_fecha': fecha_servicio,
+            'destinatario_responsable_id': destinatario_responsable.id if destinatario_responsable else False,
+            'destinatario_responsable_nombre': destinatario_responsable_nombre,
 
             # --- OTROS ---
             'nombre_persona_recibe': self.contact_name or '',
+            'ruta_origen_id': ruta_origen.id if ruta_origen else False,
             'ruta_empresa': ruta,
-            'instrucciones_especiales': self.observaciones or '',
+            'instrucciones_especiales': instrucciones_manifiesto,
 
             # --- RESIDUOS ---
             'residuo_ids': residuo_lines,
@@ -2050,7 +2106,6 @@ class ServiceOrder(models.Model):
         <field name="report_type">qweb-pdf</field>
         <field name="report_name">manifiesto_ambiental.manifiesto_ambiental_document</field>
         <field name="report_file">manifiesto_ambiental.manifiesto_ambiental_document</field>
-        <!-- NO binding_model_id - el botón action_print_manifiesto decide qué reporte usar -->
         <field name="paperformat_id" ref="manifiesto_ambiental.paperformat_manifiesto_ambiental_sin_margen"/>
     </record>
 
@@ -2064,7 +2119,6 @@ class ServiceOrder(models.Model):
                         <style>
                             @page { margin: 5mm; size: A4; }
 
-                            /* Tipografía y densidad para caber en 1 hoja */
                             body, td, th, strong, .labelcell, .subcell {
                                 font-family: "DejaVu Sans", Arial, "Liberation Sans", sans-serif !important;
                                 font-size: 10.5px;
@@ -2072,7 +2126,6 @@ class ServiceOrder(models.Model):
                             }
                             .page { margin-top: 2px !important; padding-top: 2px !important; }
 
-                            /* Encabezado externo compacto */
                             .header, .o_company_document_layout .header, .company_address, .o_company_address,
                             .external_layout .header, .address, .o_report_layout_standard .header,
                             .o_report_layout_boxed .header, .o_report_layout_clean .header {
@@ -2099,7 +2152,6 @@ class ServiceOrder(models.Model):
                             table { width: 100%; border-collapse: collapse; margin-bottom: 2px; page-break-inside: avoid; }
                             td, th { border: 1px solid #666; padding: 2px 4px; font-size: 10px; vertical-align: top; }
 
-                            /* Sin sombreados */
                             th, .header-table, .labelcell, .subcell { background: none !important; }
                             th, .header-table { font-weight: 700; text-align: center; }
                             .labelcell { font-weight: 700; font-size: 10.5px; }
@@ -2243,13 +2295,28 @@ class ServiceOrder(models.Model):
                                     <td class="center-text"><span t-if="residuo.clasificacion_inflamable">X</span></td>
                                     <td class="center-text"><span t-if="residuo.clasificacion_biologico">X</span></td>
                                     <td class="center-text"></td>
-                                    <td class="center-text"><span t-field="residuo.envase_cantidad"/></td>
+
+                                    <td class="center-text">
+                                        <t t-if="residuo.envase_cantidad">
+                                            <span t-field="residuo.envase_cantidad"/>
+                                        </t>
+                                        <t t-else="">&#160;</t>
+                                    </td>
+
                                     <td class="center-text">
                                         <span t-if="residuo.packaging_id" t-field="residuo.packaging_id.name"/>
                                         <span t-elif="residuo.envase_tipo" t-field="residuo.envase_tipo"/>
                                     </td>
+
                                     <td class="center-text"><span t-field="residuo.envase_capacidad"/></td>
-                                    <td class="center-text"><span t-field="residuo.cantidad"/> kg</td>
+
+                                    <td class="center-text">
+                                        <t t-if="residuo.cantidad">
+                                            <span t-field="residuo.cantidad"/> kg
+                                        </t>
+                                        <t t-else="">&#160;</t>
+                                    </td>
+
                                     <td class="center-text"><span t-if="residuo.etiqueta_si">X</span></td>
                                     <td class="center-text"><span t-if="residuo.etiqueta_no">X</span></td>
                                 </tr>
@@ -3703,7 +3770,7 @@ $ma-transition:   all 0.18s ease;
                        decoration-success="state == 'delivered'"
                        decoration-info="state == 'confirmed'"
                        decoration-warning="state == 'in_transit'"
-                       decoration-muted="state == 'cancelled'"/>
+                       decoration-muted="state == 'cancel'"/>
             </list>
         </field>
     </record>
@@ -3747,15 +3814,13 @@ $ma-transition:   all 0.18s ease;
                             class="btn-warning" icon="fa-exclamation-triangle"
                             invisible="state not in ['in_transit', 'delivered'] or not is_current_version or tipo_manifiesto == 'salida'"/>
 
-                    <button name="action_remanifestar" string="Remanifestar (PDF)" type="object"
-                            class="btn-secondary" icon="fa-refresh"
-                            invisible="not is_current_version or state == 'draft'"
-                            confirm="Se creará una nueva versión y se guardará un PDF de la actual. ¿Continuar?"/>
-
-                    <button name="action_remanifestar_sin_pdf" string="Remanifestar (Datos)" type="object"
+                    <button name="action_remanifestar"
+                            string="Remanifestar"
+                            type="object"
                             class="btn-secondary"
+                            icon="fa-refresh"
                             invisible="not is_current_version or state == 'draft'"
-                            confirm="Se creará una nueva versión sin respaldo PDF. ¿Continuar?"/>
+                            confirm="Se creará una nueva versión partiendo de la información actual del manifiesto. ¿Continuar?"/>
 
                     <button name="action_cancel" string="Cancelar" type="object"
                             class="btn-danger"
@@ -3969,7 +4034,6 @@ $ma-transition:   all 0.18s ease;
                         <!-- RESIDUOS -->
                         <!-- ====================================================== -->
                         <page string="Residuos" name="residuos">
-                            
 
                             <field name="residuo_ids" readonly="not is_current_version">
                                 <list editable="bottom">
@@ -4239,8 +4303,6 @@ $ma-transition:   all 0.18s ease;
                                        placeholder="Describa el motivo de esta remanifestación..."
                                        readonly="not is_current_version"/>
                             </group>
-
-                          
 
                             <div class="mt-3">
                                 <button name="action_view_all_versions" type="object"

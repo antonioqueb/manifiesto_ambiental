@@ -101,7 +101,7 @@
                             invisible="state not in ['in_transit', 'delivered'] or not is_current_version or tipo_manifiesto == 'salida'"
                             confirm="¿Desea generar la recepción de inventario para estos residuos?"/>
 
-                    <button name="action_print_manifiesto" string="Imprimir PDF" type="object"
+                    <button name="action_print_manifiesto" string="Imprimir Manifiesto" type="object"
                             class="btn-secondary" icon="fa-print"/>
 
                     <!-- Secundarias -->
@@ -147,11 +147,12 @@
                             <field name="recepcion_count" widget="statinfo" string="Recepciones"/>
                         </button>
 
-                        <button type="object" name="action_view_version_history"
-                                class="oe_stat_button" icon="fa-file-pdf-o">
+                        <button type="object" name="action_view_documento_fisico"
+                                class="oe_stat_button" icon="fa-file-pdf-o"
+                                invisible="not tiene_documento_fisico"
+                                help="Abrir únicamente el documento físico cargado en este manifiesto.">
                             <div class="o_field_widget o_stat_info">
-                                <span class="o_stat_value" invisible="not tiene_documento_fisico">Sí</span>
-                                <span class="o_stat_value" invisible="tiene_documento_fisico">No</span>
+                                <span class="o_stat_value">Sí</span>
                                 <span class="o_stat_text">Doc. físico</span>
                             </div>
                         </button>
@@ -562,7 +563,29 @@
                                     <field name="tiene_documento_fisico" readonly="1"
                                            widget="boolean_toggle"/>
                                 </group>
-                                <group/>
+
+                                <group string="Acciones">
+                                    <button name="action_view_documento_fisico"
+                                            type="object"
+                                            string="Ver Documento Físico"
+                                            class="btn-primary"
+                                            icon="fa-eye"
+                                            invisible="not tiene_documento_fisico"/>
+
+                                    <button name="action_download_documento_fisico"
+                                            type="object"
+                                            string="Descargar Documento Físico"
+                                            class="btn-secondary"
+                                            icon="fa-download"
+                                            invisible="not tiene_documento_fisico"/>
+
+                                    <button name="action_print_manifiesto"
+                                            type="object"
+                                            string="Imprimir Documento Físico"
+                                            class="btn-secondary"
+                                            icon="fa-print"
+                                            invisible="not tiene_documento_fisico"/>
+                                </group>
                             </group>
 
                             <group string="Vista previa" col="1">
@@ -571,7 +594,7 @@
                                            filename="documento_fisico_filename"
                                            readonly="not is_current_version"
                                            widget="pdf_viewer"
-                                           options="{'accepted_file_extensions': '.pdf,.png,.jpg,.jpeg,.gif,.bmp,.tiff'}"/>
+                                           options="{'accepted_file_extensions': '.pdf'}"/>
                                 </div>
                             </group>
                         </page>

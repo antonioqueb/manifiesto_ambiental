@@ -2,6 +2,7 @@
 from odoo import models, fields, api, _
 from odoo.exceptions import UserError
 from datetime import date
+from urllib.parse import quote
 import base64
 import logging
 import json
@@ -514,11 +515,62 @@ class ManifiestoAmbiental(models.Model):
         return res
 
     # =========================================================================
-    # IMPRESIÓN INTELIGENTE
+    # DOCUMENTO FÍSICO / IMPRESIÓN INTELIGENTE
     # =========================================================================
-    def action_print_manifiesto(self):
-        """Imprime el reporte correcto según el tipo de manifiesto (entrada o salida)."""
+    def _get_documento_fisico_filename(self):
         self.ensure_one()
+        return (
+            self.documento_fisico_filename
+            or f"Manifiesto_Fisico_{self.numero_manifiesto or self.id}.pdf"
+        )
+
+    def _get_documento_fisico_url(self, download=False):
+        self.ensure_one()
+
+        if not self.documento_fisico:
+            raise UserError(_("Este manifiesto no tiene documento físico cargado."))
+
+        filename = self._get_documento_fisico_filename()
+
+        return (
+            f"/web/content/{self._name}/{self.id}/documento_fisico/"
+            f"{quote(filename)}?download={'true' if download else 'false'}"
+        )
+
+    def action_view_documento_fisico(self):
+        """
+        Regla de negocio:
+        Si el manifiesto tiene documento físico cargado, esta acción abre
+        únicamente ese archivo físico. No abre historial de versiones.
+        """
+        self.ensure_one()
+
+        return {
+            'type': 'ir.actions.act_url',
+            'url': self._get_documento_fisico_url(download=False),
+            'target': 'new',
+        }
+
+    def action_download_documento_fisico(self):
+        self.ensure_one()
+
+        return {
+            'type': 'ir.actions.act_url',
+            'url': self._get_documento_fisico_url(download=True),
+            'target': 'self',
+        }
+
+    def action_print_manifiesto(self):
+        """
+        Regla de negocio obligatoria:
+        - Si existe documento físico cargado, se abre/imprime ese PDF físico.
+        - Solo si no existe documento físico, se genera el PDF normal QWeb.
+        """
+        self.ensure_one()
+
+        if self.documento_fisico:
+            return self.action_view_documento_fisico()
+
         if self.tipo_manifiesto == 'salida':
             report = self.env.ref(
                 'salida_acopio_manifiesto.action_report_manifiesto_salida',
@@ -529,8 +581,10 @@ class ManifiestoAmbiental(models.Model):
                 'manifiesto_ambiental.action_report_manifiesto_ambiental',
                 raise_if_not_found=False,
             )
+
         if not report:
             raise UserError(_("No se encontró el reporte correspondiente."))
+
         return report.report_action(self)
 
     # =========================================================================

@@ -5,6 +5,7 @@ import logging
 
 _logger = logging.getLogger(__name__)
 
+
 class ServiceOrder(models.Model):
     _inherit = 'service.order'
 
@@ -13,6 +14,7 @@ class ServiceOrder(models.Model):
         'service_order_id',
         string='Manifiestos Generados',
     )
+
     manifiesto_count = fields.Integer(
         string='No. Manifiestos',
         compute='_compute_manifiesto_count',
@@ -37,11 +39,8 @@ class ServiceOrder(models.Model):
     def action_create_manifiesto(self):
         self.ensure_one()
 
-        # 1. Generador (para datos de dirección)
+        # 1. Generador
         generador = self.generador_id if self.generador_id else self.partner_id
-
-        # El nombre/razón social en el campo 4 siempre es el cliente de la OS
-        # La dirección y demás datos vienen del generador seleccionado
         nombre_razon_social = self.partner_id.name or generador.name or ''
 
         # 2. Fecha del servicio
@@ -63,15 +62,30 @@ class ServiceOrder(models.Model):
 
         # 4. Líneas de residuos
         residuo_lines = []
+
         for line in self.line_ids:
             if not line.product_id:
                 continue
-            prod_name = line.product_id.name or ''
-            if prod_name.strip().upper().startswith('SERVICIO DE'):
-                continue
+
+            prod = line.product_id
+
+            manifest_description = (
+                (getattr(line, 'manifest_description', False) or '').strip()
+                if hasattr(line, 'manifest_description')
+                else ''
+            )
+
+            # Regla principal:
+            # - Si hay descripción de manifiesto, se usa esa.
+            # - Si no hay, se respeta el fallback solicitado: descripción actual o nombre del servicio/producto.
+            nombre_residuo_final = (
+                manifest_description or
+                line.description or
+                prod.name or
+                'Sin descripción'
+            )
 
             cantidad_final = line.weight_kg if line.weight_kg > 0.0 else line.product_uom_qty
-            prod = line.product_id
 
             capacidad_final = line.capacity if line.capacity else ''
             if not capacidad_final and hasattr(prod, 'envase_capacidad_default') and prod.envase_capacidad_default:
@@ -79,7 +93,12 @@ class ServiceOrder(models.Model):
 
             residuo_lines.append((0, 0, {
                 'product_id': prod.id,
-                'nombre_residuo': line.description or prod.name,
+
+                # Aquí está el cambio funcional:
+                # antes: line.description or prod.name
+                # ahora: manifest_description -> line.description -> prod.name
+                'nombre_residuo': nombre_residuo_final,
+
                 'cantidad': cantidad_final,
                 'residue_type': line.residue_type,
                 'packaging_id': line.packaging_id.id if line.packaging_id else False,
@@ -101,15 +120,15 @@ class ServiceOrder(models.Model):
         # 6. Vehículo y placa
         vehicle = self.vehicle_id
         vehicle_id = vehicle.id if vehicle else False
-        # Placa: prioridad al campo de la OS, luego la del vehículo
         numero_placa = self.numero_placa or (vehicle.license_plate if vehicle else '') or ''
 
-        # 7. Tipo de vehículo: construir desde el fleet.vehicle, fallback al transportista
+        # 7. Tipo de vehículo
         tipo_vehiculo = ''
         if vehicle:
             brand = vehicle.model_id.brand_id.name if vehicle.model_id and vehicle.model_id.brand_id else ''
             model = vehicle.model_id.name if vehicle.model_id else ''
             tipo_vehiculo = f"{brand} {model}".strip() or vehicle.name or ''
+
         if not tipo_vehiculo and self.transportista_id:
             tipo_vehiculo = self.transportista_id.tipo_vehiculo or ''
 
@@ -151,7 +170,7 @@ class ServiceOrder(models.Model):
             'numero_autorizacion_semarnat': self.transportista_id.numero_autorizacion_semarnat if self.transportista_id else '',
             'numero_permiso_sct': self.transportista_id.numero_permiso_sct if self.transportista_id else '',
 
-            # --- VEHÍCULO, PLACA, CHOFER (propagación explícita) ---
+            # --- VEHÍCULO, PLACA, CHOFER ---
             'vehicle_id': vehicle_id,
             'tipo_vehiculo': tipo_vehiculo,
             'numero_placa': numero_placa,

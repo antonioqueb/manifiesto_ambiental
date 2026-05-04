@@ -1,11 +1,9 @@
 # -*- coding: utf-8 -*-
 from odoo import models, fields, api, _
 from odoo.exceptions import UserError
-from datetime import date
 from urllib.parse import quote
 import base64
 import logging
-import json
 import re
 
 _logger = logging.getLogger(__name__)
@@ -77,10 +75,11 @@ class ManifiestoAmbiental(models.Model):
     generador_nombre = fields.Char(
         string='4. Nombre o razón social del generador',
         required=True,
-        compute='_compute_generador_nombre',
-        store=True,
-        readonly=False,
         tracking=True,
+        help=(
+            'Nombre que se mostrará en el manifiesto. '
+            'Se llena con Nombre en Manifiesto del contacto o, si está vacío, con el nombre normal.'
+        ),
     )
     generador_codigo_postal = fields.Char(string='Código postal')
     generador_calle = fields.Char(string='Calle')
@@ -132,7 +131,15 @@ class ManifiestoAmbiental(models.Model):
         domain=[('es_transportista', '=', True)],
         tracking=True,
     )
-    transportista_nombre = fields.Char(string='8. Nombre o razón social del transportista', required=True, tracking=True)
+    transportista_nombre = fields.Char(
+        string='8. Nombre o razón social del transportista',
+        required=True,
+        tracking=True,
+        help=(
+            'Nombre que se mostrará en el manifiesto. '
+            'Se llena con Nombre en Manifiesto del contacto o, si está vacío, con el nombre normal.'
+        ),
+    )
     transportista_codigo_postal = fields.Char(string='Código postal')
     transportista_calle = fields.Char(string='Calle')
     transportista_num_ext = fields.Char(string='Núm. Ext.')
@@ -202,7 +209,15 @@ class ManifiestoAmbiental(models.Model):
         domain=[('es_destinatario', '=', True)],
         tracking=True,
     )
-    destinatario_nombre = fields.Char(string='15. Nombre o razón social del destinatario', required=True, tracking=True)
+    destinatario_nombre = fields.Char(
+        string='15. Nombre o razón social del destinatario',
+        required=True,
+        tracking=True,
+        help=(
+            'Nombre que se mostrará en el manifiesto. '
+            'Se llena con Nombre en Manifiesto del contacto o, si está vacío, con el nombre normal.'
+        ),
+    )
     destinatario_codigo_postal = fields.Char(string='Código postal')
     destinatario_calle = fields.Char(string='Calle')
     destinatario_num_ext = fields.Char(string='Núm. Ext.')
@@ -238,6 +253,31 @@ class ManifiestoAmbiental(models.Model):
     company_id = fields.Many2one('res.company', string='Compañía', default=lambda self: self.env.company)
 
     # =========================================================================
+    # HELPERS
+    # =========================================================================
+    def _get_partner_nombre_en_manifiesto(self, partner):
+        """
+        Devuelve el nombre documental que debe copiarse al manifiesto.
+
+        Prioridad:
+        1. res.partner.nombre_en_manifiesto
+        2. res.partner.name
+
+        Este valor es una máscara documental. No cambia el nombre real del contacto.
+        """
+        if not partner:
+            return ''
+
+        if hasattr(partner, '_get_nombre_en_manifiesto'):
+            return partner._get_nombre_en_manifiesto()
+
+        nombre_mascara = ''
+        if 'nombre_en_manifiesto' in partner._fields:
+            nombre_mascara = (partner.nombre_en_manifiesto or '').strip()
+
+        return nombre_mascara or (partner.name or '')
+
+    # =========================================================================
     # COMPUTES
     # =========================================================================
     @api.depends('numero_manifiesto', 'version')
@@ -262,13 +302,6 @@ class ManifiestoAmbiental(models.Model):
     def _compute_discrepancia_count(self):
         for rec in self:
             rec.discrepancia_count = len(rec.discrepancia_ids)
-
-    @api.depends('generador_id', 'generador_id.name')
-    def _compute_generador_nombre(self):
-        for rec in self:
-            if rec.generador_id:
-                if not rec.service_order_id:
-                    rec.generador_nombre = rec.generador_id.name or ''
 
     @api.depends('generador_responsable_id', 'generador_responsable_id.name')
     def _compute_generador_responsable_nombre(self):
@@ -298,8 +331,7 @@ class ManifiestoAmbiental(models.Model):
         if self.generador_id:
             p = self.generador_id
             self.numero_registro_ambiental = p.numero_registro_ambiental or ''
-            if not self.service_order_id:
-                self.generador_nombre = p.name or ''
+            self.generador_nombre = self._get_partner_nombre_en_manifiesto(p)
             self.generador_codigo_postal = p.zip or ''
             self.generador_calle = p.street or ''
             self.generador_num_ext = p.street_number or ''
@@ -310,8 +342,10 @@ class ManifiestoAmbiental(models.Model):
             self.generador_telefono = p.phone or ''
             self.generador_email = p.email or ''
             if self.generador_responsable_id:
-                ok = (self.generador_responsable_id.id == p.id or
-                      self.generador_responsable_id.parent_id.id == p.id)
+                ok = (
+                    self.generador_responsable_id.id == p.id or
+                    self.generador_responsable_id.parent_id.id == p.id
+                )
                 if not ok:
                     self.generador_responsable_id = False
 
@@ -324,7 +358,7 @@ class ManifiestoAmbiental(models.Model):
     def _onchange_transportista_id(self):
         if self.transportista_id:
             p = self.transportista_id
-            self.transportista_nombre = p.name or ''
+            self.transportista_nombre = self._get_partner_nombre_en_manifiesto(p)
             self.transportista_codigo_postal = p.zip or ''
             self.transportista_calle = p.street or ''
             self.transportista_num_ext = p.street_number or ''
@@ -337,8 +371,10 @@ class ManifiestoAmbiental(models.Model):
             self.numero_autorizacion_semarnat = p.numero_autorizacion_semarnat or ''
             self.numero_permiso_sct = p.numero_permiso_sct or ''
             if self.transportista_responsable_id:
-                ok = (self.transportista_responsable_id.id == p.id or
-                      self.transportista_responsable_id.parent_id.id == p.id)
+                ok = (
+                    self.transportista_responsable_id.id == p.id or
+                    self.transportista_responsable_id.parent_id.id == p.id
+                )
                 if not ok:
                     self.transportista_responsable_id = False
 
@@ -361,7 +397,7 @@ class ManifiestoAmbiental(models.Model):
     def _onchange_destinatario_id(self):
         if self.destinatario_id:
             p = self.destinatario_id
-            self.destinatario_nombre = p.name or ''
+            self.destinatario_nombre = self._get_partner_nombre_en_manifiesto(p)
             self.destinatario_codigo_postal = p.zip or ''
             self.destinatario_calle = p.street or ''
             self.destinatario_num_ext = p.street_number or ''
@@ -450,11 +486,11 @@ class ManifiestoAmbiental(models.Model):
                     else:
                         vals['numero_manifiesto'] = str(next_seq)
 
-            if vals.get('generador_id') and not vals.get('generador_nombre'):
+            if vals.get('generador_id'):
                 p = self.env['res.partner'].browse(vals['generador_id'])
                 vals.update({
                     'numero_registro_ambiental': vals.get('numero_registro_ambiental') or p.numero_registro_ambiental or '',
-                    'generador_nombre': p.name or '',
+                    'generador_nombre': vals.get('generador_nombre') or self._get_partner_nombre_en_manifiesto(p),
                     'generador_codigo_postal': vals.get('generador_codigo_postal') or p.zip or '',
                     'generador_calle': vals.get('generador_calle') or p.street or '',
                     'generador_num_ext': vals.get('generador_num_ext') or p.street_number or '',
@@ -464,6 +500,39 @@ class ManifiestoAmbiental(models.Model):
                     'generador_estado': vals.get('generador_estado') or (p.state_id.name if p.state_id else ''),
                     'generador_telefono': vals.get('generador_telefono') or p.phone or '',
                     'generador_email': vals.get('generador_email') or p.email or '',
+                })
+
+            if vals.get('transportista_id'):
+                p = self.env['res.partner'].browse(vals['transportista_id'])
+                vals.update({
+                    'transportista_nombre': vals.get('transportista_nombre') or self._get_partner_nombre_en_manifiesto(p),
+                    'transportista_codigo_postal': vals.get('transportista_codigo_postal') or p.zip or '',
+                    'transportista_calle': vals.get('transportista_calle') or p.street or '',
+                    'transportista_num_ext': vals.get('transportista_num_ext') or p.street_number or '',
+                    'transportista_num_int': vals.get('transportista_num_int') or p.street_number2 or '',
+                    'transportista_colonia': vals.get('transportista_colonia') or p.street2 or '',
+                    'transportista_municipio': vals.get('transportista_municipio') or p.city or '',
+                    'transportista_estado': vals.get('transportista_estado') or (p.state_id.name if p.state_id else ''),
+                    'transportista_telefono': vals.get('transportista_telefono') or p.phone or '',
+                    'transportista_email': vals.get('transportista_email') or p.email or '',
+                    'numero_autorizacion_semarnat': vals.get('numero_autorizacion_semarnat') or p.numero_autorizacion_semarnat or '',
+                    'numero_permiso_sct': vals.get('numero_permiso_sct') or p.numero_permiso_sct or '',
+                })
+
+            if vals.get('destinatario_id'):
+                p = self.env['res.partner'].browse(vals['destinatario_id'])
+                vals.update({
+                    'destinatario_nombre': vals.get('destinatario_nombre') or self._get_partner_nombre_en_manifiesto(p),
+                    'destinatario_codigo_postal': vals.get('destinatario_codigo_postal') or p.zip or '',
+                    'destinatario_calle': vals.get('destinatario_calle') or p.street or '',
+                    'destinatario_num_ext': vals.get('destinatario_num_ext') or p.street_number or '',
+                    'destinatario_num_int': vals.get('destinatario_num_int') or p.street_number2 or '',
+                    'destinatario_colonia': vals.get('destinatario_colonia') or p.street2 or '',
+                    'destinatario_municipio': vals.get('destinatario_municipio') or p.city or '',
+                    'destinatario_estado': vals.get('destinatario_estado') or (p.state_id.name if p.state_id else ''),
+                    'destinatario_telefono': vals.get('destinatario_telefono') or p.phone or '',
+                    'destinatario_email': vals.get('destinatario_email') or p.email or '',
+                    'numero_autorizacion_semarnat_destinatario': vals.get('numero_autorizacion_semarnat_destinatario') or p.numero_autorizacion_semarnat or '',
                 })
 
             if vals.get('generador_responsable_id') and not vals.get('generador_responsable_nombre'):
@@ -489,10 +558,25 @@ class ManifiestoAmbiental(models.Model):
         return records
 
     # =========================================================================
-    # WRITE — sincronizar lotes cuando cambia numero_manifiesto
+    # WRITE
     # =========================================================================
     def write(self, vals):
+        vals = dict(vals)
+
+        if 'generador_id' in vals and 'generador_nombre' not in vals:
+            partner = self.env['res.partner'].browse(vals['generador_id']) if vals.get('generador_id') else False
+            vals['generador_nombre'] = self._get_partner_nombre_en_manifiesto(partner)
+
+        if 'transportista_id' in vals and 'transportista_nombre' not in vals:
+            partner = self.env['res.partner'].browse(vals['transportista_id']) if vals.get('transportista_id') else False
+            vals['transportista_nombre'] = self._get_partner_nombre_en_manifiesto(partner)
+
+        if 'destinatario_id' in vals and 'destinatario_nombre' not in vals:
+            partner = self.env['res.partner'].browse(vals['destinatario_id']) if vals.get('destinatario_id') else False
+            vals['destinatario_nombre'] = self._get_partner_nombre_en_manifiesto(partner)
+
         res = super().write(vals)
+
         if 'numero_manifiesto' in vals:
             new_number = vals['numero_manifiesto']
             for manifiesto in self:
@@ -729,10 +813,6 @@ class ManifiestoAmbiental(models.Model):
             raise UserError("No se puede remanifestar un manifiesto en estado borrador.")
 
         try:
-            # Flujo único de remanifestación:
-            # 1. Intenta guardar respaldo PDF.
-            # 2. Si el PDF falla, guarda respaldo de datos.
-            # 3. Crea nueva versión copiando residuos completos, incluido packaging_id.
             try:
                 pdf_data = self._generate_current_pdf_corregido()
                 self._save_version_to_history(pdf_data)
@@ -1034,8 +1114,6 @@ RESIDUOS
                 'clasificacion_biologico': residuo.clasificacion_biologico,
 
                 # Envase / embalaje
-                # packaging_id es el campo real usado por la vista actual.
-                # Si no se copia explícitamente, el embalaje se pierde al remanifestar.
                 'packaging_id': residuo.packaging_id.id if residuo.packaging_id else False,
                 'envase_tipo': residuo.envase_tipo,
                 'envase_cantidad': residuo.envase_cantidad,
@@ -1155,12 +1233,18 @@ class ManifiestoAmbientalResiduo(models.Model):
     def _compute_clasificaciones_display(self):
         for record in self:
             clasificaciones = []
-            if record.clasificacion_corrosivo: clasificaciones.append('C')
-            if record.clasificacion_reactivo: clasificaciones.append('R')
-            if record.clasificacion_explosivo: clasificaciones.append('E')
-            if record.clasificacion_toxico: clasificaciones.append('T')
-            if record.clasificacion_inflamable: clasificaciones.append('I')
-            if record.clasificacion_biologico: clasificaciones.append('B')
+            if record.clasificacion_corrosivo:
+                clasificaciones.append('C')
+            if record.clasificacion_reactivo:
+                clasificaciones.append('R')
+            if record.clasificacion_explosivo:
+                clasificaciones.append('E')
+            if record.clasificacion_toxico:
+                clasificaciones.append('T')
+            if record.clasificacion_inflamable:
+                clasificaciones.append('I')
+            if record.clasificacion_biologico:
+                clasificaciones.append('B')
             record.clasificaciones_display = ', '.join(clasificaciones)
 
     @api.onchange('product_id')

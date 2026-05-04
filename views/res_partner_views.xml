@@ -6,7 +6,6 @@
         <field name="model">res.partner</field>
         <field name="inherit_id" ref="base.view_partner_form"/>
         <field name="arch" type="xml">
-            <!-- Insertamos un div con clase o_row después de la calle (street) -->
             <xpath expr="//field[@name='street']" position="after">
                 <div class="o_row" style="margin-top: 4px;">
                     <div class="o_col">
@@ -22,7 +21,7 @@
         </field>
     </record>
 
-    <!-- 2. MEJORA EN DATOS AMBIENTALES: Mejor estructura y estilo -->
+    <!-- 2. DATOS AMBIENTALES Y MÁSCARA PARA MANIFIESTO -->
     <record id="view_partner_form_manifiesto_fields" model="ir.ui.view">
         <field name="name">res.partner.form.manifiesto.fields</field>
         <field name="model">res.partner</field>
@@ -30,20 +29,33 @@
         <field name="arch" type="xml">
             <notebook position="inside">
                 <page string="Datos Ambientales" name="environmental_data" icon="fa-leaf">
-                    
-                    <!-- Encabezado con Clasificación (Toggles) -->
+
+                    <group string="Nombre para documentos oficiales" col="2">
+                        <group>
+                            <field name="nombre_en_manifiesto"
+                                   placeholder="Ej. Razón social exacta que debe aparecer en el manifiesto"/>
+                        </group>
+                        <group>
+                            <div class="alert alert-secondary" role="alert" style="margin-bottom:0px;">
+                                <i class="fa fa-info-circle"/>
+                                Si este campo está vacío, el manifiesto usará el nombre normal del contacto.
+                            </div>
+                        </group>
+                    </group>
+
+                    <separator string="Clasificación ambiental"/>
+
                     <group>
                         <group string="Tipo de Actor Ambiental">
                             <field name="es_generador" widget="boolean_toggle"/>
                             <field name="es_transportista" widget="boolean_toggle"/>
                             <field name="es_destinatario" widget="boolean_toggle"/>
                         </group>
-                        
-                        <!-- Panel Informativo dinámico (Opcional, solo visual) -->
+
                         <group>
-                            <div class="alert alert-info" role="alert" style="margin-bottom:0px;" 
+                            <div class="alert alert-info" role="alert" style="margin-bottom:0px;"
                                  invisible="not es_generador and not es_transportista and not es_destinatario">
-                                <i class="fa fa-info-circle"/> 
+                                <i class="fa fa-info-circle"/>
                                 <span invisible="not es_generador"> Este contacto generará residuos.</span>
                                 <span invisible="not es_transportista"> Proveedor de logística.</span>
                                 <span invisible="not es_destinatario"> Sitio de disposición final.</span>
@@ -54,23 +66,21 @@
                     <separator string="Documentación y Permisos"/>
 
                     <group>
-                        <!-- Columna Izquierda: Generador y Destino -->
                         <group>
-                            <field name="numero_registro_ambiental" 
+                            <field name="numero_registro_ambiental"
                                    invisible="not es_generador"
                                    placeholder="Ej. NRA-123456"
                                    decoration-bf="1"/>
-                                   
-                            <field name="numero_autorizacion_semarnat" 
+
+                            <field name="numero_autorizacion_semarnat"
                                    invisible="not es_transportista and not es_destinatario"
                                    placeholder="Ej. AUT-SEM-001"/>
                         </group>
 
-                        <!-- Columna Derecha: Transportista (SCT y Vehículo) -->
                         <group invisible="not es_transportista">
-                            <field name="numero_permiso_sct" 
+                            <field name="numero_permiso_sct"
                                    placeholder="Ej. SCT-TX-999"/>
-                            
+
                             <label for="tipo_vehiculo" string="Unidad de Transporte"/>
                             <div class="o_row">
                                 <field name="tipo_vehiculo" placeholder="Tipo (ej. Torton)"/>

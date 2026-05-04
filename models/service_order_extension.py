@@ -25,6 +25,28 @@ class ServiceOrder(models.Model):
         for rec in self:
             rec.manifiesto_count = len(rec.manifiesto_ids)
 
+    def _get_partner_nombre_en_manifiesto(self, partner):
+        """
+        Devuelve el nombre documental que debe copiarse al manifiesto.
+
+        Prioridad:
+        1. res.partner.nombre_en_manifiesto
+        2. res.partner.name
+
+        Es una máscara documental. No modifica el nombre real del contacto.
+        """
+        if not partner:
+            return ''
+
+        if hasattr(partner, '_get_nombre_en_manifiesto'):
+            return partner._get_nombre_en_manifiesto()
+
+        nombre_mascara = ''
+        if 'nombre_en_manifiesto' in partner._fields:
+            nombre_mascara = (partner.nombre_en_manifiesto or '').strip()
+
+        return nombre_mascara or (partner.name or '')
+
     def action_view_manifiestos(self):
         self.ensure_one()
         return {
@@ -42,10 +64,7 @@ class ServiceOrder(models.Model):
         # 1. Generador
         generador = self.generador_id if self.generador_id else self.partner_id
 
-        nombre_razon_social = (
-            (self.partner_id.name if self.partner_id else '') or
-            (generador.name if generador else '')
-        )
+        nombre_razon_social = self._get_partner_nombre_en_manifiesto(generador)
 
         # 2. Fecha del servicio
         fecha_servicio = (
@@ -58,10 +77,8 @@ class ServiceOrder(models.Model):
 
         # 3. Ruta
         ruta = ''
-        ruta_origen = False
 
         if self.pickup_location_id:
-            ruta_origen = self.pickup_location_id
             ruta = self.pickup_location_id.contact_address_complete or self.pickup_location_id.name or ''
             ruta = ruta.replace('\n', ', ')
         elif self.pickup_location:
@@ -135,7 +152,6 @@ class ServiceOrder(models.Model):
         chofer_id = self.chofer_id.id if self.chofer_id else False
 
         # 9. Responsable destinatario
-        # IMPORTANTE:
         # manifiesto.ambiental NO tiene campo destinatario_responsable_id.
         # Por eso solo se guarda el nombre en destinatario_responsable_nombre.
         destinatario_responsable = False
@@ -182,7 +198,7 @@ class ServiceOrder(models.Model):
 
             # --- TRANSPORTISTA ---
             'transportista_id': self.transportista_id.id if self.transportista_id else False,
-            'transportista_nombre': self.transportista_id.name if self.transportista_id else '',
+            'transportista_nombre': self._get_partner_nombre_en_manifiesto(self.transportista_id),
             'transportista_codigo_postal': self.transportista_id.zip if self.transportista_id else '',
             'transportista_calle': self.transportista_id.street if self.transportista_id else '',
             'transportista_num_ext': self.transportista_id.street_number if self.transportista_id else '',
@@ -208,7 +224,7 @@ class ServiceOrder(models.Model):
 
             # --- DESTINATARIO ---
             'destinatario_id': dest.id if dest else False,
-            'destinatario_nombre': dest.name if dest else '',
+            'destinatario_nombre': self._get_partner_nombre_en_manifiesto(dest),
             'destinatario_codigo_postal': dest.zip if dest else '',
             'destinatario_calle': dest.street if dest else '',
             'destinatario_num_ext': dest.street_number if dest else '',

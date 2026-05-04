@@ -82,7 +82,6 @@
             <form string="Manifiesto Ambiental" class="o_manifiesto_ambiental_form_v2">
 
                 <header>
-                    <!-- Acciones primarias -->
                     <button name="action_confirm" string="Confirmar" type="object"
                             class="btn-primary"
                             invisible="state != 'draft'"/>
@@ -95,7 +94,6 @@
                             class="btn-primary"
                             invisible="state != 'in_transit'"/>
 
-                    <!-- Operativas -->
                     <button name="action_recibir_residuos" string="Recibir Residuos" type="object"
                             class="btn-success" icon="fa-download"
                             invisible="state not in ['in_transit', 'delivered'] or not is_current_version or tipo_manifiesto == 'salida'"
@@ -104,7 +102,6 @@
                     <button name="action_print_manifiesto" string="Imprimir Manifiesto" type="object"
                             class="btn-secondary" icon="fa-print"/>
 
-                    <!-- Secundarias -->
                     <button name="action_crear_discrepancia" string="Reportar Discrepancia" type="object"
                             class="btn-warning" icon="fa-exclamation-triangle"
                             invisible="state not in ['in_transit', 'delivered'] or not is_current_version or tipo_manifiesto == 'salida'"/>
@@ -128,7 +125,6 @@
 
                 <sheet>
 
-                    <!-- Smart buttons -->
                     <div class="oe_button_box" name="button_box">
                         <button name="action_view_version_history" type="object"
                                 class="oe_stat_button" icon="fa-history">
@@ -158,7 +154,6 @@
                         </button>
                     </div>
 
-                    <!-- Aviso versión histórica -->
                     <div class="alert alert-warning ma_alert_strip" invisible="is_current_version">
                         <strong>Versión histórica.</strong>
                         Este registro no es la versión actual del manifiesto.
@@ -168,7 +163,6 @@
                         </button>
                     </div>
 
-                    <!-- HERO -->
                     <div class="ma_hero">
                         <div class="ma_hero_main">
                             <div class="ma_eyebrow">Número de manifiesto</div>
@@ -214,7 +208,6 @@
                         </div>
                     </div>
 
-                    <!-- Metadata compacta -->
                     <group class="ma_top_group" col="4">
                         <field name="numero_registro_ambiental" readonly="not is_current_version"/>
                         <field name="pagina" readonly="not is_current_version"/>
@@ -224,9 +217,6 @@
 
                     <notebook>
 
-                        <!-- ====================================================== -->
-                        <!-- RESUMEN -->
-                        <!-- ====================================================== -->
                         <page string="Resumen" name="resumen">
                             <group col="2" class="ma_summary_grid">
                                 <group string="Generador">
@@ -234,7 +224,7 @@
                                            string="Empresa"
                                            options="{'no_create': True, 'no_create_edit': True}"
                                            readonly="not is_current_version"/>
-                                    <field name="generador_nombre" string="Razón Social"
+                                    <field name="generador_nombre" string="Nombre en Manifiesto"
                                            readonly="not is_current_version"/>
                                     <field name="generador_estado" readonly="not is_current_version"/>
                                     <field name="generador_municipio" readonly="not is_current_version"/>
@@ -245,7 +235,7 @@
                                            string="Empresa"
                                            options="{'no_create': True, 'no_create_edit': True}"
                                            readonly="not is_current_version"/>
-                                    <field name="destinatario_nombre" string="Razón Social"
+                                    <field name="destinatario_nombre" string="Nombre en Manifiesto"
                                            readonly="not is_current_version"/>
                                     <field name="destinatario_estado" readonly="not is_current_version"/>
                                     <field name="destinatario_municipio" readonly="not is_current_version"/>
@@ -267,9 +257,6 @@
                             </group>
                         </page>
 
-                        <!-- ====================================================== -->
-                        <!-- GENERADOR -->
-                        <!-- ====================================================== -->
                         <page string="Generador" name="generador">
                             <group col="2">
                                 <group string="Empresa">
@@ -292,7 +279,7 @@
 
                             <group string="Dirección" col="2">
                                 <group>
-                                    <field name="generador_nombre" string="Razón Social"
+                                    <field name="generador_nombre" string="Nombre en Manifiesto"
                                            readonly="not is_current_version"/>
                                     <field name="generador_calle" readonly="not is_current_version"/>
                                     <field name="generador_num_ext" string="Núm. Exterior"
@@ -326,9 +313,6 @@
                             </group>
                         </page>
 
-                        <!-- ====================================================== -->
-                        <!-- RESIDUOS -->
-                        <!-- ====================================================== -->
                         <page string="Residuos" name="residuos">
 
                             <field name="residuo_ids" readonly="not is_current_version">
@@ -398,9 +382,6 @@
                             </group>
                         </page>
 
-                        <!-- ====================================================== -->
-                        <!-- TRANSPORTISTA -->
-                        <!-- ====================================================== -->
                         <page string="Transportista" name="transportista">
                             <group col="2">
                                 <group string="Empresa">
@@ -422,7 +403,7 @@
 
                             <group string="Dirección (Sección 8)" col="2">
                                 <group>
-                                    <field name="transportista_nombre" string="Razón Social"
+                                    <field name="transportista_nombre" string="Nombre en Manifiesto"
                                            readonly="not is_current_version"/>
                                     <field name="transportista_calle" readonly="not is_current_version"/>
                                     <field name="transportista_num_ext" string="Núm. Exterior"
@@ -487,9 +468,6 @@
                             </group>
                         </page>
 
-                        <!-- ====================================================== -->
-                        <!-- DESTINATARIO -->
-                        <!-- ====================================================== -->
                         <page string="Destinatario" name="destinatario">
                             <group col="2">
                                 <group string="Empresa">
@@ -511,7 +489,7 @@
 
                             <group string="Dirección (Sección 15)" col="2">
                                 <group>
-                                    <field name="destinatario_nombre" string="Razón Social"
+                                    <field name="destinatario_nombre" string="Nombre en Manifiesto"
                                            readonly="not is_current_version"/>
                                     <field name="destinatario_calle" readonly="not is_current_version"/>
                                     <field name="destinatario_num_ext" string="Núm. Exterior"
@@ -552,9 +530,6 @@
                             </group>
                         </page>
 
-                        <!-- ====================================================== -->
-                        <!-- DOCUMENTO FÍSICO -->
-                        <!-- ====================================================== -->
                         <page string="Documento Físico" name="documento_fisico">
                             <group col="2">
                                 <group string="Archivo">
@@ -599,9 +574,6 @@
                             </group>
                         </page>
 
-                        <!-- ====================================================== -->
-                        <!-- VERSIONES -->
-                        <!-- ====================================================== -->
                         <page string="Versiones" name="versiones" invisible="version &lt;= 1">
                             <group col="2">
                                 <group string="Versión actual">
@@ -632,7 +604,6 @@
 
                     </notebook>
 
-                    <!-- invisibles técnicos -->
                     <field name="is_current_version" invisible="1"/>
                     <field name="original_manifiesto_id" invisible="1"/>
                     <field name="created_by_remanifest" invisible="1"/>

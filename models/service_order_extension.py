@@ -54,7 +54,10 @@ class ServiceOrder(models.Model):
 
         # 3. Ruta
         ruta = ''
+        ruta_origen = False
+
         if self.pickup_location_id:
+            ruta_origen = self.pickup_location_id
             ruta = self.pickup_location_id.contact_address_complete or self.pickup_location_id.name or ''
             ruta = ruta.replace('\n', ', ')
         elif self.pickup_location:
@@ -75,9 +78,6 @@ class ServiceOrder(models.Model):
                 else ''
             )
 
-            # Regla principal:
-            # - Si hay descripción de manifiesto, se usa esa.
-            # - Si no hay, se respeta el fallback solicitado: descripción actual o nombre del servicio/producto.
             nombre_residuo_final = (
                 manifest_description or
                 line.description or
@@ -93,12 +93,7 @@ class ServiceOrder(models.Model):
 
             residuo_lines.append((0, 0, {
                 'product_id': prod.id,
-
-                # Aquí está el cambio funcional:
-                # antes: line.description or prod.name
-                # ahora: manifest_description -> line.description -> prod.name
                 'nombre_residuo': nombre_residuo_final,
-
                 'cantidad': cantidad_final,
                 'residue_type': line.residue_type,
                 'packaging_id': line.packaging_id.id if line.packaging_id else False,
@@ -134,6 +129,29 @@ class ServiceOrder(models.Model):
 
         # 8. Chofer
         chofer_id = self.chofer_id.id if self.chofer_id else False
+
+        # 9. Responsable destinatario
+        destinatario_responsable = False
+        if 'destinatario_responsable_id' in self._fields:
+            destinatario_responsable = self.destinatario_responsable_id
+
+        destinatario_responsable_nombre = (
+            destinatario_responsable.name
+            if destinatario_responsable
+            else (self.contact_name or '')
+        )
+
+        # 10. Instrucciones especiales oficiales del manifiesto
+        # No se debe usar self.observaciones porque son notas internas de la OS.
+        instrucciones_manifiesto = ''
+        for field_name in (
+            'manifiesto_instrucciones_especiales',
+            'manifest_instructions',
+            'special_handling_instructions',
+        ):
+            if field_name in self._fields:
+                instrucciones_manifiesto = getattr(self, field_name) or ''
+                break
 
         manifiesto_vals = {
             'service_order_id': self.id,
@@ -195,11 +213,14 @@ class ServiceOrder(models.Model):
             'destinatario_email': dest.email or '',
             'numero_autorizacion_semarnat_destinatario': dest.numero_autorizacion_semarnat or '',
             'destinatario_fecha': fecha_servicio,
+            'destinatario_responsable_id': destinatario_responsable.id if destinatario_responsable else False,
+            'destinatario_responsable_nombre': destinatario_responsable_nombre,
 
             # --- OTROS ---
             'nombre_persona_recibe': self.contact_name or '',
+            'ruta_origen_id': ruta_origen.id if ruta_origen else False,
             'ruta_empresa': ruta,
-            'instrucciones_especiales': self.observaciones or '',
+            'instrucciones_especiales': instrucciones_manifiesto,
 
             # --- RESIDUOS ---
             'residuo_ids': residuo_lines,

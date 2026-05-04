@@ -1,6 +1,6 @@
 {
     'name': 'Manifiesto Ambiental',
-    'version': '19.0.2.1.0',
+    'version': '19.0.2.2.0',
     'category': 'Environmental',
     'summary': 'Gestión de Manifiestos Ambientales para Residuos Peligrosos con Control de Versiones',
     'description': '...',

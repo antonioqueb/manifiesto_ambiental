@@ -22,7 +22,6 @@
         <field name="report_type">qweb-pdf</field>
         <field name="report_name">manifiesto_ambiental.manifiesto_ambiental_document</field>
         <field name="report_file">manifiesto_ambiental.manifiesto_ambiental_document</field>
-        <!-- NO binding_model_id - el botón action_print_manifiesto decide qué reporte usar -->
         <field name="paperformat_id" ref="manifiesto_ambiental.paperformat_manifiesto_ambiental_sin_margen"/>
     </record>
 
@@ -36,7 +35,6 @@
                         <style>
                             @page { margin: 5mm; size: A4; }
 
-                            /* Tipografía y densidad para caber en 1 hoja */
                             body, td, th, strong, .labelcell, .subcell {
                                 font-family: "DejaVu Sans", Arial, "Liberation Sans", sans-serif !important;
                                 font-size: 10.5px;
@@ -44,7 +42,6 @@
                             }
                             .page { margin-top: 2px !important; padding-top: 2px !important; }
 
-                            /* Encabezado externo compacto */
                             .header, .o_company_document_layout .header, .company_address, .o_company_address,
                             .external_layout .header, .address, .o_report_layout_standard .header,
                             .o_report_layout_boxed .header, .o_report_layout_clean .header {
@@ -71,7 +68,6 @@
                             table { width: 100%; border-collapse: collapse; margin-bottom: 2px; page-break-inside: avoid; }
                             td, th { border: 1px solid #666; padding: 2px 4px; font-size: 10px; vertical-align: top; }
 
-                            /* Sin sombreados */
                             th, .header-table, .labelcell, .subcell { background: none !important; }
                             th, .header-table { font-weight: 700; text-align: center; }
                             .labelcell { font-weight: 700; font-size: 10.5px; }
@@ -215,13 +211,28 @@
                                     <td class="center-text"><span t-if="residuo.clasificacion_inflamable">X</span></td>
                                     <td class="center-text"><span t-if="residuo.clasificacion_biologico">X</span></td>
                                     <td class="center-text"></td>
-                                    <td class="center-text"><span t-field="residuo.envase_cantidad"/></td>
+
+                                    <td class="center-text">
+                                        <t t-if="residuo.envase_cantidad">
+                                            <span t-field="residuo.envase_cantidad"/>
+                                        </t>
+                                        <t t-else="">&#160;</t>
+                                    </td>
+
                                     <td class="center-text">
                                         <span t-if="residuo.packaging_id" t-field="residuo.packaging_id.name"/>
                                         <span t-elif="residuo.envase_tipo" t-field="residuo.envase_tipo"/>
                                     </td>
+
                                     <td class="center-text"><span t-field="residuo.envase_capacidad"/></td>
-                                    <td class="center-text"><span t-field="residuo.cantidad"/> kg</td>
+
+                                    <td class="center-text">
+                                        <t t-if="residuo.cantidad">
+                                            <span t-field="residuo.cantidad"/> kg
+                                        </t>
+                                        <t t-else="">&#160;</t>
+                                    </td>
+
                                     <td class="center-text"><span t-if="residuo.etiqueta_si">X</span></td>
                                     <td class="center-text"><span t-if="residuo.etiqueta_no">X</span></td>
                                 </tr>

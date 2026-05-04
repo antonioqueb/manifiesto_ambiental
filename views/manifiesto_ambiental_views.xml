@@ -65,7 +65,7 @@
                        decoration-success="state == 'delivered'"
                        decoration-info="state == 'confirmed'"
                        decoration-warning="state == 'in_transit'"
-                       decoration-muted="state == 'cancelled'"/>
+                       decoration-muted="state == 'cancel'"/>
             </list>
         </field>
     </record>
@@ -109,15 +109,13 @@
                             class="btn-warning" icon="fa-exclamation-triangle"
                             invisible="state not in ['in_transit', 'delivered'] or not is_current_version or tipo_manifiesto == 'salida'"/>
 
-                    <button name="action_remanifestar" string="Remanifestar (PDF)" type="object"
-                            class="btn-secondary" icon="fa-refresh"
-                            invisible="not is_current_version or state == 'draft'"
-                            confirm="Se creará una nueva versión y se guardará un PDF de la actual. ¿Continuar?"/>
-
-                    <button name="action_remanifestar_sin_pdf" string="Remanifestar (Datos)" type="object"
+                    <button name="action_remanifestar"
+                            string="Remanifestar"
+                            type="object"
                             class="btn-secondary"
+                            icon="fa-refresh"
                             invisible="not is_current_version or state == 'draft'"
-                            confirm="Se creará una nueva versión sin respaldo PDF. ¿Continuar?"/>
+                            confirm="Se creará una nueva versión partiendo de la información actual del manifiesto. ¿Continuar?"/>
 
                     <button name="action_cancel" string="Cancelar" type="object"
                             class="btn-danger"
@@ -331,7 +329,6 @@
                         <!-- RESIDUOS -->
                         <!-- ====================================================== -->
                         <page string="Residuos" name="residuos">
-                            
 
                             <field name="residuo_ids" readonly="not is_current_version">
                                 <list editable="bottom">
@@ -601,8 +598,6 @@
                                        placeholder="Describa el motivo de esta remanifestación..."
                                        readonly="not is_current_version"/>
                             </group>
-
-                          
 
                             <div class="mt-3">
                                 <button name="action_view_all_versions" type="object"

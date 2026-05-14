@@ -1,9 +1,80 @@
 # -*- coding: utf-8 -*-
-from odoo import models, fields
+from odoo import models, fields, api
 
 
 class ResPartner(models.Model):
     _inherit = 'res.partner'
+
+    # =========================================================================
+    # VISUALIZACIÓN CONTEXTUAL DE CONTACTOS HIJOS
+    # =========================================================================
+    @api.depends(
+        'name',
+        'complete_name',
+        'parent_id',
+        'parent_id.name',
+        'email',
+        'vat',
+        'state_id',
+        'country_id',
+        'commercial_company_name',
+    )
+    @api.depends_context(
+        'lang',
+        'show_address',
+        'show_address_only',
+        'show_email',
+        'show_vat',
+        'manifiesto_child_only_display',
+        'service_order_child_only_display',
+    )
+    def _compute_display_name(self):
+        """
+        Ajuste contextual para Manifiesto Ambiental.
+
+        Odoo normalmente muestra contactos hijos como:
+        "CONTACTO PADRE, CONTACTO HIJO".
+
+        En los campos del manifiesto donde el contacto ya está filtrado por
+        el padre seleccionado, esto estorba. Si el campo envía el contexto
+        manifiesto_child_only_display=True, se muestra solo partner.name.
+
+        También respeta service_order_child_only_display=True para mantener
+        compatibilidad con el módulo service_order.
+        """
+        super()._compute_display_name()
+
+        child_only = (
+            self.env.context.get('manifiesto_child_only_display')
+            or self.env.context.get('service_order_child_only_display')
+        )
+        if not child_only:
+            return
+
+        for partner in self:
+            if partner.parent_id and partner.name:
+                partner.display_name = partner.name
+
+    def name_get(self):
+        """
+        Compatibilidad con flujos Many2one que sigan usando name_get.
+        En contexto normal conserva el comportamiento estándar.
+        """
+        child_only = (
+            self.env.context.get('manifiesto_child_only_display')
+            or self.env.context.get('service_order_child_only_display')
+        )
+        if not child_only:
+            return super().name_get()
+
+        result = []
+        for partner in self:
+            if partner.parent_id and partner.name:
+                name = partner.name
+            else:
+                name = partner.name or partner.complete_name or ''
+            result.append((partner.id, name))
+        return result
 
     # =========================================================================
     # MÁSCARA PARA DOCUMENTOS OFICIALES / MANIFIESTO

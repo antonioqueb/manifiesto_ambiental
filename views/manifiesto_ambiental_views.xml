@@ -223,7 +223,7 @@
                                     <field name="generador_id"
                                            string="Empresa"
                                            options="{'no_create': True, 'no_create_edit': True}"
-                                           readonly="not is_current_version"/>
+                                           readonly="not is_current_version" context="{'manifiesto_child_only_display': True}"/>
                                     <field name="generador_nombre" string="Nombre en Manifiesto"
                                            readonly="not is_current_version"/>
                                     <field name="generador_estado" readonly="not is_current_version"/>
@@ -234,7 +234,7 @@
                                     <field name="destinatario_id"
                                            string="Empresa"
                                            options="{'no_create': True, 'no_create_edit': True}"
-                                           readonly="not is_current_version"/>
+                                           readonly="not is_current_version" context="{'manifiesto_child_only_display': True}"/>
                                     <field name="destinatario_nombre" string="Nombre en Manifiesto"
                                            readonly="not is_current_version"/>
                                     <field name="destinatario_estado" readonly="not is_current_version"/>
@@ -264,13 +264,13 @@
                                            string="Empresa Generadora"
                                            placeholder="Seleccione generador..."
                                            options="{'no_create': True, 'no_create_edit': True}"
-                                           readonly="not is_current_version"/>
+                                           readonly="not is_current_version" context="{'manifiesto_child_only_display': True}"/>
                                 </group>
                                 <group string="Firma">
                                     <field name="generador_responsable_id"
                                            string="Responsable"
                                            options="{'no_create': True, 'no_create_edit': True}"
-                                           readonly="not is_current_version"/>
+                                           readonly="not is_current_version" context="{'manifiesto_child_only_display': True}"/>
                                     <field name="generador_responsable_nombre"
                                            string="Nombre en documento"
                                            readonly="not is_current_version"/>
@@ -389,12 +389,12 @@
                                            string="Empresa Transportista"
                                            placeholder="Seleccione transportista..."
                                            options="{'no_create': True, 'no_create_edit': True}"
-                                           readonly="not is_current_version"/>
+                                           readonly="not is_current_version" context="{'manifiesto_child_only_display': True}"/>
                                 </group>
                                 <group string="Operación">
                                     <field name="chofer_id" string="Chofer"
                                            options="{'no_create': True, 'no_create_edit': True}"
-                                           readonly="not is_current_version"/>
+                                           readonly="not is_current_version" context="{'manifiesto_child_only_display': True}"/>
                                     <field name="vehicle_id" string="Vehículo"
                                            options="{'no_create': True, 'no_create_edit': True}"
                                            readonly="not is_current_version"/>
@@ -450,7 +450,7 @@
                                     <field name="transportista_responsable_id"
                                            string="Responsable"
                                            options="{'no_create': True, 'no_create_edit': True}"
-                                           readonly="not is_current_version"/>
+                                           readonly="not is_current_version" context="{'manifiesto_child_only_display': True}"/>
                                     <field name="transportista_responsable_nombre"
                                            string="Nombre en documento"
                                            readonly="not is_current_version"/>
@@ -475,7 +475,7 @@
                                            string="Empresa Destinataria"
                                            placeholder="Seleccione destinatario..."
                                            options="{'no_create': True, 'no_create_edit': True}"
-                                           readonly="not is_current_version"/>
+                                           readonly="not is_current_version" context="{'manifiesto_child_only_display': True}"/>
                                 </group>
                                 <group string="Recepción">
                                     <field name="nombre_persona_recibe"

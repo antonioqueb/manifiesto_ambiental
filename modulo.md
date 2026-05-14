@@ -79,11 +79,9 @@ from . import manifiesto_discrepancia```
 # -*- coding: utf-8 -*-
 from odoo import models, fields, api, _
 from odoo.exceptions import UserError
-from datetime import date
 from urllib.parse import quote
 import base64
 import logging
-import json
 import re
 
 _logger = logging.getLogger(__name__)
@@ -155,10 +153,11 @@ class ManifiestoAmbiental(models.Model):
     generador_nombre = fields.Char(
         string='4. Nombre o razón social del generador',
         required=True,
-        compute='_compute_generador_nombre',
-        store=True,
-        readonly=False,
         tracking=True,
+        help=(
+            'Nombre que se mostrará en el manifiesto. '
+            'Se llena con Nombre en Manifiesto del contacto o, si está vacío, con el nombre normal.'
+        ),
     )
     generador_codigo_postal = fields.Char(string='Código postal')
     generador_calle = fields.Char(string='Calle')
@@ -210,7 +209,15 @@ class ManifiestoAmbiental(models.Model):
         domain=[('es_transportista', '=', True)],
         tracking=True,
     )
-    transportista_nombre = fields.Char(string='8. Nombre o razón social del transportista', required=True, tracking=True)
+    transportista_nombre = fields.Char(
+        string='8. Nombre o razón social del transportista',
+        required=True,
+        tracking=True,
+        help=(
+            'Nombre que se mostrará en el manifiesto. '
+            'Se llena con Nombre en Manifiesto del contacto o, si está vacío, con el nombre normal.'
+        ),
+    )
     transportista_codigo_postal = fields.Char(string='Código postal')
     transportista_calle = fields.Char(string='Calle')
     transportista_num_ext = fields.Char(string='Núm. Ext.')
@@ -280,7 +287,15 @@ class ManifiestoAmbiental(models.Model):
         domain=[('es_destinatario', '=', True)],
         tracking=True,
     )
-    destinatario_nombre = fields.Char(string='15. Nombre o razón social del destinatario', required=True, tracking=True)
+    destinatario_nombre = fields.Char(
+        string='15. Nombre o razón social del destinatario',
+        required=True,
+        tracking=True,
+        help=(
+            'Nombre que se mostrará en el manifiesto. '
+            'Se llena con Nombre en Manifiesto del contacto o, si está vacío, con el nombre normal.'
+        ),
+    )
     destinatario_codigo_postal = fields.Char(string='Código postal')
     destinatario_calle = fields.Char(string='Calle')
     destinatario_num_ext = fields.Char(string='Núm. Ext.')
@@ -316,6 +331,31 @@ class ManifiestoAmbiental(models.Model):
     company_id = fields.Many2one('res.company', string='Compañía', default=lambda self: self.env.company)
 
     # =========================================================================
+    # HELPERS
+    # =========================================================================
+    def _get_partner_nombre_en_manifiesto(self, partner):
+        """
+        Devuelve el nombre documental que debe copiarse al manifiesto.
+
+        Prioridad:
+        1. res.partner.nombre_en_manifiesto
+        2. res.partner.name
+
+        Este valor es una máscara documental. No cambia el nombre real del contacto.
+        """
+        if not partner:
+            return ''
+
+        if hasattr(partner, '_get_nombre_en_manifiesto'):
+            return partner._get_nombre_en_manifiesto()
+
+        nombre_mascara = ''
+        if 'nombre_en_manifiesto' in partner._fields:
+            nombre_mascara = (partner.nombre_en_manifiesto or '').strip()
+
+        return nombre_mascara or (partner.name or '')
+
+    # =========================================================================
     # COMPUTES
     # =========================================================================
     @api.depends('numero_manifiesto', 'version')
@@ -340,13 +380,6 @@ class ManifiestoAmbiental(models.Model):
     def _compute_discrepancia_count(self):
         for rec in self:
             rec.discrepancia_count = len(rec.discrepancia_ids)
-
-    @api.depends('generador_id', 'generador_id.name')
-    def _compute_generador_nombre(self):
-        for rec in self:
-            if rec.generador_id:
-                if not rec.service_order_id:
-                    rec.generador_nombre = rec.generador_id.name or ''
 
     @api.depends('generador_responsable_id', 'generador_responsable_id.name')
     def _compute_generador_responsable_nombre(self):
@@ -376,8 +409,7 @@ class ManifiestoAmbiental(models.Model):
         if self.generador_id:
             p = self.generador_id
             self.numero_registro_ambiental = p.numero_registro_ambiental or ''
-            if not self.service_order_id:
-                self.generador_nombre = p.name or ''
+            self.generador_nombre = self._get_partner_nombre_en_manifiesto(p)
             self.generador_codigo_postal = p.zip or ''
             self.generador_calle = p.street or ''
             self.generador_num_ext = p.street_number or ''
@@ -388,8 +420,10 @@ class ManifiestoAmbiental(models.Model):
             self.generador_telefono = p.phone or ''
             self.generador_email = p.email or ''
             if self.generador_responsable_id:
-                ok = (self.generador_responsable_id.id == p.id or
-                      self.generador_responsable_id.parent_id.id == p.id)
+                ok = (
+                    self.generador_responsable_id.id == p.id or
+                    self.generador_responsable_id.parent_id.id == p.id
+                )
                 if not ok:
                     self.generador_responsable_id = False
 
@@ -402,7 +436,7 @@ class ManifiestoAmbiental(models.Model):
     def _onchange_transportista_id(self):
         if self.transportista_id:
             p = self.transportista_id
-            self.transportista_nombre = p.name or ''
+            self.transportista_nombre = self._get_partner_nombre_en_manifiesto(p)
             self.transportista_codigo_postal = p.zip or ''
             self.transportista_calle = p.street or ''
             self.transportista_num_ext = p.street_number or ''
@@ -415,8 +449,10 @@ class ManifiestoAmbiental(models.Model):
             self.numero_autorizacion_semarnat = p.numero_autorizacion_semarnat or ''
             self.numero_permiso_sct = p.numero_permiso_sct or ''
             if self.transportista_responsable_id:
-                ok = (self.transportista_responsable_id.id == p.id or
-                      self.transportista_responsable_id.parent_id.id == p.id)
+                ok = (
+                    self.transportista_responsable_id.id == p.id or
+                    self.transportista_responsable_id.parent_id.id == p.id
+                )
                 if not ok:
                     self.transportista_responsable_id = False
 
@@ -439,7 +475,7 @@ class ManifiestoAmbiental(models.Model):
     def _onchange_destinatario_id(self):
         if self.destinatario_id:
             p = self.destinatario_id
-            self.destinatario_nombre = p.name or ''
+            self.destinatario_nombre = self._get_partner_nombre_en_manifiesto(p)
             self.destinatario_codigo_postal = p.zip or ''
             self.destinatario_calle = p.street or ''
             self.destinatario_num_ext = p.street_number or ''
@@ -528,11 +564,11 @@ class ManifiestoAmbiental(models.Model):
                     else:
                         vals['numero_manifiesto'] = str(next_seq)
 
-            if vals.get('generador_id') and not vals.get('generador_nombre'):
+            if vals.get('generador_id'):
                 p = self.env['res.partner'].browse(vals['generador_id'])
                 vals.update({
                     'numero_registro_ambiental': vals.get('numero_registro_ambiental') or p.numero_registro_ambiental or '',
-                    'generador_nombre': p.name or '',
+                    'generador_nombre': vals.get('generador_nombre') or self._get_partner_nombre_en_manifiesto(p),
                     'generador_codigo_postal': vals.get('generador_codigo_postal') or p.zip or '',
                     'generador_calle': vals.get('generador_calle') or p.street or '',
                     'generador_num_ext': vals.get('generador_num_ext') or p.street_number or '',
@@ -542,6 +578,39 @@ class ManifiestoAmbiental(models.Model):
                     'generador_estado': vals.get('generador_estado') or (p.state_id.name if p.state_id else ''),
                     'generador_telefono': vals.get('generador_telefono') or p.phone or '',
                     'generador_email': vals.get('generador_email') or p.email or '',
+                })
+
+            if vals.get('transportista_id'):
+                p = self.env['res.partner'].browse(vals['transportista_id'])
+                vals.update({
+                    'transportista_nombre': vals.get('transportista_nombre') or self._get_partner_nombre_en_manifiesto(p),
+                    'transportista_codigo_postal': vals.get('transportista_codigo_postal') or p.zip or '',
+                    'transportista_calle': vals.get('transportista_calle') or p.street or '',
+                    'transportista_num_ext': vals.get('transportista_num_ext') or p.street_number or '',
+                    'transportista_num_int': vals.get('transportista_num_int') or p.street_number2 or '',
+                    'transportista_colonia': vals.get('transportista_colonia') or p.street2 or '',
+                    'transportista_municipio': vals.get('transportista_municipio') or p.city or '',
+                    'transportista_estado': vals.get('transportista_estado') or (p.state_id.name if p.state_id else ''),
+                    'transportista_telefono': vals.get('transportista_telefono') or p.phone or '',
+                    'transportista_email': vals.get('transportista_email') or p.email or '',
+                    'numero_autorizacion_semarnat': vals.get('numero_autorizacion_semarnat') or p.numero_autorizacion_semarnat or '',
+                    'numero_permiso_sct': vals.get('numero_permiso_sct') or p.numero_permiso_sct or '',
+                })
+
+            if vals.get('destinatario_id'):
+                p = self.env['res.partner'].browse(vals['destinatario_id'])
+                vals.update({
+                    'destinatario_nombre': vals.get('destinatario_nombre') or self._get_partner_nombre_en_manifiesto(p),
+                    'destinatario_codigo_postal': vals.get('destinatario_codigo_postal') or p.zip or '',
+                    'destinatario_calle': vals.get('destinatario_calle') or p.street or '',
+                    'destinatario_num_ext': vals.get('destinatario_num_ext') or p.street_number or '',
+                    'destinatario_num_int': vals.get('destinatario_num_int') or p.street_number2 or '',
+                    'destinatario_colonia': vals.get('destinatario_colonia') or p.street2 or '',
+                    'destinatario_municipio': vals.get('destinatario_municipio') or p.city or '',
+                    'destinatario_estado': vals.get('destinatario_estado') or (p.state_id.name if p.state_id else ''),
+                    'destinatario_telefono': vals.get('destinatario_telefono') or p.phone or '',
+                    'destinatario_email': vals.get('destinatario_email') or p.email or '',
+                    'numero_autorizacion_semarnat_destinatario': vals.get('numero_autorizacion_semarnat_destinatario') or p.numero_autorizacion_semarnat or '',
                 })
 
             if vals.get('generador_responsable_id') and not vals.get('generador_responsable_nombre'):
@@ -567,10 +636,25 @@ class ManifiestoAmbiental(models.Model):
         return records
 
     # =========================================================================
-    # WRITE — sincronizar lotes cuando cambia numero_manifiesto
+    # WRITE
     # =========================================================================
     def write(self, vals):
+        vals = dict(vals)
+
+        if 'generador_id' in vals and 'generador_nombre' not in vals:
+            partner = self.env['res.partner'].browse(vals['generador_id']) if vals.get('generador_id') else False
+            vals['generador_nombre'] = self._get_partner_nombre_en_manifiesto(partner)
+
+        if 'transportista_id' in vals and 'transportista_nombre' not in vals:
+            partner = self.env['res.partner'].browse(vals['transportista_id']) if vals.get('transportista_id') else False
+            vals['transportista_nombre'] = self._get_partner_nombre_en_manifiesto(partner)
+
+        if 'destinatario_id' in vals and 'destinatario_nombre' not in vals:
+            partner = self.env['res.partner'].browse(vals['destinatario_id']) if vals.get('destinatario_id') else False
+            vals['destinatario_nombre'] = self._get_partner_nombre_en_manifiesto(partner)
+
         res = super().write(vals)
+
         if 'numero_manifiesto' in vals:
             new_number = vals['numero_manifiesto']
             for manifiesto in self:
@@ -807,10 +891,6 @@ class ManifiestoAmbiental(models.Model):
             raise UserError("No se puede remanifestar un manifiesto en estado borrador.")
 
         try:
-            # Flujo único de remanifestación:
-            # 1. Intenta guardar respaldo PDF.
-            # 2. Si el PDF falla, guarda respaldo de datos.
-            # 3. Crea nueva versión copiando residuos completos, incluido packaging_id.
             try:
                 pdf_data = self._generate_current_pdf_corregido()
                 self._save_version_to_history(pdf_data)
@@ -1112,8 +1192,6 @@ RESIDUOS
                 'clasificacion_biologico': residuo.clasificacion_biologico,
 
                 # Envase / embalaje
-                # packaging_id es el campo real usado por la vista actual.
-                # Si no se copia explícitamente, el embalaje se pierde al remanifestar.
                 'packaging_id': residuo.packaging_id.id if residuo.packaging_id else False,
                 'envase_tipo': residuo.envase_tipo,
                 'envase_cantidad': residuo.envase_cantidad,
@@ -1233,12 +1311,18 @@ class ManifiestoAmbientalResiduo(models.Model):
     def _compute_clasificaciones_display(self):
         for record in self:
             clasificaciones = []
-            if record.clasificacion_corrosivo: clasificaciones.append('C')
-            if record.clasificacion_reactivo: clasificaciones.append('R')
-            if record.clasificacion_explosivo: clasificaciones.append('E')
-            if record.clasificacion_toxico: clasificaciones.append('T')
-            if record.clasificacion_inflamable: clasificaciones.append('I')
-            if record.clasificacion_biologico: clasificaciones.append('B')
+            if record.clasificacion_corrosivo:
+                clasificaciones.append('C')
+            if record.clasificacion_reactivo:
+                clasificaciones.append('R')
+            if record.clasificacion_explosivo:
+                clasificaciones.append('E')
+            if record.clasificacion_toxico:
+                clasificaciones.append('T')
+            if record.clasificacion_inflamable:
+                clasificaciones.append('I')
+            if record.clasificacion_biologico:
+                clasificaciones.append('B')
             record.clasificaciones_display = ', '.join(clasificaciones)
 
     @api.onchange('product_id')
@@ -1836,62 +1920,94 @@ from odoo import models, fields
 
 class ResPartner(models.Model):
     _inherit = 'res.partner'
-    
-    # Campos adicionales de dirección
+
+    # =========================================================================
+    # MÁSCARA PARA DOCUMENTOS OFICIALES / MANIFIESTO
+    # =========================================================================
+    nombre_en_manifiesto = fields.Char(
+        string='Nombre en Manifiesto',
+        help=(
+            'Nombre o razón social que debe mostrarse/imprimirse en el manifiesto. '
+            'Si se deja vacío, el sistema usará el nombre normal del contacto.'
+        ),
+    )
+
+    # =========================================================================
+    # CAMPOS ADICIONALES DE DIRECCIÓN
+    # =========================================================================
     street_number = fields.Char(
         string='Núm. Exterior',
-        help='Número exterior de la dirección'
+        help='Número exterior de la dirección',
     )
-    
+
     street_number2 = fields.Char(
         string='Núm. Interior',
-        help='Número interior de la dirección'
+        help='Número interior de la dirección',
     )
-    
-    # Campo específico para registro ambiental
+
+    # =========================================================================
+    # DOCUMENTACIÓN AMBIENTAL
+    # =========================================================================
     numero_registro_ambiental = fields.Char(
         string='Número de Registro Ambiental',
-        help='Número de registro ambiental del generador de residuos peligrosos'
+        help='Número de registro ambiental del generador de residuos peligrosos',
     )
-    
-    # Campo para autorización SEMARNAT
+
     numero_autorizacion_semarnat = fields.Char(
         string='Número de Autorización SEMARNAT',
-        help='Número de autorización de la SEMARNAT'
+        help='Número de autorización de la SEMARNAT',
     )
-    
-    # Campo para permiso SCT (solo para transportistas)
+
     numero_permiso_sct = fields.Char(
         string='Número de Permiso S.C.T.',
-        help='Número de permiso de la Secretaría de Comunicaciones y Transportes'
+        help='Número de permiso de la Secretaría de Comunicaciones y Transportes',
     )
-    
-    # Campos para vehículos (transportistas)
+
+    # =========================================================================
+    # VEHÍCULOS / TRANSPORTISTAS
+    # =========================================================================
     tipo_vehiculo = fields.Char(
         string='Tipo de Vehículo',
-        help='Tipo de vehículo utilizado para el transporte'
+        help='Tipo de vehículo utilizado para el transporte',
     )
-    
+
     numero_placa = fields.Char(
         string='Número de Placa',
-        help='Número de placa del vehículo'
+        help='Número de placa del vehículo',
     )
-    
-    # Categorización del partner
+
+    # =========================================================================
+    # CLASIFICACIÓN DEL CONTACTO
+    # =========================================================================
     es_generador = fields.Boolean(
         string='Es Generador',
-        help='Marcar si este contacto es generador de residuos peligrosos'
+        help='Marcar si este contacto es generador de residuos peligrosos',
     )
-    
+
     es_transportista = fields.Boolean(
         string='Es Transportista',
-        help='Marcar si este contacto es transportista de residuos peligrosos'
+        help='Marcar si este contacto es transportista de residuos peligrosos',
     )
-    
+
     es_destinatario = fields.Boolean(
         string='Es Destinatario',
-        help='Marcar si este contacto es destinatario final de residuos peligrosos'
-    )```
+        help='Marcar si este contacto es destinatario final de residuos peligrosos',
+    )
+
+    # =========================================================================
+    # HELPERS
+    # =========================================================================
+    def _get_nombre_en_manifiesto(self):
+        """
+        Devuelve el nombre que debe usarse en el manifiesto.
+
+        Regla:
+        - Si el contacto tiene 'Nombre en Manifiesto', se usa ese valor.
+        - Si está vacío, se usa el nombre normal del contacto.
+        """
+        self.ensure_one()
+        nombre_mascara = (self.nombre_en_manifiesto or '').strip()
+        return nombre_mascara or (self.name or '')```
 
 ## ./models/service_order_extension.py
 ```py
@@ -1922,6 +2038,28 @@ class ServiceOrder(models.Model):
         for rec in self:
             rec.manifiesto_count = len(rec.manifiesto_ids)
 
+    def _get_partner_nombre_en_manifiesto(self, partner):
+        """
+        Devuelve el nombre documental que debe copiarse al manifiesto.
+
+        Prioridad:
+        1. res.partner.nombre_en_manifiesto
+        2. res.partner.name
+
+        Es una máscara documental. No modifica el nombre real del contacto.
+        """
+        if not partner:
+            return ''
+
+        if hasattr(partner, '_get_nombre_en_manifiesto'):
+            return partner._get_nombre_en_manifiesto()
+
+        nombre_mascara = ''
+        if 'nombre_en_manifiesto' in partner._fields:
+            nombre_mascara = (partner.nombre_en_manifiesto or '').strip()
+
+        return nombre_mascara or (partner.name or '')
+
     def action_view_manifiestos(self):
         self.ensure_one()
         return {
@@ -1939,10 +2077,7 @@ class ServiceOrder(models.Model):
         # 1. Generador
         generador = self.generador_id if self.generador_id else self.partner_id
 
-        nombre_razon_social = (
-            (self.partner_id.name if self.partner_id else '') or
-            (generador.name if generador else '')
-        )
+        nombre_razon_social = self._get_partner_nombre_en_manifiesto(generador)
 
         # 2. Fecha del servicio
         fecha_servicio = (
@@ -1955,10 +2090,8 @@ class ServiceOrder(models.Model):
 
         # 3. Ruta
         ruta = ''
-        ruta_origen = False
 
         if self.pickup_location_id:
-            ruta_origen = self.pickup_location_id
             ruta = self.pickup_location_id.contact_address_complete or self.pickup_location_id.name or ''
             ruta = ruta.replace('\n', ', ')
         elif self.pickup_location:
@@ -2032,7 +2165,6 @@ class ServiceOrder(models.Model):
         chofer_id = self.chofer_id.id if self.chofer_id else False
 
         # 9. Responsable destinatario
-        # IMPORTANTE:
         # manifiesto.ambiental NO tiene campo destinatario_responsable_id.
         # Por eso solo se guarda el nombre en destinatario_responsable_nombre.
         destinatario_responsable = False
@@ -2079,7 +2211,7 @@ class ServiceOrder(models.Model):
 
             # --- TRANSPORTISTA ---
             'transportista_id': self.transportista_id.id if self.transportista_id else False,
-            'transportista_nombre': self.transportista_id.name if self.transportista_id else '',
+            'transportista_nombre': self._get_partner_nombre_en_manifiesto(self.transportista_id),
             'transportista_codigo_postal': self.transportista_id.zip if self.transportista_id else '',
             'transportista_calle': self.transportista_id.street if self.transportista_id else '',
             'transportista_num_ext': self.transportista_id.street_number if self.transportista_id else '',
@@ -2105,7 +2237,7 @@ class ServiceOrder(models.Model):
 
             # --- DESTINATARIO ---
             'destinatario_id': dest.id if dest else False,
-            'destinatario_nombre': dest.name if dest else '',
+            'destinatario_nombre': self._get_partner_nombre_en_manifiesto(dest),
             'destinatario_codigo_postal': dest.zip if dest else '',
             'destinatario_calle': dest.street if dest else '',
             'destinatario_num_ext': dest.street_number if dest else '',
@@ -3844,7 +3976,6 @@ $ma-transition:   all 0.18s ease;
             <form string="Manifiesto Ambiental" class="o_manifiesto_ambiental_form_v2">
 
                 <header>
-                    <!-- Acciones primarias -->
                     <button name="action_confirm" string="Confirmar" type="object"
                             class="btn-primary"
                             invisible="state != 'draft'"/>
@@ -3857,7 +3988,6 @@ $ma-transition:   all 0.18s ease;
                             class="btn-primary"
                             invisible="state != 'in_transit'"/>
 
-                    <!-- Operativas -->
                     <button name="action_recibir_residuos" string="Recibir Residuos" type="object"
                             class="btn-success" icon="fa-download"
                             invisible="state not in ['in_transit', 'delivered'] or not is_current_version or tipo_manifiesto == 'salida'"
@@ -3866,7 +3996,6 @@ $ma-transition:   all 0.18s ease;
                     <button name="action_print_manifiesto" string="Imprimir Manifiesto" type="object"
                             class="btn-secondary" icon="fa-print"/>
 
-                    <!-- Secundarias -->
                     <button name="action_crear_discrepancia" string="Reportar Discrepancia" type="object"
                             class="btn-warning" icon="fa-exclamation-triangle"
                             invisible="state not in ['in_transit', 'delivered'] or not is_current_version or tipo_manifiesto == 'salida'"/>
@@ -3890,7 +4019,6 @@ $ma-transition:   all 0.18s ease;
 
                 <sheet>
 
-                    <!-- Smart buttons -->
                     <div class="oe_button_box" name="button_box">
                         <button name="action_view_version_history" type="object"
                                 class="oe_stat_button" icon="fa-history">
@@ -3920,7 +4048,6 @@ $ma-transition:   all 0.18s ease;
                         </button>
                     </div>
 
-                    <!-- Aviso versión histórica -->
                     <div class="alert alert-warning ma_alert_strip" invisible="is_current_version">
                         <strong>Versión histórica.</strong>
                         Este registro no es la versión actual del manifiesto.
@@ -3930,7 +4057,6 @@ $ma-transition:   all 0.18s ease;
                         </button>
                     </div>
 
-                    <!-- HERO -->
                     <div class="ma_hero">
                         <div class="ma_hero_main">
                             <div class="ma_eyebrow">Número de manifiesto</div>
@@ -3976,7 +4102,6 @@ $ma-transition:   all 0.18s ease;
                         </div>
                     </div>
 
-                    <!-- Metadata compacta -->
                     <group class="ma_top_group" col="4">
                         <field name="numero_registro_ambiental" readonly="not is_current_version"/>
                         <field name="pagina" readonly="not is_current_version"/>
@@ -3986,9 +4111,6 @@ $ma-transition:   all 0.18s ease;
 
                     <notebook>
 
-                        <!-- ====================================================== -->
-                        <!-- RESUMEN -->
-                        <!-- ====================================================== -->
                         <page string="Resumen" name="resumen">
                             <group col="2" class="ma_summary_grid">
                                 <group string="Generador">
@@ -3996,7 +4118,7 @@ $ma-transition:   all 0.18s ease;
                                            string="Empresa"
                                            options="{'no_create': True, 'no_create_edit': True}"
                                            readonly="not is_current_version"/>
-                                    <field name="generador_nombre" string="Razón Social"
+                                    <field name="generador_nombre" string="Nombre en Manifiesto"
                                            readonly="not is_current_version"/>
                                     <field name="generador_estado" readonly="not is_current_version"/>
                                     <field name="generador_municipio" readonly="not is_current_version"/>
@@ -4007,7 +4129,7 @@ $ma-transition:   all 0.18s ease;
                                            string="Empresa"
                                            options="{'no_create': True, 'no_create_edit': True}"
                                            readonly="not is_current_version"/>
-                                    <field name="destinatario_nombre" string="Razón Social"
+                                    <field name="destinatario_nombre" string="Nombre en Manifiesto"
                                            readonly="not is_current_version"/>
                                     <field name="destinatario_estado" readonly="not is_current_version"/>
                                     <field name="destinatario_municipio" readonly="not is_current_version"/>
@@ -4029,9 +4151,6 @@ $ma-transition:   all 0.18s ease;
                             </group>
                         </page>
 
-                        <!-- ====================================================== -->
-                        <!-- GENERADOR -->
-                        <!-- ====================================================== -->
                         <page string="Generador" name="generador">
                             <group col="2">
                                 <group string="Empresa">
@@ -4054,7 +4173,7 @@ $ma-transition:   all 0.18s ease;
 
                             <group string="Dirección" col="2">
                                 <group>
-                                    <field name="generador_nombre" string="Razón Social"
+                                    <field name="generador_nombre" string="Nombre en Manifiesto"
                                            readonly="not is_current_version"/>
                                     <field name="generador_calle" readonly="not is_current_version"/>
                                     <field name="generador_num_ext" string="Núm. Exterior"
@@ -4088,9 +4207,6 @@ $ma-transition:   all 0.18s ease;
                             </group>
                         </page>
 
-                        <!-- ====================================================== -->
-                        <!-- RESIDUOS -->
-                        <!-- ====================================================== -->
                         <page string="Residuos" name="residuos">
 
                             <field name="residuo_ids" readonly="not is_current_version">
@@ -4160,9 +4276,6 @@ $ma-transition:   all 0.18s ease;
                             </group>
                         </page>
 
-                        <!-- ====================================================== -->
-                        <!-- TRANSPORTISTA -->
-                        <!-- ====================================================== -->
                         <page string="Transportista" name="transportista">
                             <group col="2">
                                 <group string="Empresa">
@@ -4184,7 +4297,7 @@ $ma-transition:   all 0.18s ease;
 
                             <group string="Dirección (Sección 8)" col="2">
                                 <group>
-                                    <field name="transportista_nombre" string="Razón Social"
+                                    <field name="transportista_nombre" string="Nombre en Manifiesto"
                                            readonly="not is_current_version"/>
                                     <field name="transportista_calle" readonly="not is_current_version"/>
                                     <field name="transportista_num_ext" string="Núm. Exterior"
@@ -4249,9 +4362,6 @@ $ma-transition:   all 0.18s ease;
                             </group>
                         </page>
 
-                        <!-- ====================================================== -->
-                        <!-- DESTINATARIO -->
-                        <!-- ====================================================== -->
                         <page string="Destinatario" name="destinatario">
                             <group col="2">
                                 <group string="Empresa">
@@ -4273,7 +4383,7 @@ $ma-transition:   all 0.18s ease;
 
                             <group string="Dirección (Sección 15)" col="2">
                                 <group>
-                                    <field name="destinatario_nombre" string="Razón Social"
+                                    <field name="destinatario_nombre" string="Nombre en Manifiesto"
                                            readonly="not is_current_version"/>
                                     <field name="destinatario_calle" readonly="not is_current_version"/>
                                     <field name="destinatario_num_ext" string="Núm. Exterior"
@@ -4314,9 +4424,6 @@ $ma-transition:   all 0.18s ease;
                             </group>
                         </page>
 
-                        <!-- ====================================================== -->
-                        <!-- DOCUMENTO FÍSICO -->
-                        <!-- ====================================================== -->
                         <page string="Documento Físico" name="documento_fisico">
                             <group col="2">
                                 <group string="Archivo">
@@ -4361,9 +4468,6 @@ $ma-transition:   all 0.18s ease;
                             </group>
                         </page>
 
-                        <!-- ====================================================== -->
-                        <!-- VERSIONES -->
-                        <!-- ====================================================== -->
                         <page string="Versiones" name="versiones" invisible="version &lt;= 1">
                             <group col="2">
                                 <group string="Versión actual">
@@ -4394,7 +4498,6 @@ $ma-transition:   all 0.18s ease;
 
                     </notebook>
 
-                    <!-- invisibles técnicos -->
                     <field name="is_current_version" invisible="1"/>
                     <field name="original_manifiesto_id" invisible="1"/>
                     <field name="created_by_remanifest" invisible="1"/>
@@ -4709,7 +4812,6 @@ $ma-transition:   all 0.18s ease;
         <field name="model">res.partner</field>
         <field name="inherit_id" ref="base.view_partner_form"/>
         <field name="arch" type="xml">
-            <!-- Insertamos un div con clase o_row después de la calle (street) -->
             <xpath expr="//field[@name='street']" position="after">
                 <div class="o_row" style="margin-top: 4px;">
                     <div class="o_col">
@@ -4725,7 +4827,7 @@ $ma-transition:   all 0.18s ease;
         </field>
     </record>
 
-    <!-- 2. MEJORA EN DATOS AMBIENTALES: Mejor estructura y estilo -->
+    <!-- 2. DATOS AMBIENTALES Y MÁSCARA PARA MANIFIESTO -->
     <record id="view_partner_form_manifiesto_fields" model="ir.ui.view">
         <field name="name">res.partner.form.manifiesto.fields</field>
         <field name="model">res.partner</field>
@@ -4733,20 +4835,33 @@ $ma-transition:   all 0.18s ease;
         <field name="arch" type="xml">
             <notebook position="inside">
                 <page string="Datos Ambientales" name="environmental_data" icon="fa-leaf">
-                    
-                    <!-- Encabezado con Clasificación (Toggles) -->
+
+                    <group string="Nombre para documentos oficiales" col="2">
+                        <group>
+                            <field name="nombre_en_manifiesto"
+                                   placeholder="Ej. Razón social exacta que debe aparecer en el manifiesto"/>
+                        </group>
+                        <group>
+                            <div class="alert alert-secondary" role="alert" style="margin-bottom:0px;">
+                                <i class="fa fa-info-circle"/>
+                                Si este campo está vacío, el manifiesto usará el nombre normal del contacto.
+                            </div>
+                        </group>
+                    </group>
+
+                    <separator string="Clasificación ambiental"/>
+
                     <group>
                         <group string="Tipo de Actor Ambiental">
                             <field name="es_generador" widget="boolean_toggle"/>
                             <field name="es_transportista" widget="boolean_toggle"/>
                             <field name="es_destinatario" widget="boolean_toggle"/>
                         </group>
-                        
-                        <!-- Panel Informativo dinámico (Opcional, solo visual) -->
+
                         <group>
-                            <div class="alert alert-info" role="alert" style="margin-bottom:0px;" 
+                            <div class="alert alert-info" role="alert" style="margin-bottom:0px;"
                                  invisible="not es_generador and not es_transportista and not es_destinatario">
-                                <i class="fa fa-info-circle"/> 
+                                <i class="fa fa-info-circle"/>
                                 <span invisible="not es_generador"> Este contacto generará residuos.</span>
                                 <span invisible="not es_transportista"> Proveedor de logística.</span>
                                 <span invisible="not es_destinatario"> Sitio de disposición final.</span>
@@ -4757,23 +4872,21 @@ $ma-transition:   all 0.18s ease;
                     <separator string="Documentación y Permisos"/>
 
                     <group>
-                        <!-- Columna Izquierda: Generador y Destino -->
                         <group>
-                            <field name="numero_registro_ambiental" 
+                            <field name="numero_registro_ambiental"
                                    invisible="not es_generador"
                                    placeholder="Ej. NRA-123456"
                                    decoration-bf="1"/>
-                                   
-                            <field name="numero_autorizacion_semarnat" 
+
+                            <field name="numero_autorizacion_semarnat"
                                    invisible="not es_transportista and not es_destinatario"
                                    placeholder="Ej. AUT-SEM-001"/>
                         </group>
 
-                        <!-- Columna Derecha: Transportista (SCT y Vehículo) -->
                         <group invisible="not es_transportista">
-                            <field name="numero_permiso_sct" 
+                            <field name="numero_permiso_sct"
                                    placeholder="Ej. SCT-TX-999"/>
-                            
+
                             <label for="tipo_vehiculo" string="Unidad de Transporte"/>
                             <div class="o_row">
                                 <field name="tipo_vehiculo" placeholder="Tipo (ej. Torton)"/>

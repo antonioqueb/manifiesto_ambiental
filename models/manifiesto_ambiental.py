@@ -9,6 +9,11 @@ import re
 _logger = logging.getLogger(__name__)
 
 
+MANIFIESTO_CHILD_ONLY_DISPLAY_CONTEXT = {
+    'manifiesto_child_only_display': True,
+}
+
+
 class ManifiestoAmbiental(models.Model):
     _name = 'manifiesto.ambiental'
     _inherit = ['mail.thread', 'mail.activity.mixin']
@@ -70,6 +75,7 @@ class ManifiestoAmbiental(models.Model):
         'res.partner',
         string='Generador',
         domain=[('es_generador', '=', True)],
+        context=MANIFIESTO_CHILD_ONLY_DISPLAY_CONTEXT,
         tracking=True,
     )
     generador_nombre = fields.Char(
@@ -95,6 +101,7 @@ class ManifiestoAmbiental(models.Model):
         'res.partner',
         string='Responsable Generador',
         domain="['|', ('parent_id', '=', generador_id), ('id', '=', generador_id)]",
+        context=MANIFIESTO_CHILD_ONLY_DISPLAY_CONTEXT,
         help='Contacto responsable del generador.',
         tracking=True,
     )
@@ -127,8 +134,10 @@ class ManifiestoAmbiental(models.Model):
     # 8. TRANSPORTISTA
     # =========================================================================
     transportista_id = fields.Many2one(
-        'res.partner', string='Transportista',
+        'res.partner',
+        string='Transportista',
         domain=[('es_transportista', '=', True)],
+        context=MANIFIESTO_CHILD_ONLY_DISPLAY_CONTEXT,
         tracking=True,
     )
     transportista_nombre = fields.Char(
@@ -175,6 +184,7 @@ class ManifiestoAmbiental(models.Model):
     chofer_id = fields.Many2one(
         'res.partner',
         string='Chofer',
+        context=MANIFIESTO_CHILD_ONLY_DISPLAY_CONTEXT,
         tracking=True,
     )
 
@@ -182,6 +192,7 @@ class ManifiestoAmbiental(models.Model):
         'res.partner',
         string='Responsable Transportista',
         domain="['|', ('parent_id', '=', transportista_id), ('id', '=', transportista_id)]",
+        context=MANIFIESTO_CHILD_ONLY_DISPLAY_CONTEXT,
         tracking=True,
     )
     transportista_responsable_nombre = fields.Char(
@@ -205,8 +216,10 @@ class ManifiestoAmbiental(models.Model):
     # 15. DESTINATARIO
     # =========================================================================
     destinatario_id = fields.Many2one(
-        'res.partner', string='Destinatario',
+        'res.partner',
+        string='Destinatario',
         domain=[('es_destinatario', '=', True)],
+        context=MANIFIESTO_CHILD_ONLY_DISPLAY_CONTEXT,
         tracking=True,
     )
     destinatario_nombre = fields.Char(

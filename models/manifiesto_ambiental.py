@@ -290,6 +290,34 @@ class ManifiestoAmbiental(models.Model):
 
         return nombre_mascara or (partner.name or '')
 
+    def _get_vehicle_tags_text(self, vehicle):
+        """
+        Devuelve el texto plano para el campo 11. Tipo de vehículo.
+
+        Regla de negocio:
+        El tipo de vehículo del manifiesto se toma de las etiquetas
+        del vehículo de flota seleccionado. Si hay más de una etiqueta,
+        se concatenan con un espacio entre ellas.
+
+        Ejemplo:
+        Etiquetas: [CAJA SECA, TORTON]
+        Resultado: CAJA SECA TORTON
+        """
+        if not vehicle:
+            return ''
+
+        tag_names = []
+        seen = set()
+
+        for tag in vehicle.tag_ids:
+            name = (tag.name or '').strip()
+            key = name.lower()
+            if name and key not in seen:
+                tag_names.append(name)
+                seen.add(key)
+
+        return ' '.join(tag_names)
+
     # =========================================================================
     # COMPUTES
     # =========================================================================
@@ -328,13 +356,10 @@ class ManifiestoAmbiental(models.Model):
             if rec.transportista_responsable_id:
                 rec.transportista_responsable_nombre = rec.transportista_responsable_id.name or ''
 
-    @api.depends('vehicle_id', 'vehicle_id.model_id', 'vehicle_id.model_id.brand_id')
+    @api.depends('vehicle_id', 'vehicle_id.tag_ids', 'vehicle_id.tag_ids.name')
     def _compute_vehicle_fields(self):
         for rec in self:
-            if rec.vehicle_id:
-                brand = rec.vehicle_id.model_id.brand_id.name if rec.vehicle_id.model_id and rec.vehicle_id.model_id.brand_id else ''
-                model = rec.vehicle_id.model_id.name if rec.vehicle_id.model_id else ''
-                rec.tipo_vehiculo = f"{brand} {model}".strip() or rec.vehicle_id.name or ''
+            rec.tipo_vehiculo = rec._get_vehicle_tags_text(rec.vehicle_id)
 
     # =========================================================================
     # ONCHANGES
@@ -399,12 +424,11 @@ class ManifiestoAmbiental(models.Model):
     @api.onchange('vehicle_id')
     def _onchange_vehicle_id(self):
         if self.vehicle_id:
-            v = self.vehicle_id
-            brand = v.model_id.brand_id.name if v.model_id and v.model_id.brand_id else ''
-            model = v.model_id.name if v.model_id else ''
-            self.tipo_vehiculo = f"{brand} {model}".strip() or v.name or ''
+            self.tipo_vehiculo = self._get_vehicle_tags_text(self.vehicle_id)
             if not self.numero_placa:
-                self.numero_placa = v.license_plate or ''
+                self.numero_placa = self.vehicle_id.license_plate or ''
+        else:
+            self.tipo_vehiculo = ''
 
     @api.onchange('destinatario_id')
     def _onchange_destinatario_id(self):
@@ -556,11 +580,10 @@ class ManifiestoAmbiental(models.Model):
                 r = self.env['res.partner'].browse(vals['transportista_responsable_id'])
                 vals['transportista_responsable_nombre'] = r.name or ''
 
-            if vals.get('vehicle_id') and not vals.get('tipo_vehiculo'):
-                v = self.env['fleet.vehicle'].browse(vals['vehicle_id'])
-                brand = v.model_id.brand_id.name if v.model_id and v.model_id.brand_id else ''
-                model = v.model_id.name if v.model_id else ''
-                vals['tipo_vehiculo'] = f"{brand} {model}".strip() or v.name or ''
+            if vals.get('vehicle_id'):
+                vehicle = self.env['fleet.vehicle'].browse(vals['vehicle_id'])
+                if vehicle.exists():
+                    vals['tipo_vehiculo'] = self._get_vehicle_tags_text(vehicle)
 
         records = super().create(vals_list)
 

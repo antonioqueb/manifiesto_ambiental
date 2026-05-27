@@ -7,11 +7,11 @@
         <field name="format">A4</field>
         <field name="orientation">Portrait</field>
         <field name="margin_top">2</field>
-        <field name="margin_bottom">10</field>
+        <field name="margin_bottom">3</field>
         <field name="margin_left">5</field>
         <field name="margin_right">5</field>
         <field name="header_line" eval="False"/>
-        <field name="header_spacing">35</field>
+        <field name="header_spacing">0</field>
         <field name="dpi">90</field>
     </record>
 
@@ -29,28 +29,30 @@
     <template id="manifiesto_ambiental_document">
         <t t-call="web.html_container">
             <t t-foreach="docs" t-as="doc">
-                <t t-call="web.external_layout">
+                <t t-call="web.basic_layout">
                     <div class="page">
                         <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
                         <style>
-                            @page { margin: 5mm; size: A4; }
+                            @page { margin: 3mm 5mm 3mm 5mm; size: A4; }
 
                             body, td, th, strong, .labelcell, .subcell {
                                 font-family: "DejaVu Sans", Arial, "Liberation Sans", sans-serif !important;
-                                font-size: 10.5px;
-                                line-height: 1.15;
+                                font-size: 11px;
+                                line-height: 1.12;
                             }
-                            .page { margin-top: 2px !important; padding-top: 2px !important; }
+                            .page { margin-top: 0 !important; padding-top: 0 !important; }
 
                             .header, .o_company_document_layout .header, .company_address, .o_company_address,
                             .external_layout .header, .address, .o_report_layout_standard .header,
                             .o_report_layout_boxed .header, .o_report_layout_clean .header {
-                                margin-bottom: 8px !important;
-                                padding-bottom: 4px !important;
+                                display: none !important;
+                                height: 0px !important;
+                                margin: 0px !important;
+                                padding: 0px !important;
                                 border-bottom: none !important;
                             }
 
-                            .footer, .o_company_document_layout .footer {
+                            .footer, .o_company_document_layout .footer, .external_layout .footer, .o_footer {
                                 display: none !important;
                                 height: 0px !important;
                                 padding: 0px !important;
@@ -59,19 +61,26 @@
 
                             .page-title {
                                 text-align: center;
-                                font-size: 12px;
+                                font-size: 12.5px;
                                 font-weight: 700;
-                                margin: 2px 0 4px;
+                                margin: 0 0 4px;
                                 font-family: "DejaVu Sans", Arial, sans-serif !important;
                             }
 
                             table { width: 100%; border-collapse: collapse; margin-bottom: 2px; page-break-inside: avoid; }
-                            td, th { border: 1px solid #666; padding: 2px 4px; font-size: 10px; vertical-align: top; }
+                            td, th { border: 1px solid #666; padding: 2px 3px; font-size: 11px; vertical-align: top; }
 
                             th, .header-table, .labelcell, .subcell { background: none !important; }
                             th, .header-table { font-weight: 700; text-align: center; }
-                            .labelcell { font-weight: 700; font-size: 10.5px; }
-                            .subcell { font-weight: 700; font-size: 9.8px; }
+                            .labelcell { font-weight: 700; font-size: 11px; }
+                            .subcell { font-weight: 700; font-size: 10.8px; }
+                            .labelcell span, .subcell span { font-weight: 400 !important; }
+                            strong { font-weight: 700; }
+
+                            .gray-fill, .domicilio-cell, .header-table.gray-fill {
+                                background: #eeeeee !important;
+                            }
+                            .header-table[rowspan] { vertical-align: middle; }
 
                             .no-border { border: none !important; }
                             .center-text { text-align: center; }
@@ -81,10 +90,11 @@
                             table.signature-section { width: 100%; border-collapse: separate; border-spacing: 0; margin-bottom: 2px; }
                             table.signature-section > tbody > tr > td { border: none !important; padding: 0; }
                             .signature-container { border: 1px solid #666; padding: 4px; }
-                            .signature-text { margin: 0 0 4px 0; }
-                            .signature-fields { display: table; width: 100%; margin-top: 2px; }
+                            .signature-text { margin: 0; }
+                            .signature-fields { display: table; width: 100%; margin-top: 14px; }
                             .signature-fields .cell { display: table-cell; vertical-align: top; padding-right: 8px; }
                             .signature-fields .cell:last-child { padding-right: 0; }
+                            .signature-fields span { font-weight: 400 !important; }
 
                             tr, td { page-break-inside: avoid; }
                         </style>
@@ -126,7 +136,7 @@
                             </tr>
 
                             <tr>
-                                <td class="subcell">Domicilio</td>
+                                <td class="subcell domicilio-cell">Domicilio</td>
                                 <td class="subcell">Código postal: <span t-field="doc.generador_codigo_postal"/></td>
                                 <td class="subcell">Calle: <span t-field="doc.generador_calle"/></td>
                                 <td class="subcell">Núm. Ext.: <span t-field="doc.generador_num_ext"/></td>
@@ -175,17 +185,16 @@
                             </colgroup>
 
                             <tr>
-                                <th colspan="14" class="header-table">5. Identificación de los residuos</th>
+                                <th colspan="14" class="header-table gray-fill">5. Identificación de los residuos</th>
                             </tr>
                             <tr>
-                                <th class="header-table">Nombre del residuo</th>
+                                <th class="header-table" rowspan="2">Nombre del residuo</th>
                                 <th class="header-table" colspan="7">Clasificación</th>
                                 <th class="header-table" colspan="3">Envase</th>
-                                <th class="header-table">Cantidad (kg)</th>
+                                <th class="header-table" rowspan="2">Cantidad (kg)</th>
                                 <th class="header-table" colspan="2">Etiqueta</th>
                             </tr>
                             <tr>
-                                <th class="header-table"></th>
                                 <th class="header-table">C</th>
                                 <th class="header-table">R</th>
                                 <th class="header-table">E</th>
@@ -196,7 +205,6 @@
                                 <th class="header-table">Pzas</th>
                                 <th class="header-table">Embalaje</th>
                                 <th class="header-table">Capacidad</th>
-                                <th class="header-table"></th>
                                 <th class="header-table">Sí</th>
                                 <th class="header-table">No</th>
                             </tr>
@@ -266,7 +274,7 @@
                                 <td>
                                     <div class="signature-container">
                                         <div class="signature-text">
-                                            7. Declaración del generador: Declaro bajo protesta de decir verdad que el contenido de este lote está total y correctamente descrito mediante el número de manifiesto, nombre del residuo, características CRETIB, debidamente envasado y etiquetado y que se han previsto las condiciones de seguridad para su transporte por vía terrestre de acuerdo con la legislación vigente.
+                                            <strong>7. Declaración del generador:</strong> Declaro bajo protesta de decir verdad que el contenido de este lote está total y correctamente descrito mediante el número de manifiesto, nombre del residuo, características CRETIB, debidamente envasado y etiquetado y que se han previsto las condiciones de seguridad para su transporte por vía terrestre de acuerdo con la legislación vigente.
                                         </div>
                                         <div class="signature-fields">
                                             <div class="cell" style="width:40%;">
@@ -288,24 +296,33 @@
                         </table>
 
                         <!-- 8. TRANSPORTISTA -->
-                        <table>
+                        <table class="section-4">
+                            <colgroup>
+                                <col style="width:15%"/>
+                                <col style="width:25%"/>
+                                <col style="width:40%"/>
+                                <col style="width:10%"/>
+                                <col style="width:10%"/>
+                            </colgroup>
+
                             <tr>
-                                <td colspan="4" class="labelcell">8. Nombre o razón social del transportista: <span t-field="doc.transportista_nombre"/></td>
+                                <td colspan="5" class="labelcell">8. Nombre o razón social del transportista: <span t-field="doc.transportista_nombre"/></td>
                             </tr>
                             <tr>
-                                <td class="subcell" style="width:25%;">Código postal: <span t-field="doc.transportista_codigo_postal"/></td>
-                                <td class="subcell" style="width:25%;">Calle: <span t-field="doc.transportista_calle"/></td>
-                                <td class="subcell" style="width:25%;">Núm. Ext.: <span t-field="doc.transportista_num_ext"/></td>
-                                <td class="subcell" style="width:25%;">Núm. Int.: <span t-field="doc.transportista_num_int"/></td>
+                                <td class="subcell domicilio-cell">Domicilio</td>
+                                <td class="subcell">Código postal: <span t-field="doc.transportista_codigo_postal"/></td>
+                                <td class="subcell">Calle: <span t-field="doc.transportista_calle"/></td>
+                                <td class="subcell">Núm. Ext.: <span t-field="doc.transportista_num_ext"/></td>
+                                <td class="subcell">Núm. Int.: <span t-field="doc.transportista_num_int"/></td>
                             </tr>
                             <tr>
-                                <td><strong>Colonia:</strong> <span t-field="doc.transportista_colonia"/></td>
-                                <td><strong>Municipio o Delegación:</strong> <span t-field="doc.transportista_municipio"/></td>
-                                <td colspan="2"><strong>Estado:</strong> <span t-field="doc.transportista_estado"/></td>
+                                <td class="subcell" colspan="2">Colonia: <span t-field="doc.transportista_colonia"/></td>
+                                <td class="subcell">Municipio o Delegación: <span t-field="doc.transportista_municipio"/></td>
+                                <td class="subcell" colspan="2">Estado: <span t-field="doc.transportista_estado"/></td>
                             </tr>
                             <tr>
-                                <td><strong>Teléfono:</strong> <span t-field="doc.transportista_telefono"/></td>
-                                <td colspan="3"><strong>Correo electrónico:</strong> <span t-field="doc.transportista_email"/></td>
+                                <td class="subcell" colspan="2">Teléfono: <span t-field="doc.transportista_telefono"/></td>
+                                <td class="subcell" colspan="3">Correo electrónico: <span t-field="doc.transportista_email"/></td>
                             </tr>
                         </table>
 
@@ -337,7 +354,7 @@
                                 <td>
                                     <div class="signature-container">
                                         <div class="signature-text">
-                                            14. Declaración del transportista: Declaro bajo protesta de decir verdad que recibí los residuos peligrosos descritos en el manifiesto para su transporte a la empresa destinataria señalada por el generador.
+                                            <strong>14. Declaración del transportista:</strong> Declaro bajo protesta de decir verdad que recibí los residuos peligrosos descritos en el manifiesto para su transporte a la empresa destinataria señalada por el generador.
                                         </div>
                                         <div class="signature-fields">
                                             <div class="cell" style="width:40%;">
@@ -359,24 +376,33 @@
                         </table>
 
                         <!-- 15. DESTINATARIO -->
-                        <table>
+                        <table class="section-4">
+                            <colgroup>
+                                <col style="width:15%"/>
+                                <col style="width:25%"/>
+                                <col style="width:40%"/>
+                                <col style="width:10%"/>
+                                <col style="width:10%"/>
+                            </colgroup>
+
                             <tr>
-                                <td colspan="4" class="labelcell">15. Nombre o razón social del destinatario: <span t-field="doc.destinatario_nombre"/></td>
+                                <td colspan="5" class="labelcell">15. Nombre o razón social del destinatario: <span t-field="doc.destinatario_nombre"/></td>
                             </tr>
                             <tr>
-                                <td class="subcell" style="width:25%;">Código postal: <span t-field="doc.destinatario_codigo_postal"/></td>
-                                <td class="subcell" style="width:25%;">Calle: <span t-field="doc.destinatario_calle"/></td>
-                                <td class="subcell" style="width:25%;">Núm. Ext.: <span t-field="doc.destinatario_num_ext"/></td>
-                                <td class="subcell" style="width:25%;">Núm. Int.: <span t-field="doc.destinatario_num_int"/></td>
+                                <td class="subcell domicilio-cell">Domicilio</td>
+                                <td class="subcell">Código postal: <span t-field="doc.destinatario_codigo_postal"/></td>
+                                <td class="subcell">Calle: <span t-field="doc.destinatario_calle"/></td>
+                                <td class="subcell">Núm. Ext.: <span t-field="doc.destinatario_num_ext"/></td>
+                                <td class="subcell">Núm. Int.: <span t-field="doc.destinatario_num_int"/></td>
                             </tr>
                             <tr>
-                                <td><strong>Colonia:</strong> <span t-field="doc.destinatario_colonia"/></td>
-                                <td><strong>Municipio o Delegación:</strong> <span t-field="doc.destinatario_municipio"/></td>
-                                <td colspan="2"><strong>Estado:</strong> <span t-field="doc.destinatario_estado"/></td>
+                                <td class="subcell" colspan="2">Colonia: <span t-field="doc.destinatario_colonia"/></td>
+                                <td class="subcell">Municipio o Delegación: <span t-field="doc.destinatario_municipio"/></td>
+                                <td class="subcell" colspan="2">Estado: <span t-field="doc.destinatario_estado"/></td>
                             </tr>
                             <tr>
-                                <td><strong>Teléfono:</strong> <span t-field="doc.destinatario_telefono"/></td>
-                                <td colspan="3"><strong>Correo electrónico:</strong> <span t-field="doc.destinatario_email"/></td>
+                                <td class="subcell" colspan="2">Teléfono: <span t-field="doc.destinatario_telefono"/></td>
+                                <td class="subcell" colspan="3">Correo electrónico: <span t-field="doc.destinatario_email"/></td>
                             </tr>
                         </table>
 
@@ -402,7 +428,7 @@
                                 <td>
                                     <div class="signature-container">
                                         <div class="signature-text">
-                                            19. Declaración del destinatario: Declaro bajo protesta de decir verdad que recibí los residuos peligrosos descritos en el manifiesto.
+                                            <strong>19. Declaración del destinatario:</strong> Declaro bajo protesta de decir verdad que recibí los residuos peligrosos descritos en el manifiesto.
                                         </div>
                                         <div class="signature-fields">
                                             <div class="cell" style="width:40%;">

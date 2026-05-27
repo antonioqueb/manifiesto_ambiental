@@ -3,6 +3,7 @@
 // Module: manifiesto_ambiental | Odoo 19 Enterprise
 // Scope: .o_manifiesto_ambiental_form_v3
 // Objetivo: formulario moderno, intuitivo y blindado contra desbordes.
+// Nota Odoo 19: no usa min()/max()/clamp() CSS con unidades mixtas para evitar errores LibSass.
 // ============================================================================
 
 // ---------------------------------------------------------------------------
@@ -101,7 +102,7 @@ $ma-transition-2: 220ms ease;
 
     .o_form_sheet {
       width: 100% !important;
-      max-width: min(100%, 1680px) !important;
+      max-width: 1680px !important;
       min-width: 0 !important;
       margin: 16px auto 0 !important;
       padding: 0 !important;
@@ -389,7 +390,7 @@ $ma-transition-2: 220ms ease;
       max-width: 100% !important;
       min-width: 0 !important;
       color: $ma-ink !important;
-      font-size: clamp(24px, 2.6vw, 36px) !important;
+      font-size: 32px !important;
       font-weight: 920 !important;
       letter-spacing: -0.04em;
       line-height: 1.06;
@@ -402,7 +403,7 @@ $ma-transition-2: 220ms ease;
         max-width: 100% !important;
         min-width: 0 !important;
         color: $ma-ink !important;
-        font-size: clamp(24px, 2.6vw, 36px) !important;
+        font-size: 32px !important;
         font-weight: 920 !important;
         letter-spacing: -0.04em;
         line-height: 1.08;
@@ -1235,7 +1236,7 @@ $ma-transition-2: 220ms ease;
     width: 100% !important;
     max-width: 100% !important;
     min-width: 0 !important;
-    min-height: clamp(420px, 62vh, 720px);
+    min-height: 640px;
     border: 1px solid $ma-border;
     border-radius: $ma-radius-lg;
     background: $ma-bg-2;
@@ -1257,7 +1258,7 @@ $ma-transition-2: 220ms ease;
       width: 100% !important;
       max-width: 100% !important;
       min-width: 0 !important;
-      min-height: clamp(420px, 62vh, 720px);
+      min-height: 640px;
       background: $ma-bg-2;
       overflow: hidden;
     }
@@ -1295,6 +1296,21 @@ $ma-transition-2: 220ms ease;
       padding: 24px 24px 20px;
     }
 
+    .ma_title .o_field_widget,
+    .ma_title .o_field_widget input,
+    .ma_title .o_field_widget .o_input {
+      font-size: 29px !important;
+    }
+
+    .ma_pdf_viewer_wrap,
+    .ma_pdf_viewer_wrap .o_field_pdf_viewer,
+    .ma_pdf_viewer_wrap .o_field_binary_file,
+    .ma_pdf_viewer_wrap iframe,
+    .ma_pdf_viewer_wrap object,
+    .ma_pdf_viewer_wrap embed {
+      min-height: 560px;
+    }
+
     .ma_hero_side {
       grid-template-columns: repeat(3, minmax(0, 1fr));
     }
@@ -1324,7 +1340,7 @@ $ma-transition-2: 220ms ease;
       padding: 10px 12px !important;
 
       .oe_stat_button {
-        flex-basis: calc(50% - 8px);
+        flex-basis: 48%;
         min-width: 0;
         max-width: none;
       }
@@ -1332,6 +1348,21 @@ $ma-transition-2: 220ms ease;
 
     .ma_hero {
       padding: 20px 16px 18px;
+    }
+
+    .ma_title .o_field_widget,
+    .ma_title .o_field_widget input,
+    .ma_title .o_field_widget .o_input {
+      font-size: 26px !important;
+    }
+
+    .ma_pdf_viewer_wrap,
+    .ma_pdf_viewer_wrap .o_field_pdf_viewer,
+    .ma_pdf_viewer_wrap .o_field_binary_file,
+    .ma_pdf_viewer_wrap iframe,
+    .ma_pdf_viewer_wrap object,
+    .ma_pdf_viewer_wrap embed {
+      min-height: 500px;
     }
 
     .ma_hero_meta {
@@ -1420,6 +1451,15 @@ $ma-transition-2: 220ms ease;
 
     .ma_microcopy {
       font-size: 12.5px;
+    }
+
+    .ma_pdf_viewer_wrap,
+    .ma_pdf_viewer_wrap .o_field_pdf_viewer,
+    .ma_pdf_viewer_wrap .o_field_binary_file,
+    .ma_pdf_viewer_wrap iframe,
+    .ma_pdf_viewer_wrap object,
+    .ma_pdf_viewer_wrap embed {
+      min-height: 420px;
     }
 
     .oe_button_box .oe_stat_button {

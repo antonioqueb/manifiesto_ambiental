@@ -20,7 +20,7 @@
       <!-- 2. Botón de Acción en el Header -->
       <xpath expr="//header/button[@name='action_cancel']" position="after">
         <button name="action_create_manifiesto"
-                string="Crear Manifiesto"
+                string="Manifiesto"
                 type="object"
                 class="btn-primary"/>
       </xpath>

@@ -58,16 +58,11 @@ class ServiceOrder(models.Model):
             'context': {'default_service_order_id': self.id},
         }
 
-    def action_create_manifiesto(self):
+    MANIFIESTO_OPEN_STATES = ('draft', 'confirmed', 'in_transit')
+
+    def _get_manifiesto_fecha_servicio(self):
         self.ensure_one()
-
-        # 1. Generador
-        generador = self.generador_id if self.generador_id else self.partner_id
-
-        nombre_razon_social = self._get_partner_nombre_en_manifiesto(generador)
-
-        # 2. Fecha del servicio
-        fecha_servicio = (
+        return (
             getattr(self, 'date_start', None) or
             getattr(self, 'scheduled_date', None) or
             getattr(self, 'service_date', None) or
@@ -75,16 +70,9 @@ class ServiceOrder(models.Model):
             fields.Date.context_today(self)
         )
 
-        # 3. Ruta
-        ruta = ''
+    def _prepare_manifiesto_residuo_lines(self):
+        self.ensure_one()
 
-        if self.pickup_location_id:
-            ruta = self.pickup_location_id.contact_address_complete or self.pickup_location_id.name or ''
-            ruta = ruta.replace('\n', ', ')
-        elif self.pickup_location:
-            ruta = self.pickup_location
-
-        # 4. Líneas de residuos
         residuo_lines = []
 
         for line in self.line_ids:
@@ -93,11 +81,9 @@ class ServiceOrder(models.Model):
 
             prod = line.product_id
 
-            manifest_description = (
-                (getattr(line, 'manifest_description', False) or '').strip()
-                if hasattr(line, 'manifest_description')
-                else ''
-            )
+            manifest_description = ''
+            if 'manifest_description' in line._fields:
+                manifest_description = (line.manifest_description or '').strip()
 
             nombre_residuo_final = (
                 manifest_description or
@@ -106,9 +92,10 @@ class ServiceOrder(models.Model):
                 'Sin descripción'
             )
 
-            cantidad_final = line.weight_kg if line.weight_kg > 0.0 else line.product_uom_qty
+            weight_kg = getattr(line, 'weight_kg', 0.0) or 0.0
+            cantidad_final = weight_kg if weight_kg > 0.0 else line.product_uom_qty
 
-            capacidad_final = line.capacity if line.capacity else ''
+            capacidad_final = getattr(line, 'capacity', False) or ''
             if not capacidad_final and hasattr(prod, 'envase_capacidad_default') and prod.envase_capacidad_default:
                 capacidad_final = str(prod.envase_capacidad_default)
 
@@ -129,6 +116,29 @@ class ServiceOrder(models.Model):
                 'etiqueta_si': True,
                 'etiqueta_no': False,
             }))
+
+        return residuo_lines
+
+    def _prepare_manifiesto_vals_from_order(self):
+        self.ensure_one()
+
+        # 1. Generador
+        generador = self.generador_id if self.generador_id else self.partner_id
+        nombre_razon_social = self._get_partner_nombre_en_manifiesto(generador)
+
+        # 2. Fecha del servicio
+        fecha_servicio = self._get_manifiesto_fecha_servicio()
+
+        # 3. Ruta
+        ruta = ''
+        if self.pickup_location_id:
+            ruta = self.pickup_location_id.contact_address_complete or self.pickup_location_id.name or ''
+            ruta = ruta.replace('\n', ', ')
+        elif self.pickup_location:
+            ruta = self.pickup_location
+
+        # 4. Líneas de residuos
+        residuo_lines = self._prepare_manifiesto_residuo_lines()
 
         # 5. Destinatario
         dest = self.destinatario_id if self.destinatario_id else self.partner_id
@@ -152,7 +162,7 @@ class ServiceOrder(models.Model):
         chofer_id = self.chofer_id.id if self.chofer_id else False
 
         # 9. Responsable destinatario
-        # manifiesto.ambiental NO tiene campo destinatario_responsable_id.
+        # manifiesto.ambiental no tiene campo destinatario_responsable_id.
         # Por eso solo se guarda el nombre en destinatario_responsable_nombre.
         destinatario_responsable = False
         if 'destinatario_responsable_id' in self._fields:
@@ -176,7 +186,7 @@ class ServiceOrder(models.Model):
                 instrucciones_manifiesto = getattr(self, field_name) or ''
                 break
 
-        manifiesto_vals = {
+        return {
             'service_order_id': self.id,
 
             # --- GENERADOR ---
@@ -247,8 +257,47 @@ class ServiceOrder(models.Model):
             'residuo_ids': residuo_lines,
         }
 
-        manifiesto = self.env['manifiesto.ambiental'].create(manifiesto_vals)
+    def _find_open_manifiesto(self):
+        self.ensure_one()
+        return self.env['manifiesto.ambiental'].search([
+            ('service_order_id', '=', self.id),
+            ('state', 'in', list(self.MANIFIESTO_OPEN_STATES)),
+            ('is_current_version', '=', True),
+        ], order='id desc', limit=1)
 
+    def _sync_existing_manifiesto_from_order(self, manifiesto, manifiesto_vals):
+        """
+        Actualiza el manifiesto activo de la orden sin cambiar su folio.
+
+        Para proteger datos operativos, las líneas se reemplazan solo si el
+        manifiesto sigue en borrador o confirmado y aún no tiene recepciones.
+        """
+        self.ensure_one()
+        manifiesto.ensure_one()
+
+        update_vals = dict(manifiesto_vals)
+
+        residuo_lines = update_vals.pop('residuo_ids', [])
+
+        # Nunca sobrescribir control/documentación existente desde la orden.
+        for protected_field in (
+            'numero_manifiesto',
+            'sequence_number',
+            'state',
+            'original_manifiesto_id',
+            'version',
+            'is_current_version',
+            'created_by_remanifest',
+        ):
+            update_vals.pop(protected_field, None)
+
+        if manifiesto.state in ('draft', 'confirmed') and not manifiesto.recepcion_ids:
+            update_vals['residuo_ids'] = [(5, 0, 0)] + residuo_lines
+
+        manifiesto.write(update_vals)
+        return manifiesto
+
+    def _get_manifiesto_action(self, manifiesto):
         return {
             'name': 'Manifiesto Ambiental',
             'type': 'ir.actions.act_window',
@@ -257,3 +306,19 @@ class ServiceOrder(models.Model):
             'res_id': manifiesto.id,
             'target': 'current',
         }
+
+    def action_create_manifiesto(self):
+        self.ensure_one()
+
+        manifiesto_vals = self._prepare_manifiesto_vals_from_order()
+
+        manifiesto = self._find_open_manifiesto()
+        if manifiesto:
+            manifiesto = self._sync_existing_manifiesto_from_order(
+                manifiesto,
+                manifiesto_vals,
+            )
+        else:
+            manifiesto = self.env['manifiesto.ambiental'].create(manifiesto_vals)
+
+        return self._get_manifiesto_action(manifiesto)

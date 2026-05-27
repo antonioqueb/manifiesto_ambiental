@@ -449,57 +449,307 @@ class ManifiestoAmbiental(models.Model):
     # =========================================================================
     # NUMERACIÓN
     # =========================================================================
+    MANIFIESTO_ACTIVE_SEQUENCE_STATES = ('draft', 'confirmed', 'in_transit', 'delivered')
+    MANIFIESTO_OFFICIAL_SEQUENCE_STATES = ('confirmed', 'in_transit', 'delivered')
+
+    def _normalize_manifiesto_date(self, fecha_servicio=None):
+        """
+        Normaliza fecha_servicio a date.
+
+        Mantiene compatibilidad con valores date, datetime, string o False.
+        """
+        fecha = fields.Date.to_date(fecha_servicio) if fecha_servicio else False
+        return fecha or fields.Date.context_today(self)
+
     def _get_next_sequence_number(self):
+        """
+        Secuencia técnica global para ordenamiento interno.
+
+        No se usa como sufijo del número de manifiesto.
+        Se bloquea por transacción para evitar duplicados por concurrencia.
+        """
+        self.env.cr.execute(
+            "SELECT pg_advisory_xact_lock(hashtext(%s)::bigint)",
+            ['manifiesto_ambiental.sequence_number'],
+        )
         self.env.cr.execute(
             "SELECT COALESCE(MAX(sequence_number), 0) + 1 FROM manifiesto_ambiental"
         )
         return self.env.cr.fetchone()[0]
 
-    def _generate_manifiesto_number(self, generador_partner, fecha_servicio=None, sequence_num=None):
+    def _lock_daily_numbering(self, generador_partner, fecha_servicio=None, company_id=None):
+        """
+        Bloquea la numeración por generador + fecha + compañía durante la transacción.
+
+        Esto evita que dos usuarios confirmen o creen simultáneamente el mismo
+        siguiente folio diario.
+        """
+        if not generador_partner:
+            return
+
+        fecha = self._normalize_manifiesto_date(fecha_servicio)
+        company_id = company_id.id if hasattr(company_id, 'id') else company_id
+        company_id = company_id or self.env.company.id
+
+        lock_key = "manifiesto_ambiental.daily.%s.%s.%s" % (
+            company_id,
+            generador_partner.id,
+            fecha.isoformat(),
+        )
+        self.env.cr.execute(
+            "SELECT pg_advisory_xact_lock(hashtext(%s)::bigint)",
+            [lock_key],
+        )
+
+    def _get_manifiesto_initials(self, generador_partner):
         if not generador_partner:
             raise UserError("Se requiere un generador para crear el número de manifiesto.")
 
-        razon_social = generador_partner.name.upper()
+        razon_social = (generador_partner.name or '').upper().strip()
+        if not razon_social:
+            raise UserError("El generador debe tener nombre para crear el número de manifiesto.")
+
         palabras_excluir = [
             'S.A.', 'SA', 'S.A', 'DE', 'C.V.', 'CV', 'C.V', 'S.A.P.I.', 'SAPI',
-            'S. DE R.L.', 'S.R.L.', 'SRL', 'SOCIEDAD', 'ANONIMA', 'CIVIL',
-            'RESPONSABILIDAD', 'LIMITADA', 'CAPITAL', 'VARIABLE', 'Y', 'E',
-            'LA', 'EL', 'LOS', 'LAS', 'DEL', 'CON', 'SIN', 'PARA', 'POR'
+            'S. DE R.L.', 'S.R.L.', 'SRL', 'SOCIEDAD', 'ANONIMA', 'ANÓNIMA',
+            'CIVIL', 'RESPONSABILIDAD', 'LIMITADA', 'CAPITAL', 'VARIABLE',
+            'Y', 'E', 'LA', 'EL', 'LOS', 'LAS', 'DEL', 'CON', 'SIN', 'PARA', 'POR',
         ]
+
         razon_limpia = re.sub(r'[^\w\s]', ' ', razon_social)
         palabras = razon_limpia.split()
-        palabras_significativas = [p for p in palabras if p not in palabras_excluir and len(p) > 1]
+        palabras_significativas = [
+            p for p in palabras
+            if p not in palabras_excluir and len(p) > 1
+        ]
 
         if len(palabras_significativas) >= 2:
-            iniciales = palabras_significativas[0][0] + palabras_significativas[1][0]
-        elif len(palabras_significativas) == 1:
-            iniciales = palabras_significativas[0][:2]
-        else:
-            iniciales = razon_social[:2]
+            return palabras_significativas[0][0] + palabras_significativas[1][0]
+        if len(palabras_significativas) == 1:
+            return palabras_significativas[0][:2]
 
-        if fecha_servicio:
-            if isinstance(fecha_servicio, str):
-                from datetime import datetime
-                fecha = datetime.strptime(fecha_servicio, '%Y-%m-%d').date()
-            else:
-                fecha = fecha_servicio
-        else:
-            fecha = fields.Date.context_today(self)
+        return razon_social[:2]
 
+    def _get_manifiesto_number_base(self, generador_partner, fecha_servicio=None):
+        fecha = self._normalize_manifiesto_date(fecha_servicio)
         fecha_str = fecha.strftime('%d%m%Y')
-        numero_base = f"{iniciales}-{fecha_str}"
+        iniciales = self._get_manifiesto_initials(generador_partner)
+        return f"{iniciales}-{fecha_str}"
 
-        existing_count = self.env['manifiesto.ambiental'].search_count([
-            ('numero_manifiesto', 'like', f'{numero_base}%')
-        ])
+    def _parse_manifiesto_sequence(self, numero_manifiesto, numero_base):
+        """
+        Convierte:
+        - BASE    -> 1
+        - BASE-02 -> 2
+        - BASE-2  -> 2
 
-        if existing_count > 0:
-            sufijo = sequence_num if sequence_num else (existing_count + 1)
-            numero_final = f"{numero_base}-{sufijo:02d}"
-        else:
-            numero_final = numero_base
+        Si no coincide con la base automática, devuelve None.
+        """
+        numero = (numero_manifiesto or '').strip().upper()
+        base = (numero_base or '').strip().upper()
 
-        return numero_final
+        if not numero or not base:
+            return None
+
+        match = re.match(
+            r'^%s(?:-(\d+))?$' % re.escape(base),
+            numero,
+            flags=re.IGNORECASE,
+        )
+        if not match:
+            return None
+
+        if not match.group(1):
+            return 1
+
+        seq = int(match.group(1))
+        return seq if seq > 0 else None
+
+    def _looks_like_auto_manifiesto_number(self, numero_manifiesto):
+        """
+        Detecta números generados por la lógica automática aunque ya no coincidan
+        con el generador o fecha actual.
+
+        Ejemplos considerados automáticos:
+        - AB-27052026
+        - AB-27052026-02
+        - AB-27052026-32
+
+        Un número completamente personalizado no se toca al confirmar.
+        """
+        numero = (numero_manifiesto or '').strip().upper()
+        return bool(re.match(r'^[\w]{1,4}-\d{8}(?:-\d+)?$', numero))
+
+    def _format_manifiesto_number(self, numero_base, sequence):
+        """
+        Regla documental:
+        - Primer manifiesto del día/cliente: BASE
+        - Segundo: BASE-02
+        - Tercero: BASE-03
+        """
+        if sequence <= 1:
+            return numero_base
+        return f"{numero_base}-{sequence:02d}"
+
+    def _get_daily_sequence_domain(
+        self,
+        generador_partner,
+        fecha_servicio=None,
+        company_id=None,
+        states=None,
+        exclude_id=None,
+    ):
+        numero_base = self._get_manifiesto_number_base(generador_partner, fecha_servicio)
+
+        company_id = company_id.id if hasattr(company_id, 'id') else company_id
+        company_id = company_id or self.env.company.id
+
+        domain = [
+            ('numero_manifiesto', '=like', f'{numero_base}%'),
+            ('generador_id', '=', generador_partner.id),
+            ('company_id', '=', company_id),
+        ]
+
+        if states:
+            domain.append(('state', 'in', list(states)))
+
+        if exclude_id:
+            domain.append(('id', '!=', exclude_id))
+
+        return domain
+
+    def _get_used_daily_sequences(
+        self,
+        generador_partner,
+        fecha_servicio=None,
+        company_id=None,
+        states=None,
+        exclude_id=None,
+    ):
+        numero_base = self._get_manifiesto_number_base(generador_partner, fecha_servicio)
+        domain = self._get_daily_sequence_domain(
+            generador_partner=generador_partner,
+            fecha_servicio=fecha_servicio,
+            company_id=company_id,
+            states=states,
+            exclude_id=exclude_id,
+        )
+
+        used = set()
+        for manifiesto in self.search(domain):
+            seq = self._parse_manifiesto_sequence(
+                manifiesto.numero_manifiesto,
+                numero_base,
+            )
+            if seq:
+                used.add(seq)
+
+        return used
+
+    def _get_next_daily_sequence(
+        self,
+        generador_partner,
+        fecha_servicio=None,
+        company_id=None,
+        states=None,
+        exclude_id=None,
+    ):
+        used = self._get_used_daily_sequences(
+            generador_partner=generador_partner,
+            fecha_servicio=fecha_servicio,
+            company_id=company_id,
+            states=states,
+            exclude_id=exclude_id,
+        )
+
+        seq = 1
+        while seq in used:
+            seq += 1
+
+        return seq
+
+    def _generate_manifiesto_number(
+        self,
+        generador_partner,
+        fecha_servicio=None,
+        sequence_num=None,
+        company_id=None,
+        states=None,
+        exclude_id=None,
+    ):
+        """
+        Genera un número tentativo por generador + fecha + compañía.
+
+        sequence_num se conserva en la firma por retrocompatibilidad, pero ya
+        no se usa como sufijo documental. El bug venía de usar una secuencia
+        global como si fuera la secuencia diaria del cliente.
+        """
+        if not generador_partner:
+            raise UserError("Se requiere un generador para crear el número de manifiesto.")
+
+        fecha = self._normalize_manifiesto_date(fecha_servicio)
+        company_id = company_id.id if hasattr(company_id, 'id') else company_id
+        company_id = company_id or self.env.company.id
+
+        self._lock_daily_numbering(generador_partner, fecha, company_id)
+
+        numero_base = self._get_manifiesto_number_base(generador_partner, fecha)
+
+        next_seq = self._get_next_daily_sequence(
+            generador_partner=generador_partner,
+            fecha_servicio=fecha,
+            company_id=company_id,
+            states=states or self.MANIFIESTO_ACTIVE_SEQUENCE_STATES,
+            exclude_id=exclude_id,
+        )
+
+        return self._format_manifiesto_number(numero_base, next_seq)
+
+    def _assign_daily_number_on_confirm(self):
+        """
+        Al confirmar, el número se vuelve oficial.
+
+        Reglas:
+        - Si es remanifestación, conserva el número original.
+        - Si el número es personalizado y no parece automático, no se toca.
+        - Si el número automático está duplicado o saltado, se ajusta al
+          siguiente consecutivo real para ese generador/día/compañía.
+        """
+        self.ensure_one()
+
+        if self.created_by_remanifest or self.version > 1:
+            return
+
+        if not self.generador_id:
+            return
+
+        fecha = self._normalize_manifiesto_date(self.generador_fecha)
+        company_id = self.company_id.id or self.env.company.id
+
+        numero_base = self._get_manifiesto_number_base(self.generador_id, fecha)
+
+        current_seq = self._parse_manifiesto_sequence(
+            self.numero_manifiesto,
+            numero_base,
+        )
+
+        if current_seq is None and not self._looks_like_auto_manifiesto_number(self.numero_manifiesto):
+            # Número completamente personalizado. No mantener consecutivo.
+            return
+
+        self._lock_daily_numbering(self.generador_id, fecha, company_id)
+
+        desired_seq = self._get_next_daily_sequence(
+            generador_partner=self.generador_id,
+            fecha_servicio=fecha,
+            company_id=company_id,
+            states=self.MANIFIESTO_OFFICIAL_SEQUENCE_STATES,
+            exclude_id=self.id,
+        )
+        desired_number = self._format_manifiesto_number(numero_base, desired_seq)
+
+        if self.numero_manifiesto != desired_number:
+            self.write({'numero_manifiesto': desired_number})
 
     # =========================================================================
     # CREATE
@@ -509,19 +759,20 @@ class ManifiestoAmbiental(models.Model):
         for vals in vals_list:
             if not vals.get('created_by_remanifest'):
                 next_seq = self._get_next_sequence_number()
-                vals['sequence_number'] = next_seq
+                vals['sequence_number'] = vals.get('sequence_number') or next_seq
 
                 if not vals.get('numero_manifiesto'):
                     generador_id = vals.get('generador_id')
                     if generador_id:
                         generador_partner = self.env['res.partner'].browse(generador_id)
                         vals['numero_manifiesto'] = self._generate_manifiesto_number(
-                            generador_partner,
-                            vals.get('generador_fecha'),
-                            next_seq,
+                            generador_partner=generador_partner,
+                            fecha_servicio=vals.get('generador_fecha'),
+                            company_id=vals.get('company_id') or self.env.company.id,
+                            states=self.MANIFIESTO_ACTIVE_SEQUENCE_STATES,
                         )
                     else:
-                        vals['numero_manifiesto'] = str(next_seq)
+                        vals['numero_manifiesto'] = str(vals['sequence_number'])
 
             if vals.get('generador_id'):
                 p = self.env['res.partner'].browse(vals['generador_id'])
@@ -712,6 +963,8 @@ class ManifiestoAmbiental(models.Model):
     # =========================================================================
     def action_confirm(self):
         for rec in self:
+            if rec.state == 'draft':
+                rec._assign_daily_number_on_confirm()
             rec.state = 'confirmed'
 
     def action_in_transit(self):

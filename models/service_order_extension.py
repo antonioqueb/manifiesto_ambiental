@@ -47,6 +47,58 @@ class ServiceOrder(models.Model):
 
         return nombre_mascara or (partner.name or '')
 
+
+    def _partner_has_responsable_tag(self, partner):
+        """
+        Detecta si un contacto tiene una etiqueta/categoría tipo Responsable.
+
+        Usa las etiquetas estándar de contactos de Odoo: res.partner.category
+        en partner.category_id.
+        """
+        if not partner:
+            return False
+
+        for tag in partner.category_id:
+            tag_name = (tag.name or '').strip().lower()
+            if 'responsable' in tag_name:
+                return True
+
+        return False
+
+    def _get_acopio_responsable_contact(self, acopio_partner):
+        """
+        Devuelve el contacto responsable del Acopio/Destinatario.
+
+        Regla de negocio:
+        - Se busca primero entre los contactos hijos del Acopio/Destinatario.
+        - El contacto debe tener una etiqueta/categoría que contenga
+          'Responsable'.
+        - No se toma el contacto del generador.
+        - No se toma el contacto del cliente de la orden.
+        - Si no existe responsable marcado, se deja vacío.
+        """
+        Partner = self.env['res.partner']
+
+        if not acopio_partner:
+            return Partner.browse()
+
+        responsables = acopio_partner.child_ids.filtered(
+            lambda contact: self._partner_has_responsable_tag(contact)
+        )
+
+        if responsables:
+            return responsables.sorted(lambda contact: contact.id)[:1]
+
+        # Fallback controlado: si el propio Acopio está marcado como Responsable.
+        if self._partner_has_responsable_tag(acopio_partner):
+            return acopio_partner
+
+        return Partner.browse()
+
+    def _get_acopio_responsable_nombre(self, acopio_partner):
+        responsable = self._get_acopio_responsable_contact(acopio_partner)
+        return responsable.name or ''
+
     def action_view_manifiestos(self):
         self.ensure_one()
         return {
@@ -161,18 +213,23 @@ class ServiceOrder(models.Model):
         # 8. Chofer
         chofer_id = self.chofer_id.id if self.chofer_id else False
 
-        # 9. Responsable destinatario
-        # manifiesto.ambiental no tiene campo destinatario_responsable_id.
-        # Por eso solo se guarda el nombre en destinatario_responsable_nombre.
-        destinatario_responsable = False
-        if 'destinatario_responsable_id' in self._fields:
-            destinatario_responsable = self.destinatario_responsable_id
-
-        destinatario_responsable_nombre = (
-            destinatario_responsable.name
-            if destinatario_responsable
-            else (self.contact_name or '')
-        )
+        # 9. Responsable destinatario / Acopio
+        #
+        # Regla de negocio:
+        # El responsable de la sección Destinatario/Acopio debe salir del
+        # contacto hijo del Acopio marcado con etiqueta tipo "Responsable".
+        #
+        # No debe salir de:
+        # - self.contact_name
+        # - contacto del generador
+        # - contacto del cliente
+        # - partner_id de la orden
+        #
+        # Aunque dest pueda caer a partner_id como fallback documental, el
+        # responsable solo se toma de self.destinatario_id porque ese es el
+        # Acopio/Destinatario real.
+        acopio_partner = self.destinatario_id if self.destinatario_id else False
+        destinatario_responsable_nombre = self._get_acopio_responsable_nombre(acopio_partner)
 
         # 10. Instrucciones especiales oficiales del manifiesto
         # No se debe usar self.observaciones porque son notas internas de la OS.
@@ -249,7 +306,7 @@ class ServiceOrder(models.Model):
             'destinatario_responsable_nombre': destinatario_responsable_nombre,
 
             # --- OTROS ---
-            'nombre_persona_recibe': self.contact_name or '',
+            'nombre_persona_recibe': destinatario_responsable_nombre,
             'ruta_empresa': ruta,
             'instrucciones_especiales': instrucciones_manifiesto,
 

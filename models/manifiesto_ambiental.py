@@ -318,6 +318,58 @@ class ManifiestoAmbiental(models.Model):
 
         return ' '.join(tag_names)
 
+
+    def _partner_has_responsable_tag(self, partner):
+        """
+        Detecta si un contacto tiene una etiqueta/categoría tipo Responsable.
+
+        Usa las etiquetas estándar de contactos de Odoo: res.partner.category
+        en partner.category_id.
+        """
+        if not partner:
+            return False
+
+        for tag in partner.category_id:
+            tag_name = (tag.name or '').strip().lower()
+            if 'responsable' in tag_name:
+                return True
+
+        return False
+
+    def _get_acopio_responsable_contact(self, acopio_partner):
+        """
+        Devuelve el contacto responsable del Acopio/Destinatario.
+
+        Regla de negocio:
+        - Se busca primero entre los contactos hijos del destinatario/acopio.
+        - El contacto debe tener una etiqueta/categoría que contenga
+          'Responsable'.
+        - No usa contacto del generador.
+        - No usa contacto del cliente.
+        - Si no existe responsable marcado, devuelve vacío.
+        """
+        Partner = self.env['res.partner']
+
+        if not acopio_partner:
+            return Partner.browse()
+
+        responsables = acopio_partner.child_ids.filtered(
+            lambda contact: self._partner_has_responsable_tag(contact)
+        )
+
+        if responsables:
+            return responsables.sorted(lambda contact: contact.id)[:1]
+
+        # Fallback controlado: si el propio destinatario/acopio está marcado como Responsable.
+        if self._partner_has_responsable_tag(acopio_partner):
+            return acopio_partner
+
+        return Partner.browse()
+
+    def _get_acopio_responsable_nombre(self, acopio_partner):
+        responsable = self._get_acopio_responsable_contact(acopio_partner)
+        return responsable.name or ''
+
     # =========================================================================
     # COMPUTES
     # =========================================================================
@@ -445,6 +497,16 @@ class ManifiestoAmbiental(models.Model):
             self.destinatario_telefono = p.phone or ''
             self.destinatario_email = p.email or ''
             self.numero_autorizacion_semarnat_destinatario = p.numero_autorizacion_semarnat or ''
+
+            responsable_nombre = self._get_acopio_responsable_nombre(p)
+
+            # Sección 17 y firma del destinatario/acopio.
+            # No usar contacto del cliente/generador.
+            self.nombre_persona_recibe = responsable_nombre
+            self.destinatario_responsable_nombre = responsable_nombre
+        else:
+            self.nombre_persona_recibe = ''
+            self.destinatario_responsable_nombre = ''
 
     # =========================================================================
     # NUMERACIÓN
@@ -809,6 +871,8 @@ class ManifiestoAmbiental(models.Model):
 
             if vals.get('destinatario_id'):
                 p = self.env['res.partner'].browse(vals['destinatario_id'])
+                responsable_nombre = self._get_acopio_responsable_nombre(p)
+
                 vals.update({
                     'destinatario_nombre': vals.get('destinatario_nombre') or self._get_partner_nombre_en_manifiesto(p),
                     'destinatario_codigo_postal': vals.get('destinatario_codigo_postal') or p.zip or '',
@@ -821,6 +885,11 @@ class ManifiestoAmbiental(models.Model):
                     'destinatario_telefono': vals.get('destinatario_telefono') or p.phone or '',
                     'destinatario_email': vals.get('destinatario_email') or p.email or '',
                     'numero_autorizacion_semarnat_destinatario': vals.get('numero_autorizacion_semarnat_destinatario') or p.numero_autorizacion_semarnat or '',
+
+                    # Sección Destinatario/Acopio:
+                    # solo se llena desde contacto de Acopio con etiqueta Responsable.
+                    'nombre_persona_recibe': vals.get('nombre_persona_recibe') or responsable_nombre,
+                    'destinatario_responsable_nombre': vals.get('destinatario_responsable_nombre') or responsable_nombre,
                 })
 
             if vals.get('generador_responsable_id') and not vals.get('generador_responsable_nombre'):
@@ -858,9 +927,22 @@ class ManifiestoAmbiental(models.Model):
             partner = self.env['res.partner'].browse(vals['transportista_id']) if vals.get('transportista_id') else False
             vals['transportista_nombre'] = self._get_partner_nombre_en_manifiesto(partner)
 
-        if 'destinatario_id' in vals and 'destinatario_nombre' not in vals:
+        if 'destinatario_id' in vals:
             partner = self.env['res.partner'].browse(vals['destinatario_id']) if vals.get('destinatario_id') else False
-            vals['destinatario_nombre'] = self._get_partner_nombre_en_manifiesto(partner)
+
+            if 'destinatario_nombre' not in vals:
+                vals['destinatario_nombre'] = self._get_partner_nombre_en_manifiesto(partner)
+
+            responsable_nombre = self._get_acopio_responsable_nombre(partner)
+
+            # Si el destinatario/acopio cambia, también debe cambiar el
+            # responsable de la sección Destinatario/Acopio.
+            # No conservar aquí un valor anterior del cliente/generador.
+            if 'nombre_persona_recibe' not in vals:
+                vals['nombre_persona_recibe'] = responsable_nombre
+
+            if 'destinatario_responsable_nombre' not in vals:
+                vals['destinatario_responsable_nombre'] = responsable_nombre
 
         res = super().write(vals)
 

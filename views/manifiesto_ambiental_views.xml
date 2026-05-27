@@ -223,7 +223,8 @@
                                     <field name="generador_id"
                                            string="Empresa"
                                            options="{'no_create': True, 'no_create_edit': True}"
-                                           readonly="not is_current_version" context="{'manifiesto_child_only_display': True}"/>
+                                           readonly="not is_current_version"
+                                           context="{'manifiesto_child_only_display': True}"/>
                                     <field name="generador_nombre" string="Nombre en Manifiesto"
                                            readonly="not is_current_version"/>
                                     <field name="generador_estado" readonly="not is_current_version"/>
@@ -234,7 +235,8 @@
                                     <field name="destinatario_id"
                                            string="Empresa"
                                            options="{'no_create': True, 'no_create_edit': True}"
-                                           readonly="not is_current_version" context="{'manifiesto_child_only_display': True}"/>
+                                           readonly="not is_current_version"
+                                           context="{'manifiesto_child_only_display': True}"/>
                                     <field name="destinatario_nombre" string="Nombre en Manifiesto"
                                            readonly="not is_current_version"/>
                                     <field name="destinatario_estado" readonly="not is_current_version"/>
@@ -264,13 +266,15 @@
                                            string="Empresa Generadora"
                                            placeholder="Seleccione generador..."
                                            options="{'no_create': True, 'no_create_edit': True}"
-                                           readonly="not is_current_version" context="{'manifiesto_child_only_display': True}"/>
+                                           readonly="not is_current_version"
+                                           context="{'manifiesto_child_only_display': True}"/>
                                 </group>
                                 <group string="Firma">
                                     <field name="generador_responsable_id"
                                            string="Responsable"
                                            options="{'no_create': True, 'no_create_edit': True}"
-                                           readonly="not is_current_version" context="{'manifiesto_child_only_display': True}"/>
+                                           readonly="not is_current_version"
+                                           context="{'manifiesto_child_only_display': True}"/>
                                     <field name="generador_responsable_nombre"
                                            string="Nombre en documento"
                                            readonly="not is_current_version"/>
@@ -322,12 +326,14 @@
                                            options="{'no_create': True, 'no_create_edit': True}"/>
                                     <field name="nombre_residuo" string="Descripción"/>
                                     <field name="residue_type" string="Tipo" optional="show"/>
-                                    <field name="clasificacion_corrosivo" string="C" width="35px"/>
-                                    <field name="clasificacion_reactivo" string="R" width="35px"/>
-                                    <field name="clasificacion_explosivo" string="E" width="35px"/>
-                                    <field name="clasificacion_toxico" string="T" width="35px"/>
-                                    <field name="clasificacion_inflamable" string="I" width="35px"/>
-                                    <field name="clasificacion_biologico" string="B" width="35px"/>
+
+                                    <field name="clasificacion_corrosivo" string="C" widget="boolean_toggle" width="60px"/>
+                                    <field name="clasificacion_reactivo" string="R" widget="boolean_toggle" width="60px"/>
+                                    <field name="clasificacion_explosivo" string="E" widget="boolean_toggle" width="60px"/>
+                                    <field name="clasificacion_toxico" string="T" widget="boolean_toggle" width="60px"/>
+                                    <field name="clasificacion_inflamable" string="I" widget="boolean_toggle" width="60px"/>
+                                    <field name="clasificacion_biologico" string="B" widget="boolean_toggle" width="60px"/>
+
                                     <field name="envase_cantidad" string="Uds." width="55px"/>
                                     <field name="packaging_id" string="Embalaje" optional="show"/>
                                     <field name="envase_capacidad" string="Capacidad"/>
@@ -363,12 +369,12 @@
                                         </group>
 
                                         <group string="Clasificación CRETIB" col="6">
-                                            <field name="clasificacion_corrosivo"/>
-                                            <field name="clasificacion_reactivo"/>
-                                            <field name="clasificacion_explosivo"/>
-                                            <field name="clasificacion_toxico"/>
-                                            <field name="clasificacion_inflamable"/>
-                                            <field name="clasificacion_biologico"/>
+                                            <field name="clasificacion_corrosivo" string="Corrosivo" widget="boolean_toggle"/>
+                                            <field name="clasificacion_reactivo" string="Reactivo" widget="boolean_toggle"/>
+                                            <field name="clasificacion_explosivo" string="Explosivo" widget="boolean_toggle"/>
+                                            <field name="clasificacion_toxico" string="Tóxico" widget="boolean_toggle"/>
+                                            <field name="clasificacion_inflamable" string="Inflamable" widget="boolean_toggle"/>
+                                            <field name="clasificacion_biologico" string="Biológico" widget="boolean_toggle"/>
                                         </group>
                                     </sheet>
                                 </form>
@@ -389,12 +395,14 @@
                                            string="Empresa Transportista"
                                            placeholder="Seleccione transportista..."
                                            options="{'no_create': True, 'no_create_edit': True}"
-                                           readonly="not is_current_version" context="{'manifiesto_child_only_display': True}"/>
+                                           readonly="not is_current_version"
+                                           context="{'manifiesto_child_only_display': True}"/>
                                 </group>
                                 <group string="Operación">
                                     <field name="chofer_id" string="Chofer"
                                            options="{'no_create': True, 'no_create_edit': True}"
-                                           readonly="not is_current_version" context="{'manifiesto_child_only_display': True}"/>
+                                           readonly="not is_current_version"
+                                           context="{'manifiesto_child_only_display': True}"/>
                                     <field name="vehicle_id" string="Vehículo"
                                            options="{'no_create': True, 'no_create_edit': True}"
                                            readonly="not is_current_version"/>
@@ -450,7 +458,8 @@
                                     <field name="transportista_responsable_id"
                                            string="Responsable"
                                            options="{'no_create': True, 'no_create_edit': True}"
-                                           readonly="not is_current_version" context="{'manifiesto_child_only_display': True}"/>
+                                           readonly="not is_current_version"
+                                           context="{'manifiesto_child_only_display': True}"/>
                                     <field name="transportista_responsable_nombre"
                                            string="Nombre en documento"
                                            readonly="not is_current_version"/>
@@ -475,7 +484,8 @@
                                            string="Empresa Destinataria"
                                            placeholder="Seleccione destinatario..."
                                            options="{'no_create': True, 'no_create_edit': True}"
-                                           readonly="not is_current_version" context="{'manifiesto_child_only_display': True}"/>
+                                           readonly="not is_current_version"
+                                           context="{'manifiesto_child_only_display': True}"/>
                                 </group>
                                 <group string="Recepción">
                                     <field name="nombre_persona_recibe"

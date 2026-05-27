@@ -32,6 +32,7 @@
                 <t t-call="web.basic_layout">
                     <div class="page">
                         <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+
                         <style>
                             @page { margin: 3mm 5mm 3mm 5mm; size: A4; }
 
@@ -139,6 +140,49 @@
                                 width: 100%;
                                 border-collapse: collapse;
                                 table-layout: fixed;
+                            }
+
+                            /*
+                                AJUSTE ESPECÍFICO BLOQUE 5:
+                                - Todo el contenido de la tabla queda sin negritas.
+                                - Valores de filas centrados horizontal y verticalmente.
+                                - Se amplía Nombre del residuo.
+                                - Se reduce ligeramente CRETIB, Pzas y Cantidad (kg).
+                            */
+                            table.residuos-table {
+                                width: 100%;
+                                border-collapse: collapse;
+                                table-layout: fixed;
+                            }
+
+                            table.residuos-table th,
+                            table.residuos-table td,
+                            table.residuos-table span,
+                            table.residuos-table .value {
+                                font-weight: 400 !important;
+                            }
+
+                            table.residuos-table th,
+                            table.residuos-table td {
+                                text-align: center !important;
+                                vertical-align: middle !important;
+                                line-height: 1.12;
+                            }
+
+                            table.residuos-table td .value,
+                            table.residuos-table td span,
+                            table.residuos-table td t {
+                                text-align: center !important;
+                                vertical-align: middle !important;
+                            }
+
+                            table.residuos-table td {
+                                height: 22px;
+                            }
+
+                            table.residuos-table .residuo-name-cell {
+                                text-align: center !important;
+                                vertical-align: middle !important;
                             }
 
                             table.signature-section {
@@ -252,20 +296,31 @@
                         </table>
 
                         <!-- 5. IDENTIFICACIÓN DE LOS RESIDUOS -->
-                        <table>
+                        <table class="residuos-table">
                             <colgroup>
-                                <col style="width:22%"/>
-                                <col style="width:3%"/>
-                                <col style="width:3%"/>
-                                <col style="width:3%"/>
-                                <col style="width:3%"/>
-                                <col style="width:3%"/>
-                                <col style="width:3%"/>
-                                <col style="width:3%"/>
-                                <col style="width:5%"/>
+                                <!-- Más espacio para Nombre del residuo -->
+                                <col style="width:30%"/>
+
+                                <!-- CRETIB + M: ligeramente más angostos -->
+                                <col style="width:2.4%"/>
+                                <col style="width:2.4%"/>
+                                <col style="width:2.4%"/>
+                                <col style="width:2.4%"/>
+                                <col style="width:2.4%"/>
+                                <col style="width:2.4%"/>
+                                <col style="width:2.4%"/>
+
+                                <!-- Pzas: ligeramente más angosta -->
+                                <col style="width:4%"/>
+
+                                <!-- Embalaje y Capacidad se conservan igual -->
                                 <col style="width:10%"/>
                                 <col style="width:10%"/>
-                                <col style="width:10%"/>
+
+                                <!-- Cantidad (kg): ligeramente más angosta -->
+                                <col style="width:7.2%"/>
+
+                                <!-- Etiqueta se conserva igual -->
                                 <col style="width:3%"/>
                                 <col style="width:3%"/>
                             </colgroup>
@@ -297,13 +352,34 @@
 
                             <t t-foreach="doc.residuo_ids" t-as="residuo">
                                 <tr>
-                                    <td><span class="value" t-field="residuo.nombre_residuo"/></td>
-                                    <td class="center-text"><span class="value" t-if="residuo.clasificacion_corrosivo">X</span></td>
-                                    <td class="center-text"><span class="value" t-if="residuo.clasificacion_reactivo">X</span></td>
-                                    <td class="center-text"><span class="value" t-if="residuo.clasificacion_explosivo">X</span></td>
-                                    <td class="center-text"><span class="value" t-if="residuo.clasificacion_toxico">X</span></td>
-                                    <td class="center-text"><span class="value" t-if="residuo.clasificacion_inflamable">X</span></td>
-                                    <td class="center-text"><span class="value" t-if="residuo.clasificacion_biologico">X</span></td>
+                                    <td class="residuo-name-cell">
+                                        <span class="value" t-field="residuo.nombre_residuo"/>
+                                    </td>
+
+                                    <td class="center-text">
+                                        <span class="value" t-if="residuo.clasificacion_corrosivo">X</span>
+                                    </td>
+
+                                    <td class="center-text">
+                                        <span class="value" t-if="residuo.clasificacion_reactivo">X</span>
+                                    </td>
+
+                                    <td class="center-text">
+                                        <span class="value" t-if="residuo.clasificacion_explosivo">X</span>
+                                    </td>
+
+                                    <td class="center-text">
+                                        <span class="value" t-if="residuo.clasificacion_toxico">X</span>
+                                    </td>
+
+                                    <td class="center-text">
+                                        <span class="value" t-if="residuo.clasificacion_inflamable">X</span>
+                                    </td>
+
+                                    <td class="center-text">
+                                        <span class="value" t-if="residuo.clasificacion_biologico">X</span>
+                                    </td>
+
                                     <td class="center-text"></td>
 
                                     <!-- Pzas: vacío cuando es 0 -->
@@ -316,17 +392,25 @@
                                         <span class="value" t-elif="residuo.envase_tipo" t-field="residuo.envase_tipo"/>
                                     </td>
 
-                                    <td class="center-text"><span class="value" t-field="residuo.envase_capacidad"/></td>
+                                    <td class="center-text">
+                                        <span class="value" t-field="residuo.envase_capacidad"/>
+                                    </td>
 
                                     <!-- Cantidad kg: vacío cuando es 0 -->
                                     <td class="center-text">
                                         <t t-if="residuo.cantidad">
-                                            <span class="value" t-field="residuo.cantidad"/> <span class="value">KG</span>
+                                            <span class="value" t-field="residuo.cantidad"/>
+                                            <span class="value">KG</span>
                                         </t>
                                     </td>
 
-                                    <td class="center-text"><span class="value" t-if="residuo.etiqueta_si">X</span></td>
-                                    <td class="center-text"><span class="value" t-if="residuo.etiqueta_no">X</span></td>
+                                    <td class="center-text">
+                                        <span class="value" t-if="residuo.etiqueta_si">X</span>
+                                    </td>
+
+                                    <td class="center-text">
+                                        <span class="value" t-if="residuo.etiqueta_no">X</span>
+                                    </td>
                                 </tr>
                             </t>
 
@@ -335,9 +419,20 @@
                             <t t-set="empty_rows" t-value="max(0, min_rows - residuos_count)"/>
                             <t t-foreach="range(empty_rows)" t-as="empty_row">
                                 <tr style="height: 22px;">
-                                    <td>&#160;</td><td>&#160;</td><td>&#160;</td><td>&#160;</td><td>&#160;</td>
-                                    <td>&#160;</td><td>&#160;</td><td>&#160;</td><td>&#160;</td><td>&#160;</td>
-                                    <td>&#160;</td><td>&#160;</td><td>&#160;</td><td>&#160;</td>
+                                    <td>&#160;</td>
+                                    <td>&#160;</td>
+                                    <td>&#160;</td>
+                                    <td>&#160;</td>
+                                    <td>&#160;</td>
+                                    <td>&#160;</td>
+                                    <td>&#160;</td>
+                                    <td>&#160;</td>
+                                    <td>&#160;</td>
+                                    <td>&#160;</td>
+                                    <td>&#160;</td>
+                                    <td>&#160;</td>
+                                    <td>&#160;</td>
+                                    <td>&#160;</td>
                                 </tr>
                             </t>
                         </table>
@@ -392,7 +487,9 @@
                             </colgroup>
 
                             <tr>
-                                <td colspan="5" class="labelcell">8. Nombre o razón social del transportista: <span class="value" t-field="doc.transportista_nombre"/></td>
+                                <td colspan="5" class="labelcell">
+                                    8. Nombre o razón social del transportista: <span class="value" t-field="doc.transportista_nombre"/>
+                                </td>
                             </tr>
                             <tr>
                                 <td class="subcell domicilio-cell">Domicilio</td>
@@ -402,23 +499,45 @@
                                 <td class="subcell">Núm. int.: <span class="value" t-field="doc.transportista_num_int"/></td>
                             </tr>
                             <tr>
-                                <td class="subcell" colspan="2">Colonia: <span class="value" t-field="doc.transportista_colonia"/></td>
-                                <td class="subcell">Municipio o delegación: <span class="value" t-field="doc.transportista_municipio"/></td>
-                                <td class="subcell" colspan="2">Estado: <span class="value" t-field="doc.transportista_estado"/></td>
+                                <td class="subcell" colspan="2">
+                                    Colonia: <span class="value" t-field="doc.transportista_colonia"/>
+                                </td>
+                                <td class="subcell">
+                                    Municipio o delegación: <span class="value" t-field="doc.transportista_municipio"/>
+                                </td>
+                                <td class="subcell" colspan="2">
+                                    Estado: <span class="value" t-field="doc.transportista_estado"/>
+                                </td>
                             </tr>
                             <tr>
-                                <td class="subcell" colspan="2">Teléfono: <span class="value" t-field="doc.transportista_telefono"/></td>
-                                <td class="subcell" colspan="3">Correo electrónico: <span class="value" t-field="doc.transportista_email"/></td>
+                                <td class="subcell" colspan="2">
+                                    Teléfono: <span class="value" t-field="doc.transportista_telefono"/>
+                                </td>
+                                <td class="subcell" colspan="3">
+                                    Correo electrónico: <span class="value" t-field="doc.transportista_email"/>
+                                </td>
                             </tr>
                         </table>
 
                         <!-- 9-12. INFORMACIÓN DEL TRANSPORTE -->
                         <table>
                             <tr>
-                                <td style="width:25%;">9. Núm. de autorización de la SEMARNAT:<br/><span class="value" t-field="doc.numero_autorizacion_semarnat"/></td>
-                                <td style="width:25%;">10. Núm. de permiso S.C.T.:<br/><span class="value" t-field="doc.numero_permiso_sct"/></td>
-                                <td style="width:25%;">11. Tipo de vehículo:<br/><span class="value" t-field="doc.tipo_vehiculo"/></td>
-                                <td style="width:25%;">12. Núm. de placa:<br/><span class="value" t-field="doc.numero_placa"/></td>
+                                <td style="width:25%;">
+                                    9. Núm. de autorización de la SEMARNAT:<br/>
+                                    <span class="value" t-field="doc.numero_autorizacion_semarnat"/>
+                                </td>
+                                <td style="width:25%;">
+                                    10. Núm. de permiso S.C.T.:<br/>
+                                    <span class="value" t-field="doc.numero_permiso_sct"/>
+                                </td>
+                                <td style="width:25%;">
+                                    11. Tipo de vehículo:<br/>
+                                    <span class="value" t-field="doc.tipo_vehiculo"/>
+                                </td>
+                                <td style="width:25%;">
+                                    12. Núm. de placa:<br/>
+                                    <span class="value" t-field="doc.numero_placa"/>
+                                </td>
                             </tr>
                         </table>
 
@@ -472,7 +591,9 @@
                             </colgroup>
 
                             <tr>
-                                <td colspan="5" class="labelcell">15. Nombre o razón social del destinatario: <span class="value" t-field="doc.destinatario_nombre"/></td>
+                                <td colspan="5" class="labelcell">
+                                    15. Nombre o razón social del destinatario: <span class="value" t-field="doc.destinatario_nombre"/>
+                                </td>
                             </tr>
                             <tr>
                                 <td class="subcell domicilio-cell">Domicilio</td>
@@ -482,21 +603,37 @@
                                 <td class="subcell">Núm. int.: <span class="value" t-field="doc.destinatario_num_int"/></td>
                             </tr>
                             <tr>
-                                <td class="subcell" colspan="2">Colonia: <span class="value" t-field="doc.destinatario_colonia"/></td>
-                                <td class="subcell">Municipio o delegación: <span class="value" t-field="doc.destinatario_municipio"/></td>
-                                <td class="subcell" colspan="2">Estado: <span class="value" t-field="doc.destinatario_estado"/></td>
+                                <td class="subcell" colspan="2">
+                                    Colonia: <span class="value" t-field="doc.destinatario_colonia"/>
+                                </td>
+                                <td class="subcell">
+                                    Municipio o delegación: <span class="value" t-field="doc.destinatario_municipio"/>
+                                </td>
+                                <td class="subcell" colspan="2">
+                                    Estado: <span class="value" t-field="doc.destinatario_estado"/>
+                                </td>
                             </tr>
                             <tr>
-                                <td class="subcell" colspan="2">Teléfono: <span class="value" t-field="doc.destinatario_telefono"/></td>
-                                <td class="subcell" colspan="3">Correo electrónico: <span class="value" t-field="doc.destinatario_email"/></td>
+                                <td class="subcell" colspan="2">
+                                    Teléfono: <span class="value" t-field="doc.destinatario_telefono"/>
+                                </td>
+                                <td class="subcell" colspan="3">
+                                    Correo electrónico: <span class="value" t-field="doc.destinatario_email"/>
+                                </td>
                             </tr>
                         </table>
 
                         <!-- 16-18. INFORMACIÓN ADICIONAL DEL DESTINATARIO -->
                         <table>
                             <tr>
-                                <td style="width:50%;">16. Núm. autorización de la SEMARNAT:<br/><span class="value" t-field="doc.numero_autorizacion_semarnat_destinatario"/></td>
-                                <td style="width:50%;">17. Nombre y cargo de la persona que recibe los residuos:<br/><span class="value" t-field="doc.nombre_persona_recibe"/></td>
+                                <td style="width:50%;">
+                                    16. Núm. autorización de la SEMARNAT:<br/>
+                                    <span class="value" t-field="doc.numero_autorizacion_semarnat_destinatario"/>
+                                </td>
+                                <td style="width:50%;">
+                                    17. Nombre y cargo de la persona que recibe los residuos:<br/>
+                                    <span class="value" t-field="doc.nombre_persona_recibe"/>
+                                </td>
                             </tr>
                             <tr>
                                 <td colspan="2" class="labelcell">18. Observaciones:</td>

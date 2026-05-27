@@ -71,15 +71,15 @@
     </record>
 
     <!-- ================================================================== -->
-    <!-- FORMULARIO PRINCIPAL V2 -->
+    <!-- FORMULARIO PRINCIPAL V3 — COMMAND CENTER RESPONSIVE -->
     <!-- ================================================================== -->
 
     <record id="view_manifiesto_ambiental_form" model="ir.ui.view">
-        <field name="name">manifiesto.ambiental.form.v2</field>
+        <field name="name">manifiesto.ambiental.form.v3</field>
         <field name="model">manifiesto.ambiental</field>
         <field name="type">form</field>
         <field name="arch" type="xml">
-            <form string="Manifiesto Ambiental" class="o_manifiesto_ambiental_form_v2">
+            <form string="Manifiesto Ambiental" class="o_manifiesto_ambiental_form_v3">
 
                 <header>
                     <button name="action_confirm" string="Confirmar" type="object"
@@ -164,18 +164,37 @@
                     </div>
 
                     <div class="ma_hero">
+                        <div class="ma_hero_glow"/>
+
                         <div class="ma_hero_main">
-                            <div class="ma_eyebrow">Número de manifiesto</div>
-                            <h1 class="ma_title">
-                                <field name="numero_manifiesto"
-                                       readonly="not is_current_version"
-                                       placeholder="Ej: MA-2026-001"/>
-                            </h1>
+                            <div>
+                                <div class="ma_eyebrow">Manifiesto ambiental / trazabilidad regulatoria</div>
+                                <h1 class="ma_title">
+                                    <field name="numero_manifiesto"
+                                           readonly="not is_current_version"
+                                           placeholder="Ej: MA-2026-001"/>
+                                </h1>
+                                <div class="ma_microcopy">
+                                    Control operativo del generador, transporte, residuos, destino, documento físico y remanifestación en una sola vista.
+                                </div>
+                            </div>
 
                             <div class="ma_hero_meta">
                                 <div class="ma_chip_block">
                                     <span class="ma_chip_label">Tipo</span>
                                     <field name="tipo_manifiesto" readonly="1" widget="badge"/>
+                                </div>
+
+                                <div class="ma_chip_block">
+                                    <span class="ma_chip_label">Estado</span>
+                                    <field name="state" readonly="1" widget="badge"/>
+                                </div>
+
+                                <div class="ma_chip_block">
+                                    <span class="ma_chip_label">Registro ambiental</span>
+                                    <field name="numero_registro_ambiental"
+                                           readonly="not is_current_version"
+                                           placeholder="Registro"/>
                                 </div>
 
                                 <div class="ma_chip_block">
@@ -205,6 +224,43 @@
                                     <span invisible="tiene_documento_fisico">No</span>
                                 </span>
                             </div>
+
+                            <div class="ma_kpi">
+                                <span class="ma_kpi_label">Secuencia</span>
+                                <span class="ma_kpi_value">
+                                    <field name="sequence_number" readonly="1"/>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="ma_flow_guide">
+                        <div class="ma_step_card">
+                            <span class="ma_step_index">01</span>
+                            <span class="ma_step_title">Borrador</span>
+                            <span class="ma_step_hint">Captura y validación inicial</span>
+                            <span class="ma_step_badge" invisible="state != 'draft'">Actual</span>
+                        </div>
+
+                        <div class="ma_step_card">
+                            <span class="ma_step_index">02</span>
+                            <span class="ma_step_title">Confirmado</span>
+                            <span class="ma_step_hint">Listo para operación</span>
+                            <span class="ma_step_badge" invisible="state != 'confirmed'">Actual</span>
+                        </div>
+
+                        <div class="ma_step_card">
+                            <span class="ma_step_index">03</span>
+                            <span class="ma_step_title">En tránsito</span>
+                            <span class="ma_step_hint">Seguimiento del traslado</span>
+                            <span class="ma_step_badge" invisible="state != 'in_transit'">Actual</span>
+                        </div>
+
+                        <div class="ma_step_card">
+                            <span class="ma_step_index">04</span>
+                            <span class="ma_step_title">Entregado</span>
+                            <span class="ma_step_hint">Cierre documental</span>
+                            <span class="ma_step_badge" invisible="state != 'delivered'">Actual</span>
                         </div>
                     </div>
 
@@ -218,6 +274,7 @@
                     <notebook>
 
                         <page string="Resumen" name="resumen">
+                            <div class="ma_page_intro">Vista ejecutiva del manifiesto: partes involucradas, estado, versión y referencia operativa.</div>
                             <group col="2" class="ma_summary_grid">
                                 <group string="Generador">
                                     <field name="generador_id"
@@ -258,6 +315,7 @@
                         </page>
 
                         <page string="Generador" name="generador">
+                            <div class="ma_page_intro">Datos del generador, responsable, dirección fiscal/operativa y declaración de la sección 7.</div>
                             <group col="2">
                                 <group string="Empresa">
                                     <field name="generador_id"
@@ -314,8 +372,33 @@
                         </page>
 
                         <page string="Residuos" name="residuos">
+                            <div class="ma_page_intro">Captura los residuos con tabla desplazable interna; evita que columnas CRETIB, envases y cantidades rompan el contenedor.</div>
 
-                            <field name="residuo_ids" readonly="not is_current_version">
+                            <div class="ma_o2m_shell">
+
+
+                                <div class="ma_list_toolbar">
+
+
+                                    <div>
+
+
+                                        <div class="ma_list_title">Residuos manifestados</div>
+
+
+                                        <div class="ma_list_hint">La tabla conserva todas las columnas, pero el desplazamiento queda dentro del bloque para no desbordar el formulario.</div>
+
+
+                                    </div>
+
+
+                                </div>
+
+
+                                <div class="ma_o2m_scroll">
+
+
+                                    <field name="residuo_ids" readonly="not is_current_version">
                                 <list editable="bottom">
                                     <field name="product_id"
                                            placeholder="Seleccionar residuo..."
@@ -372,7 +455,15 @@
                                         </group>
                                     </sheet>
                                 </form>
-                            </field>
+
+
+                                    </field>
+
+
+                                </div>
+
+
+                            </div>
 
                             <group string="Instrucciones Especiales de Manejo (Sección 6)" col="1">
                                 <field name="instrucciones_especiales"
@@ -383,6 +474,7 @@
                         </page>
 
                         <page string="Transportista" name="transportista">
+                            <div class="ma_page_intro">Información del transportista, autorizaciones, vehículo, ruta, responsable y declaración de traslado.</div>
                             <group col="2">
                                 <group string="Empresa">
                                     <field name="transportista_id"
@@ -469,6 +561,7 @@
                         </page>
 
                         <page string="Destinatario" name="destinatario">
+                            <div class="ma_page_intro">Recepción, datos del destinatario, responsable, observaciones y cierre documental del manifiesto.</div>
                             <group col="2">
                                 <group string="Empresa">
                                     <field name="destinatario_id"
@@ -531,6 +624,7 @@
                         </page>
 
                         <page string="Documento Físico" name="documento_fisico">
+                            <div class="ma_page_intro">Carga, consulta, descarga y previsualización del PDF físico sin afectar el ancho del formulario.</div>
                             <group col="2">
                                 <group string="Archivo">
                                     <field name="documento_fisico_filename"
@@ -539,7 +633,7 @@
                                            widget="boolean_toggle"/>
                                 </group>
 
-                                <group string="Acciones">
+                                <group string="Acciones" class="ma_action_stack">
                                     <button name="action_view_documento_fisico"
                                             type="object"
                                             string="Ver Documento Físico"
@@ -575,6 +669,7 @@
                         </page>
 
                         <page string="Versiones" name="versiones" invisible="version &lt;= 1">
+                            <div class="ma_page_intro">Consulta el origen, motivo y trazabilidad de remanifestaciones o versiones históricas.</div>
                             <group col="2">
                                 <group string="Versión actual">
                                     <field name="version" readonly="1" string="Nº de Versión"/>

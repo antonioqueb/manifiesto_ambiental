@@ -61,6 +61,16 @@ class ManifiestoAmbiental(models.Model):
 
     numero_registro_ambiental = fields.Char(string='1. Núm. de registro ambiental', required=True, tracking=True)
     numero_manifiesto = fields.Char(string='2. Núm. de manifiesto', required=True, copy=False, tracking=True)
+    numero_manifiesto_manual = fields.Boolean(
+        string='Folio Asignado Manualmente',
+        default=False,
+        copy=False,
+        help=(
+            'Se activa cuando un usuario captura o corrige el número de manifiesto. '
+            'Un folio manual no se reasigna al confirmar y se conserva en las '
+            'remanifestaciones.'
+        ),
+    )
     numero_manifiesto_display = fields.Char(
         string='Número de Manifiesto',
         compute='_compute_numero_manifiesto_display',
@@ -773,6 +783,7 @@ class ManifiestoAmbiental(models.Model):
 
         Reglas:
         - Si es remanifestación, conserva el número original.
+        - Si el folio fue capturado/corregido manualmente, no se toca.
         - Si el número es personalizado y no parece automático, no se toca.
         - Si el número automático está duplicado o saltado, se ajusta al
           siguiente consecutivo real para ese generador/día/compañía.
@@ -780,6 +791,9 @@ class ManifiestoAmbiental(models.Model):
         self.ensure_one()
 
         if self.created_by_remanifest or self.version > 1:
+            return
+
+        if self.numero_manifiesto_manual:
             return
 
         if not self.generador_id:
@@ -811,7 +825,9 @@ class ManifiestoAmbiental(models.Model):
         desired_number = self._format_manifiesto_number(numero_base, desired_seq)
 
         if self.numero_manifiesto != desired_number:
-            self.write({'numero_manifiesto': desired_number})
+            # ma_auto_folio: esta escritura es del sistema, no debe marcar
+            # el folio como manual.
+            self.with_context(ma_auto_folio=True).write({'numero_manifiesto': desired_number})
 
     # =========================================================================
     # CREATE
@@ -822,6 +838,12 @@ class ManifiestoAmbiental(models.Model):
             if not vals.get('created_by_remanifest'):
                 next_seq = self._get_next_sequence_number()
                 vals['sequence_number'] = vals.get('sequence_number') or next_seq
+
+                if vals.get('numero_manifiesto') and 'numero_manifiesto_manual' not in vals:
+                    # El número no fue generado por el sistema: es un folio
+                    # capturado (usuario, salida de acopio, etc.) y debe
+                    # respetarse en confirmación y remanifestaciones.
+                    vals['numero_manifiesto_manual'] = True
 
                 if not vals.get('numero_manifiesto'):
                     generador_id = vals.get('generador_id')
@@ -918,6 +940,16 @@ class ManifiestoAmbiental(models.Model):
     # =========================================================================
     def write(self, vals):
         vals = dict(vals)
+
+        if (
+            'numero_manifiesto' in vals
+            and 'numero_manifiesto_manual' not in vals
+            and not self.env.context.get('ma_auto_folio')
+        ):
+            # Cambio de folio hecho por un usuario (o sincronizado desde la
+            # salida de acopio): marcarlo manual para que la confirmación y
+            # las remanifestaciones lo respeten.
+            vals['numero_manifiesto_manual'] = True
 
         if 'generador_id' in vals and 'generador_nombre' not in vals:
             partner = self.env['res.partner'].browse(vals['generador_id']) if vals.get('generador_id') else False
@@ -1461,7 +1493,11 @@ RESIDUOS
             'state': 'draft',
             'documento_fisico': False,
             'documento_fisico_filename': False,
+            # Trazabilidad: la remanifestación SIEMPRE conserva el folio
+            # vigente (incluido un folio corregido a mano) y su condición
+            # de manual, para que tampoco se reasigne en confirmaciones.
             'numero_manifiesto': self.numero_manifiesto,
+            'numero_manifiesto_manual': self.numero_manifiesto_manual,
             'sequence_number': self.sequence_number,
         })
         return new_vals

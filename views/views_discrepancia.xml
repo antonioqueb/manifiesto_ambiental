@@ -47,9 +47,30 @@
                             string="Volver a Borrador"
                             type="object"
                             invisible="state == 'draft'"/>
+                    <button name="action_crear_correccion_inventario"
+                            string="Generar Corrección de Inventario"
+                            type="object"
+                            class="btn-warning"
+                            icon="fa-cubes"
+                            invisible="not tiene_discrepancias or discrepancy_log_id"
+                            groups="gestion_discrepancias.group_discrepancia_reportante,gestion_discrepancias.group_discrepancia_manager"/>
+                    <button name="action_solicitar_remanifestacion"
+                            string="Solicitar Remanifestación"
+                            type="object"
+                            class="btn-primary"
+                            icon="fa-refresh"
+                            invisible="not tiene_discrepancias"/>
                     <field name="state" widget="statusbar" statusbar_visible="draft,done"/>
                 </header>
                 <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_discrepancy_log" type="object" class="oe_stat_button"
+                                icon="fa-exchange" invisible="not discrepancy_log_id">
+                            <div class="o_stat_info">
+                                <span class="o_stat_text">Corrección de Inventario</span>
+                            </div>
+                        </button>
+                    </div>
                     <div class="oe_title">
                         <h1><field name="name" readonly="1"/></h1>
                     </div>

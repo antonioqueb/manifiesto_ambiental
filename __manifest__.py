@@ -14,6 +14,7 @@
         'stock',
         'residuo_recepcion_sai',
         'fleet',
+        'gestion_discrepancias',
     ],
     'data': [
         'security/ir.model.access.csv',
@@ -27,6 +28,7 @@
         # Primero se crea la acción de discrepancias.
         # Luego el menú puede apuntar a esa acción.
         'views/views_discrepancia.xml',
+        'views/discrepancy_log_views.xml',
         'views/manifiesto_ambiental_menus.xml',
 
         'views/service_order_manifiesto_button.xml',

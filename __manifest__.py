@@ -19,6 +19,7 @@
     'data': [
         'security/ir.model.access.csv',
         'data/sequences.xml',
+        'data/transito_directo_cron.xml',
 
         'views/manifiesto_ambiental_assets.xml',
         'views/res_partner_views.xml',

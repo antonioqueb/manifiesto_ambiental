@@ -50,6 +50,19 @@ class ManifiestoAmbiental(models.Model):
     discrepancia_ids = fields.One2many('manifiesto.discrepancia', 'manifiesto_id', string='Reportes de Discrepancias')
     discrepancia_count = fields.Integer(string='No. Discrepancias', compute='_compute_discrepancia_count')
 
+    # Bitácora de Tránsitos Directos (modelo `transito.directo`, definido en
+    # `service_order`): un manifiesto de entrada, versión vigente, que llega a
+    # "Entregado" sin ninguna recepción de inventario vinculada, se considera
+    # un tránsito directo (el residuo nunca pasó por el almacén de SAI).
+    es_transito_directo = fields.Boolean(
+        string='Es Tránsito Directo',
+        compute='_compute_es_transito_directo',
+        store=True,
+    )
+    transito_directo_id = fields.Many2one(
+        'transito.directo', string='Registro de Tránsito Directo', readonly=True, copy=False,
+    )
+
     # =========================================================================
     # CAMPOS PRINCIPALES
     # =========================================================================
@@ -405,6 +418,15 @@ class ManifiestoAmbiental(models.Model):
     def _compute_discrepancia_count(self):
         for rec in self:
             rec.discrepancia_count = len(rec.discrepancia_ids)
+
+    @api.depends('tipo_manifiesto', 'is_current_version', 'recepcion_ids')
+    def _compute_es_transito_directo(self):
+        for rec in self:
+            rec.es_transito_directo = (
+                rec.tipo_manifiesto == 'entrada'
+                and rec.is_current_version
+                and not rec.recepcion_ids
+            )
 
     @api.depends('generador_responsable_id', 'generador_responsable_id.name')
     def _compute_generador_responsable_nombre(self):
@@ -1088,10 +1110,89 @@ class ManifiestoAmbiental(models.Model):
     def action_delivered(self):
         for rec in self:
             rec.state = 'delivered'
+            if rec.es_transito_directo:
+                rec._crear_transito_directo()
 
     def action_cancel(self):
         for rec in self:
             rec.state = 'cancel'
+
+    # =========================================================================
+    # BITÁCORA DE TRÁNSITOS DIRECTOS
+    # =========================================================================
+    def _crear_transito_directo(self):
+        """Crea (de forma idempotente) el registro de bitácora en `transito.directo`
+        cuando este manifiesto de entrada llega a 'Entregado' sin haber generado
+        nunca una recepción de inventario."""
+        self.ensure_one()
+        if self.transito_directo_id:
+            return self.transito_directo_id
+        if not self.es_transito_directo or self.state != 'delivered':
+            return False
+        transito = self.env['transito.directo'].create({
+            'manifiesto_id': self.id,
+            'service_order_id': self.service_order_id.id,
+            'fecha_transito': self.transportista_fecha or self.generador_fecha,
+            'generador_id': self.generador_id.id,
+            'generador_nombre': self.generador_nombre,
+            'destinatario_id': self.destinatario_id.id,
+            'destinatario_nombre': self.destinatario_nombre,
+            'transportista_id': self.transportista_id.id,
+            'transportista_nombre': self.transportista_nombre,
+            'vehicle_id': self.vehicle_id.id,
+            'numero_placa': self.numero_placa,
+            'chofer_id': self.chofer_id.id,
+            'company_id': self.company_id.id,
+        })
+        self.transito_directo_id = transito.id
+        return transito
+
+    def action_registrar_transito_directo(self):
+        """Gatillo manual/inmediato de la misma detección automática — útil si
+        no se quiere esperar a la corrida diaria del cron de seguridad."""
+        self.ensure_one()
+        if self.transito_directo_id:
+            raise UserError(_('Este manifiesto ya tiene un tránsito directo registrado.'))
+        if not self.es_transito_directo:
+            raise UserError(_(
+                'Este manifiesto no califica como tránsito directo (tiene una recepción de '
+                'inventario vinculada, no es de tipo Entrada, o no es la versión vigente).'
+            ))
+        if self.state != 'delivered':
+            raise UserError(_('El manifiesto debe estar en estado "Entregado" para registrar el tránsito directo.'))
+        self._crear_transito_directo()
+        return {
+            'type': 'ir.actions.act_window',
+            'res_model': 'transito.directo',
+            'view_mode': 'form',
+            'res_id': self.transito_directo_id.id,
+        }
+
+    @api.model
+    def _cron_detectar_transitos_directos(self):
+        """Red de seguridad diaria: detecta manifiestos que llegaron a
+        'Entregado' sin recepción de inventario y sin bitácora, por cualquier
+        vía distinta al click en 'Marcar Entregado' (datos importados,
+        manifiestos entregados antes de instalar esta funcionalidad, etc.)."""
+        manifiestos = self.search([
+            ('state', '=', 'delivered'),
+            ('tipo_manifiesto', '=', 'entrada'),
+            ('is_current_version', '=', True),
+            ('recepcion_ids', '=', False),
+            ('transito_directo_id', '=', False),
+        ])
+        for rec in manifiestos:
+            rec._crear_transito_directo()
+        return True
+
+    def action_view_transito_directo(self):
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'res_model': 'transito.directo',
+            'view_mode': 'form',
+            'res_id': self.transito_directo_id.id,
+        }
 
     # =========================================================================
     # INTEGRACIÓN CON RECEPCIÓN

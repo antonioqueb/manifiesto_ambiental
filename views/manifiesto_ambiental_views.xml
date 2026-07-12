@@ -106,6 +106,10 @@
                             class="btn-warning" icon="fa-exclamation-triangle"
                             invisible="state not in ['in_transit', 'delivered'] or not is_current_version or tipo_manifiesto == 'salida'"/>
 
+                    <button name="action_registrar_transito_directo" string="Registrar en Bitácora de Tránsito Directo"
+                            type="object" class="btn-warning" icon="fa-road"
+                            invisible="not es_transito_directo or transito_directo_id or state != 'delivered'"/>
+
                     <button name="action_remanifestar"
                             string="Remanifestar"
                             type="object"
@@ -141,6 +145,14 @@
                                 class="oe_stat_button" icon="fa-truck"
                                 invisible="recepcion_count == 0">
                             <field name="recepcion_count" widget="statinfo" string="Recepciones"/>
+                        </button>
+
+                        <button name="action_view_transito_directo" type="object"
+                                class="oe_stat_button" icon="fa-road"
+                                invisible="not transito_directo_id">
+                            <div class="o_stat_info">
+                                <span class="o_stat_text">Tránsito Directo</span>
+                            </div>
                         </button>
 
                         <button type="object" name="action_view_documento_fisico"
@@ -249,6 +261,7 @@
                                     <field name="state" readonly="1"/>
                                     <field name="is_current_version" readonly="1"/>
                                     <field name="created_by_remanifest" readonly="1"/>
+                                    <field name="es_transito_directo" readonly="1"/>
                                 </group>
 
                                 <group string="Referencia">
